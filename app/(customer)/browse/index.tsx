@@ -20,7 +20,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 
 import { Ionicons } from '@expo/vector-icons';
-import { BusinessCard } from '@/components/customer/browseSalonCard';
+import { BrowseCard } from '@/components/customer/BrowseCard';
 
 export default function CustomerBrowseScreen() {
   const { category, categoryId } = useLocalSearchParams<{
@@ -320,7 +320,7 @@ export default function CustomerBrowseScreen() {
           <FlatList
             data={filteredBusinesses}
             renderItem={({ item, index }) => (
-              <BusinessCard item={item} index={index} />
+              <BrowseCard item={item} index={index} />
             )}
             keyExtractor={(item, index) =>
               String(item.id || index)
