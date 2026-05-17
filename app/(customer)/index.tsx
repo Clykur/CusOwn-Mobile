@@ -43,38 +43,6 @@ export default function CustomerHomeScreen() {
     router.push(`/(customer)/browse/salons/${business.id}`);
   };
 
-  const renderBusinessCard = ({ item, index }: { item: Business; index: number }) => (
-    <AnimatedSection delay={index * 100} direction="right" className="mr-4">
-      <Pressable onPress={() => handleBusinessPress(item)}>
-        <GlassCard className="w-[280px] p-3 border-slate-200/80 shadow-sm bg-white/80">
-          <Avatar url={item.image_url} name={item.salon_name} size={140} className="w-full h-[160px] rounded-2xl mb-4" />
-          <View className="gap-y-2">
-            <Text className="text-slate-900 text-xl font-bold tracking-tight" numberOfLines={1}>
-              {item.salon_name}
-            </Text>
-            <Text className="text-slate-500 text-xs leading-4" numberOfLines={2}>
-              {item.address}
-            </Text>
-            <View className="flex-row items-center justify-between mt-2">
-              <View className="flex-row items-center gap-x-1">
-                <Ionicons name="star" size={14} color="#000000" />
-                <Text className="text-accent-premium text-xs font-bold">
-                  {item.rating_avg ? item.rating_avg.toFixed(1) : '0.0'}
-                </Text>
-                {item.review_count > 0 && (
-                  <Text className="text-slate-500 text-[10px] ml-1">({item.review_count})</Text>
-                )}
-              </View>
-              <View className="bg-slate-100 px-3 py-1 rounded-full">
-                <Text className="text-slate-600 text-[10px] font-bold uppercase tracking-widest">Featured</Text>
-              </View>
-            </View>
-          </View>
-        </GlassCard>
-      </Pressable>
-    </AnimatedSection>
-  );
-
   const renderCategoryItem = ({ item, index }: { item: BusinessCategory; index: number }) => (
     <AnimatedSection delay={index * 50} direction="up">
       <Pressable
@@ -115,75 +83,61 @@ export default function CustomerHomeScreen() {
             <View className="flex-row justify-between">
 
               {/* Total */}
-              <Pressable
-                onPress={() => router.push('/(customer)/bookings')}
-                className="w-[31%]"
-              >
-                <GlassCard className="h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
-                  <View className="flex-1 items-center justify-center">
+              <GlassCard className="w-[31%] h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
+                <View className="flex-1 items-center justify-center">
 
-                    <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
-                      Total
+                  <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
+                    Total
+                  </Text>
+
+                  {bookingsLoading ? (
+                    <LoadingSkeleton height={24} width={40} borderRadius={8} />
+                  ) : (
+                    <Text className="text-slate-900 text-2xl font-black text-center">
+                      {totalCount}
                     </Text>
+                  )}
 
-                    {bookingsLoading ? (
-                      <LoadingSkeleton height={24} width={40} borderRadius={8} />
-                    ) : (
-                      <Text className="text-slate-900 text-2xl font-black text-center">
-                        {totalCount}
-                      </Text>
-                    )}
-
-                  </View>
-                </GlassCard>
-              </Pressable>
+                </View>
+              </GlassCard>
 
               {/* Upcoming */}
-              <Pressable
-                onPress={() => router.push('/(customer)/bookings')}
-                className="w-[31%]"
-              >
-                <GlassCard className="h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
-                  <View className="flex-1 items-center justify-center">
+              <GlassCard className="w-[31%] h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
+                <View className="flex-1 items-center justify-center">
 
-                    <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
-                      Upcoming
+                  <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
+                    Upcoming
+                  </Text>
+
+                  {bookingsLoading ? (
+                    <LoadingSkeleton height={24} width={40} borderRadius={8} />
+                  ) : (
+                    <Text className="text-slate-900 text-2xl font-black text-center">
+                      {upcomingCount}
                     </Text>
+                  )}
 
-                    {bookingsLoading ? (
-                      <LoadingSkeleton height={24} width={40} borderRadius={8} />
-                    ) : (
-                      <Text className="text-slate-900 text-2xl font-black text-center">
-                        {upcomingCount}
-                      </Text>
-                    )}
-
-                  </View>
-                </GlassCard>
-              </Pressable>
+                </View>
+              </GlassCard>
 
               {/* Completed */}
-              <Pressable
-                onPress={() => router.push('/(customer)/bookings')}
-                className="w-[31%]"
-              >
-                <GlassCard className="h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
-                  <View className="flex-1 items-center justify-center">
-                    <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
-                      Completed
+              <GlassCard className="w-[31%] h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
+                <View className="flex-1 items-center justify-center">
+
+                  <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
+                    Completed
+                  </Text>
+
+                  {bookingsLoading ? (
+                    <LoadingSkeleton height={24} width={40} borderRadius={8} />
+                  ) : (
+                    <Text className="text-slate-900 text-2xl font-black text-center">
+                      {completedCount}
                     </Text>
+                  )}
 
-                    {bookingsLoading ? (
-                      <LoadingSkeleton height={24} width={40} borderRadius={8} />
-                    ) : (
-                      <Text className="text-slate-900 text-2xl font-black text-center">
-                        {completedCount}
-                      </Text>
-                    )}
-
-                  </View>
-                </GlassCard>
-              </Pressable>
+                </View>
+              </GlassCard>
 
             </View>
           </AnimatedSection>

@@ -9,13 +9,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Business } from '@/types/business.types';
+import { Avatar } from '../Avatar';
 
 interface Props {
     item: Business;
     index?: number;
 }
 
-export const BusinessCard = ({
+export const BrowseCard = ({
     item,
     index = 0,
 }: Props) => {
@@ -35,19 +36,13 @@ export const BusinessCard = ({
                 <View className="flex-row bg-white border border-slate-200 rounded-[28px] p-4 shadow-sm">
 
                     {/* Left Image */}
-                    <Image
-                        source={{
-                            uri:
-                                item.image_url ||
-                                'https://via.placeholder.com/100',
-                        }}
-                        style={{
-                            width: 96,
-                            height: 96,
-                            borderRadius: 24,
-                        }}
-                        resizeMode="cover"
+                    <Avatar
+                        url={item.image_url}
+                        name={item.salon_name}
+                        size={80}
+                        className="w-[120px] h-[120px] rounded-full"
                     />
+
 
                     {/* Right Content */}
                     <View className="flex-1 ml-4 justify-center">
