@@ -1,52 +1,39 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewProps } from 'react-native';
+import { View, Text } from 'react-native';
 import { BookingStatus } from '@/types/booking.types';
 
-interface BadgeProps extends ViewProps {
+interface BadgeProps {
   status: BookingStatus;
   customLabel?: string;
+  className?: string;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ status, customLabel, style, ...props }) => {
-  const getBadgeConfig = () => {
+export const Badge: React.FC<BadgeProps> = ({ status, customLabel, className = '' }) => {
+  const getBadgeClass = () => {
     switch (status) {
       case 'confirmed':
-        return { bg: '#D1FAE5', text: '#065F46', label: 'Confirmed' };
+        return 'bg-white border-black text-black dark:bg-white dark:border-white dark:text-black';
       case 'completed':
-        return { bg: '#DBEAFE', text: '#1E40AF', label: 'Completed' };
+        return 'bg-neutral-800 border-neutral-800 text-white dark:bg-neutral-200 dark:border-neutral-200 dark:text-neutral-900';
+      case 'rejected':
       case 'cancelled':
-        return { bg: '#FEE2E2', text: '#991B1B', label: 'Cancelled' };
+        return 'bg-neutral-100 border-neutral-200 text-neutral-500 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400';
+      case 'expired':
       case 'no_show':
-        return { bg: '#F1F5F9', text: '#475569', label: 'No-Show' };
+        return 'bg-neutral-50 border-neutral-200 text-neutral-400 dark:bg-neutral-950 dark:border-neutral-900 dark:text-neutral-500';
       case 'pending':
       default:
-        return { bg: '#FEF3C7', text: '#92400E', label: 'Pending' };
+        return 'bg-neutral-200 border-neutral-300 text-neutral-800 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200';
     }
   };
 
-  const config = getBadgeConfig();
+  const label = customLabel || status.replace('_', '-');
 
   return (
-    <View style={[styles.badge, { backgroundColor: config.bg }, style]} {...props}>
-      <Text style={[styles.text, { color: config.text }]} numberOfLines={1}>
-        {customLabel || config.label}
+    <View className={`px-3 py-1 rounded-full border ${getBadgeClass()} ${className}`}>
+      <Text className={`text-[11px] font-bold uppercase tracking-wider ${getBadgeClass().split(' ').pop()}`}>
+        {label}
       </Text>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 9999,
-    alignSelf: 'flex-start',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-});

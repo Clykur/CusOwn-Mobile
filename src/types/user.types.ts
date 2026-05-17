@@ -1,16 +1,13 @@
 export type UserRole = 'Customer' | 'Owner';
+export type DBUserType = 'customer' | 'owner';
 
 export interface UserProfile {
   id: string;
-  email: string;
-  full_name: string;
-  avatar_url?: string;
-  role: UserRole;
+  email?: string;
+  full_name: string | null;
+  phone_number: string | null;
+  user_type: DBUserType;
+  profile_media_id?: string | null;
   created_at?: string;
-}
-
-export interface OwnerStats {
-  total_bookings: number;
-  pending_bookings: number;
-  revenue: number;
+  updated_at?: string;
 }

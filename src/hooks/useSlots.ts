@@ -1,11 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { slotApi } from '@/api/slot.api';
+import { apiService } from '@/services/api.service';
 import { queryKeys } from '@/lib/queryClient';
 
-export const useSlots = (salonId: string | null, date: string) => {
+export const useSlots = (businessId: string | null, date: string, serviceIds?: string) => {
   return useQuery({
-    queryKey: queryKeys.slots.list(salonId || '', date),
-    queryFn: () => slotApi.getSlots({ salonId: salonId!, date }),
-    enabled: !!salonId && !!date,
+    queryKey: ['slots', businessId, date, serviceIds],
+    queryFn: () => {
+      if (!businessId) throw new Error('Business ID is required');
+      return apiService.getSlots(businessId, date, serviceIds);
+    },
+    enabled: !!businessId && !!date,
   });
 };

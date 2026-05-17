@@ -10,25 +10,25 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useBookingStore } from '@/store/booking.store';
-import { useSalonDetail } from '@/hooks/useSalons';
-import { Service } from '@/types/salon.types';
+import { useBusinessDetail } from '@/hooks/useBusinesses';
+import { Service } from '@/types/business.types';
 import { Card } from '@/components/Card';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SelectServiceScreen() {
-  const { selectedSalon, setService } = useBookingStore();
-  const { data: salonDetail, isLoading, isError } = useSalonDetail(selectedSalon?.id || '');
+  const { selectedBusiness, setService } = useBookingStore();
+  const { data: businessDetail, isLoading, isError } = useBusinessDetail(selectedBusiness?.id || '');
 
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
   const theme = isDark ? THEME.dark : THEME.light;
 
-  if (!selectedSalon) {
+  if (!selectedBusiness) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
-        <Text style={[styles.errorMsg, { color: theme.text }]}>No salon selected.</Text>
+        <Text style={[styles.errorMsg, { color: theme.text }]}>No business selected.</Text>
         <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 12 }}>
           <Text style={{ color: theme.primary, fontWeight: '600' }}>Go Back</Text>
         </TouchableOpacity>
@@ -36,7 +36,7 @@ export default function SelectServiceScreen() {
     );
   }
 
-  const services = salonDetail?.services || selectedSalon.services || [];
+  const services = businessDetail?.services || selectedBusiness.services || [];
 
   const handleServicePress = (service: Service) => {
     setService(service);
@@ -66,7 +66,7 @@ export default function SelectServiceScreen() {
           <Text style={[styles.priceText, { color: theme.primary }]}>
             ${item.price.toFixed(2)}
           </Text>
-          <View style={[styles.selectBtn, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF' }]}>
+          <View style={[styles.selectBtn, { backgroundColor: isDark ? '#1A1A1A' : '#EFF6FF' }]}>
             <Text style={[styles.selectBtnText, { color: theme.primary }]}>Select</Text>
           </View>
         </View>
@@ -81,7 +81,7 @@ export default function SelectServiceScreen() {
           <Ionicons name="arrow-back" size={22} color={theme.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
-          {selectedSalon.name}
+          {selectedBusiness.salon_name}
         </Text>
         <View style={{ width: 22 }} />
       </View>

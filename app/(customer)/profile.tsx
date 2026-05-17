@@ -1,187 +1,451 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
-  Switch,
-  useColorScheme,
+  Pressable,
   Alert,
+  ActivityIndicator,
+  TextInput,
+  KeyboardAvoidingView,
   Platform,
+  Switch,
 } from 'react-native';
-import { useAuthStore } from '@/store/auth.store';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/store/auth.store';
+import { apiService } from '@/services/api.service';
 import { Avatar } from '@/components/Avatar';
-import { Card } from '@/components/Card';
-import { Button } from '@/components/Button';
-import { THEME } from '@/constants/theme';
-import { STRINGS } from '@/constants/strings';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CustomerProfileScreen() {
   const { user } = useAuthStore();
-  const { signOut, loading } = useAuth();
+  const { signOut } = useAuth();
+
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
-  const colorScheme = useColorScheme() || 'light';
-  const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  const [profileData, setProfileData] = useState<any>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
+  const [formData, setFormData] = useState({
+    full_name: '',
+    phone_number: '',
+  });
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    setLoading(true);
+
+    try {
+      const data = await apiService.getProfile();
+
+      setProfileData(data);
+
+      if (data?.profile) {
+        setFormData({
+          full_name: data.profile.full_name || '',
+          phone_number: data.profile.phone_number || '',
+        });
+
+        if (data.profile.profile_media_id) {
+          try {
+            const signed = await apiService.getSignedUrl(data.profile.profile_media_id);
+            if (signed?.url) {
+              setProfileImage(signed.url);
+            }
+          } catch (e) {
+            console.log('Failed to fetch signed image URL for customer profile');
+          }
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!formData.full_name.trim()) {
+      Alert.alert('Error', 'Full name is required');
+      return;
+    }
+
+    setUpdating(true);
+
+    try {
+      await apiService.updateProfile({
+        full_name: formData.full_name,
+        phone_number: formData.phone_number,
+      });
+
+      Alert.alert('Success', 'Profile updated successfully');
+
+      setEditMode(false);
+
+      fetchProfile();
+    } catch (err: any) {
+      Alert.alert(
+        'Update Failed',
+        err.message || 'Could not update profile'
+      );
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditMode(false);
+
+    setFormData({
+      full_name: profileData?.profile?.full_name || '',
+      phone_number: profileData?.profile?.phone_number || '',
+    });
+  };
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This action is permanent and will remove all your data after 30 days. Are you absolutely sure?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Permanently',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiService.deleteAccount(
+                'User requested deletion via mobile app'
+              );
+
+              signOut();
+            } catch (err: any) {
+              Alert.alert(
+                'Error',
+                'Failed to delete account. Please try again.'
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
   const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out of your account?', [
+    Alert.alert('Sign Out', 'Are you sure you want to exit?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Sign Out', style: 'destructive', onPress: signOut },
     ]);
   };
 
+  const formatDate = (date: string) => {
+    if (!date) return 'N/A';
+
+    return new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-[#F8FAFC]">
+        <ActivityIndicator size="large" color="#111827" />
+      </View>
+    );
+  }
+
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.headerSection}>
-        <Avatar
-          name={user?.user_metadata?.full_name || 'User'}
-          size={88}
-          style={styles.avatar}
-        />
-        <Text style={[styles.userName, { color: theme.text }]}>
-          {user?.user_metadata?.full_name || 'Valued Client'}
-        </Text>
-        <Text style={[styles.userEmail, { color: theme.textSecondary }]}>
-          {user?.email || 'client@cusown.com'}
-        </Text>
-      </View>
-
-      <View style={styles.statsContainer}>
-        <Card style={[styles.statCard, { backgroundColor: theme.card }]}>
-          <Text style={[styles.statNum, { color: theme.primary }]}>12</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Total Visits</Text>
-        </Card>
-        <Card style={[styles.statCard, { backgroundColor: theme.card }]}>
-          <Text style={[styles.statNum, { color: theme.secondary }]}>3</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Saved Salons</Text>
-        </Card>
-      </View>
-
-      <View style={styles.sectionContainer}>
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Account Settings</Text>
-
-        <Card style={[styles.settingsCard, { backgroundColor: theme.card }]}>
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Ionicons name="notifications-outline" size={20} color={theme.text} />
-              <Text style={[styles.settingText, { color: theme.text }]}>Push Notifications</Text>
-            </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
-              trackColor={{ false: '#CBD5E1', true: theme.primary }}
-              thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : notificationsEnabled ? theme.primary : '#F8FAFC'}
-            />
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Ionicons name="shield-checkmark-outline" size={20} color={theme.text} />
-              <Text style={[styles.settingText, { color: theme.text }]}>Data Privacy</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={theme.gray} />
-          </View>
-        </Card>
-      </View>
-
-      <View style={styles.footerSection}>
-        <Button
-          variant="danger"
-          loading={loading}
-          onPress={handleSignOut}
-          style={styles.signOutBtn}
+    <SafeAreaView className="flex-1 bg-[#F8FAFC]">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="flex-1"
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            padding: 20,
+            paddingBottom: 40,
+          }}
         >
-          {STRINGS.LOGOUT}
-        </Button>
-      </View>
-    </ScrollView>
+          {/* Header */}
+          <View className="mb-8">
+            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+              Manage your account
+            </Text>
+
+            <Text className="text-slate-900 text-3xl font-bold tracking-tight">
+              My Profile
+            </Text>
+          </View>
+
+          {/* Profile Overview */}
+          <View className="flex-row items-start justify-between mb-6">
+            <View className="flex-row flex-1">
+              <View className="relative">
+                <Avatar
+                  url={profileImage}
+                  name={profileData?.profile?.full_name || 'User'}
+                  size={88}
+                />
+              </View>
+
+              <View className="ml-4 flex-1 justify-center">
+                <Text className="text-[24px] font-semibold text-[#0F172A]">
+                  Account Settings
+                </Text>
+
+                <Text className="text-[15px] text-slate-500 mt-1 leading-6">
+                  Manage your profile and personal preferences
+                </Text>
+              </View>
+            </View>
+
+            {!editMode && (
+              <Pressable
+                onPress={() => setEditMode(true)}
+                className="border border-slate-300 rounded-xl px-5 py-3 bg-white active:bg-slate-50"
+              >
+                <Text className="text-[15px] font-semibold text-slate-700">
+                  Edit
+                </Text>
+              </Pressable>
+            )}
+          </View>
+
+          {/* Contact Card */}
+          <View className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-6">
+            <View className="border-b border-slate-200 px-5 py-4">
+              <Text className="text-[13px] tracking-[1px] uppercase text-slate-500 font-semibold">
+                Contact
+              </Text>
+            </View>
+
+            {/* Full Name */}
+            <View className="px-5 py-5 border-b border-slate-100">
+              <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 mb-2 font-medium">
+                Full Name
+              </Text>
+
+              {editMode ? (
+                <TextInput
+                  value={formData.full_name}
+                  onChangeText={(text) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      full_name: text,
+                    }))
+                  }
+                  placeholder="Enter full name"
+                  className="border border-slate-300 rounded-xl px-4 py-3 text-[16px] text-slate-900"
+                />
+              ) : (
+                <Text className="text-[18px] text-slate-900">
+                  {profileData?.profile?.full_name || 'Not set'}
+                </Text>
+              )}
+            </View>
+
+            {/* Email */}
+            <View className="px-5 py-5 border-b border-slate-100">
+              <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 mb-2 font-medium">
+                Email
+              </Text>
+
+              <View className="flex-row items-center flex-wrap">
+                <Text className="text-[18px] text-slate-900 mr-3">
+                  {profileData?.email || 'N/A'}
+                </Text>
+
+                <View className="bg-neutral-100 px-3 py-1 rounded-full border border-neutral-200">
+                  <Text className="text-neutral-800 text-[12px] font-semibold">
+                    Verified
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Phone */}
+            <View className="px-5 py-5">
+              <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 mb-2 font-medium">
+                Phone
+              </Text>
+
+              {editMode ? (
+                <TextInput
+                  value={formData.phone_number}
+                  onChangeText={(text) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      phone_number: text,
+                    }))
+                  }
+                  placeholder="Enter phone number"
+                  keyboardType="phone-pad"
+                  className="border border-slate-300 rounded-xl px-4 py-3 text-[16px] text-slate-900"
+                />
+              ) : (
+                <Text className="text-[18px] text-slate-900">
+                  {profileData?.profile?.phone_number || 'Not set'}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* Account Card */}
+          <View className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-6">
+            <View className="border-b border-slate-200 px-5 py-4">
+              <Text className="text-[13px] tracking-[1px] uppercase text-slate-500 font-semibold">
+                Account
+              </Text>
+            </View>
+
+            {/* Account Type */}
+            <View className="px-5 py-5 border-b border-slate-100">
+              <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 mb-2 font-medium">
+                Account Type
+              </Text>
+
+              <View className="self-start bg-slate-100 px-4 py-2 rounded-full">
+                <Text className="text-slate-700 font-medium">
+                  Customer
+                </Text>
+              </View>
+            </View>
+
+            {/* Account Created */}
+            <View className="px-5 py-5 border-b border-slate-100">
+              <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 mb-2 font-medium">
+                Account Created
+              </Text>
+
+              <Text className="text-[18px] text-slate-900">
+                {formatDate(profileData?.created_at)}
+              </Text>
+            </View>
+
+            {/* Last Sign In */}
+            <View className="px-5 py-5">
+              <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 mb-2 font-medium">
+                Last Sign-In
+              </Text>
+
+              <Text className="text-[18px] text-slate-900">
+                {formatDate(new Date().toISOString())}
+              </Text>
+            </View>
+          </View>
+
+          {/* Edit Actions */}
+          {editMode && (
+            <View className="flex-row gap-3 mb-6">
+              <Pressable
+                onPress={handleUpdateProfile}
+                disabled={updating}
+                className="flex-1 bg-[#0F172A] rounded-xl py-4 items-center"
+              >
+                <Text className="text-white font-semibold text-[16px]">
+                  {updating ? 'Saving...' : 'Save Changes'}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={handleCancel}
+                className="flex-1 border border-slate-300 bg-white rounded-xl py-4 items-center"
+              >
+                <Text className="text-slate-700 font-semibold text-[16px]">
+                  Cancel
+                </Text>
+              </Pressable>
+            </View>
+          )}
+
+          {/* Preferences */}
+          <View className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-6">
+            <View className="border-b border-slate-200 px-5 py-4">
+              <Text className="text-[13px] tracking-[1px] uppercase text-slate-500 font-semibold">
+                Preferences
+              </Text>
+            </View>
+
+            <View className="flex-row justify-between items-center px-5 py-5">
+              <View className="flex-row items-center">
+                <View className="w-10 h-10 rounded-full bg-slate-100 items-center justify-center mr-4">
+                  <Ionicons
+                    name="notifications-outline"
+                    size={20}
+                    color="#000000"
+                  />
+                </View>
+
+                <Text className="text-slate-900 text-base font-medium">
+                  Notifications
+                </Text>
+              </View>
+
+              <Switch
+                value={notificationsEnabled}
+                onValueChange={setNotificationsEnabled}
+                trackColor={{ false: '#E2E8F0', true: '#111827' }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+          </View>
+
+          {/* Delete Account Section */}
+          <View className="bg-white rounded-2xl border border-neutral-200 overflow-hidden mb-6">
+            <View className="border-b border-neutral-200 px-5 py-4 bg-neutral-50">
+              <Text className="text-[13px] tracking-[1px] uppercase text-neutral-800 font-semibold">
+                Danger Zone
+              </Text>
+            </View>
+
+            <View className="p-5">
+              <Text className="text-[18px] font-semibold text-slate-900 mb-2">
+                Delete Account
+              </Text>
+
+              <Text className="text-[15px] leading-6 text-slate-500 mb-5">
+                Permanently remove your account and all associated data. This action
+                cannot be undone after 30 days.
+              </Text>
+
+              <Pressable
+                onPress={handleDeleteAccount}
+                className="border border-neutral-300 bg-neutral-50 rounded-xl py-4 items-center"
+              >
+                <Text className="text-neutral-900 font-semibold text-[16px]">
+                  Delete Account
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Sign Out */}
+          <Pressable
+            onPress={handleSignOut}
+            className="border border-neutral-300 bg-neutral-50 rounded-xl py-4 items-center"
+          >
+            <Text className="text-neutral-900 font-semibold text-[16px]">
+              Sign Out
+            </Text>
+          </Pressable>
+
+          {error && (
+            <Text className="text-red-500 text-center mt-4">
+              {error}
+            </Text>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  headerSection: {
-    alignItems: 'center',
-    paddingVertical: 24,
-  },
-  avatar: {
-    marginBottom: 12,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  userEmail: {
-    fontSize: 14,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 12,
-    marginBottom: 20,
-  },
-  statCard: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 14,
-    marginBottom: 0,
-  },
-  statNum: {
-    fontSize: 22,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  sectionContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  settingsCard: {
-    padding: 0,
-    overflow: 'hidden',
-  },
-  settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  settingInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  settingText: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  divider: {
-    height: 1,
-    marginLeft: 48,
-  },
-  footerSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-  signOutBtn: {},
-});

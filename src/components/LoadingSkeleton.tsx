@@ -1,36 +1,34 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, DimensionValue, useColorScheme } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { Animated, DimensionValue, ViewStyle, StyleProp } from 'react-native';
 
 interface LoadingSkeletonProps {
   width?: DimensionValue;
   height?: DimensionValue;
   borderRadius?: number;
-  style?: any;
+  className?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   width = '100%',
   height = 20,
-  borderRadius = 8,
+  borderRadius = 10,
+  className = '',
   style,
 }) => {
-  const opacityAnim = useRef(new Animated.Value(0.3)).current;
-  const colorScheme = useColorScheme() || 'light';
-  const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  const opacityAnim = useRef(new Animated.Value(0.2)).current;
 
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 800,
+          toValue: 0.5,
+          duration: 1000,
           useNativeDriver: true,
         }),
         Animated.timing(opacityAnim, {
-          toValue: 0.3,
-          duration: 800,
+          toValue: 0.2,
+          duration: 1000,
           useNativeDriver: true,
         }),
       ])
@@ -39,13 +37,12 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 
   return (
     <Animated.View
+      className={`bg-white/10 ${className}`}
       style={[
-        styles.skeleton,
         {
           width,
           height,
           borderRadius,
-          backgroundColor: isDark ? '#334155' : '#E2E8F0',
           opacity: opacityAnim,
         },
         style,
@@ -53,9 +50,3 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     />
   );
 };
-
-const styles = StyleSheet.create({
-  skeleton: {
-    overflow: 'hidden',
-  },
-});

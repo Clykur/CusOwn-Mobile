@@ -15,4 +15,5 @@ export const ROUTES = {
   BOOKING_CONFIRM: '/booking/confirm',
   BOOKING_SUCCESS: '/booking/success',
   BOOKING_DETAIL: (id: string) => `/booking-detail/${id}`,
+  OWNER_ANALYTICS: '/(owner)/analytics',
 };

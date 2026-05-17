@@ -1,216 +1,261 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  useColorScheme,
+  Pressable,
   FlatList,
 } from 'react-native';
-import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router, useFocusEffect } from 'expo-router';
 import { useAuthStore } from '@/store/auth.store';
-import { useSalons } from '@/hooks/useSalons';
+import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
+import { useBookings } from '@/hooks/useBookings';
 import { useBookingStore } from '@/store/booking.store';
-import { Salon } from '@/types/salon.types';
-import { Card } from '@/components/Card';
+import { Business, BusinessCategory } from '@/types/business.types';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { Avatar } from '@/components/Avatar';
-import { THEME } from '@/constants/theme';
-import { STRINGS } from '@/constants/strings';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { BusinessCard } from '@/components/customer/BusinessCard';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CustomerHomeScreen() {
   const { user } = useAuthStore();
-  const { data: salons, isLoading, isError, refetch } = useSalons();
-  const { setSalon } = useBookingStore();
-  const colorScheme = useColorScheme() || 'light';
-  const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  const { data: businesses, isLoading, isError, refetch } = useBusinesses();
+  const { data: categories } = useCategories();
+  const { data: bookings, isLoading: bookingsLoading, refetch: refetchBookings } = useBookings('Customer');
+  const { setBusiness } = useBookingStore();
 
-  const handleSalonPress = (salon: Salon) => {
-    setSalon(salon);
-    router.push('/booking/select-service');
+  useFocusEffect(
+    useCallback(() => {
+      refetchBookings();
+      refetch();
+    }, [refetchBookings, refetch])
+  );
+
+  const totalCount = bookings?.length || 0;
+  const upcomingCount = bookings?.filter((b: any) => b.status === 'pending' || b.status === 'confirmed').length || 0;
+  const completedCount = bookings?.filter((b: any) => b.status === 'completed').length || 0;
+
+  const handleBusinessPress = (business: Business) => {
+    router.push(`/(customer)/browse/salons/${business.id}`);
   };
 
-  const renderSalonCard = ({ item }: { item: Salon }) => (
-    <TouchableOpacity activeOpacity={0.8} onPress={() => handleSalonPress(item)}>
-      <Card style={[styles.salonCard, { backgroundColor: theme.card }]}>
-        <Avatar url={item.images?.[0]} name={item.name} size={120} style={styles.salonImg} />
-        <View style={styles.salonInfo}>
-          <Text style={[styles.salonName, { color: theme.text }]} numberOfLines={1}>
-            {item.name}
-          </Text>
-          <Text style={[styles.salonAddress, { color: theme.textSecondary }]} numberOfLines={2}>
-            {item.address}
-          </Text>
-          <View style={styles.ratingRow}>
-            <Ionicons name="star" size={14} color="#F59E0B" />
-            <Text style={[styles.ratingText, { color: theme.textSecondary }]}>
-              {item.rating?.toFixed(1) || '4.8'}
+  const renderBusinessCard = ({ item, index }: { item: Business; index: number }) => (
+    <AnimatedSection delay={index * 100} direction="right" className="mr-4">
+      <Pressable onPress={() => handleBusinessPress(item)}>
+        <GlassCard className="w-[280px] p-3 border-slate-200/80 shadow-sm bg-white/80">
+          <Avatar url={item.image_url} name={item.salon_name} size={140} className="w-full h-[160px] rounded-2xl mb-4" />
+          <View className="gap-y-2">
+            <Text className="text-slate-900 text-xl font-bold tracking-tight" numberOfLines={1}>
+              {item.salon_name}
             </Text>
+            <Text className="text-slate-500 text-xs leading-4" numberOfLines={2}>
+              {item.address}
+            </Text>
+            <View className="flex-row items-center justify-between mt-2">
+              <View className="flex-row items-center gap-x-1">
+                <Ionicons name="star" size={14} color="#000000" />
+                <Text className="text-accent-premium text-xs font-bold">
+                  {item.rating_avg ? item.rating_avg.toFixed(1) : '0.0'}
+                </Text>
+                {item.review_count > 0 && (
+                  <Text className="text-slate-500 text-[10px] ml-1">({item.review_count})</Text>
+                )}
+              </View>
+              <View className="bg-slate-100 px-3 py-1 rounded-full">
+                <Text className="text-slate-600 text-[10px] font-bold uppercase tracking-widest">Featured</Text>
+              </View>
+            </View>
           </View>
+        </GlassCard>
+      </Pressable>
+    </AnimatedSection>
+  );
+
+  const renderCategoryItem = ({ item, index }: { item: BusinessCategory; index: number }) => (
+    <AnimatedSection delay={index * 50} direction="up">
+      <Pressable
+        className="w-[110px] p-4 rounded-3xl bg-white border border-slate-200 shadow-sm items-center justify-center gap-y-3"
+        onPress={() => router.push({ pathname: '/(customer)/browse', params: { categoryId: item.value } })}
+      >
+        <View className="w-12 h-12 rounded-full bg-accent-premium/10 items-center justify-center">
+          <Ionicons name={item.icon as any || 'business'} size={24} color="#000000" />
         </View>
-      </Card>
-    </TouchableOpacity>
+        <Text className="text-slate-900 text-[11px] font-bold text-center uppercase tracking-wider">{item.label}</Text>
+      </Pressable>
+    </AnimatedSection>
   );
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.headerBanner}>
-        <View>
-          <Text style={[styles.greetingText, { color: theme.textSecondary }]}>
-            {STRINGS.WELCOME_TITLE}
-          </Text>
-          <Text style={[styles.userName, { color: theme.text }]}>
-            {user?.user_metadata?.full_name || 'Valued Client'}
-          </Text>
-        </View>
-        <Avatar name={user?.user_metadata?.full_name || 'User'} size={44} />
-      </View>
+    <PremiumBackground>
+      <SafeAreaView className="flex-1" edges={['top']}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="pb-12"
+        >
+          {/* Header Banner */}
+          <AnimatedSection direction="down" className="px-luxury pt-4 pb-6 flex-row justify-between items-center">
+            <View>
+              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">Welcome to CusOwn</Text>
 
-      <TouchableOpacity
-        style={[styles.searchBar, { backgroundColor: theme.card, borderColor: theme.border }]}
-        activeOpacity={0.9}
-        onPress={() => router.push('/(customer)/browse')}
-      >
-        <Ionicons name="search" size={20} color={theme.gray} />
-        <Text style={[styles.searchText, { color: theme.gray }]}>Search salons or services...</Text>
-      </TouchableOpacity>
+              <Text className="text-slate-900 text-3xl font-bold tracking-tight">
+                {user?.user_metadata?.full_name?.split(' ')[0] || 'Curated Client'}
+              </Text>
+            </View>
+            <Pressable onPress={() => router.push('/(customer)/profile')}>
+              <Avatar name={user?.user_metadata?.full_name || 'User'} size={50} className="border-2 border-accent-premium/30" />
+            </Pressable>
+          </AnimatedSection>
 
-      <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Featured Salons</Text>
-        <TouchableOpacity onPress={() => router.push('/(customer)/browse')}>
-          <Text style={[styles.seeAllText, { color: theme.primary }]}>See All</Text>
-        </TouchableOpacity>
-      </View>
+          {/* Bookings Metrics Cards */}
+          <AnimatedSection delay={50} direction="up" className="px-luxury mb-8">
+            <View className="flex-row justify-between">
 
-      {isLoading ? (
-        <View style={styles.skeletonList}>
-          <LoadingSkeleton height={140} borderRadius={12} style={{ marginBottom: 12 }} />
-          <LoadingSkeleton height={140} borderRadius={12} />
-        </View>
-      ) : isError ? (
-        <View style={[styles.errorBox, { backgroundColor: theme.card }]}>
-          <Text style={[styles.errorMsg, { color: theme.error }]}>Failed to load featured salons</Text>
-          <TouchableOpacity onPress={() => refetch()} style={styles.retryBtn}>
-            <Text style={{ color: theme.primary, fontWeight: '600' }}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <FlatList
-          data={salons?.slice(0, 5)}
-          renderItem={renderSalonCard}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-        />
-      )}
-    </ScrollView>
+              {/* Total */}
+              <Pressable
+                onPress={() => router.push('/(customer)/bookings')}
+                className="w-[31%]"
+              >
+                <GlassCard className="h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
+                  <View className="flex-1 items-center justify-center">
+
+                    <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
+                      Total
+                    </Text>
+
+                    {bookingsLoading ? (
+                      <LoadingSkeleton height={24} width={40} borderRadius={8} />
+                    ) : (
+                      <Text className="text-slate-900 text-2xl font-black text-center">
+                        {totalCount}
+                      </Text>
+                    )}
+
+                  </View>
+                </GlassCard>
+              </Pressable>
+
+              {/* Upcoming */}
+              <Pressable
+                onPress={() => router.push('/(customer)/bookings')}
+                className="w-[31%]"
+              >
+                <GlassCard className="h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
+                  <View className="flex-1 items-center justify-center">
+
+                    <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
+                      Upcoming
+                    </Text>
+
+                    {bookingsLoading ? (
+                      <LoadingSkeleton height={24} width={40} borderRadius={8} />
+                    ) : (
+                      <Text className="text-slate-900 text-2xl font-black text-center">
+                        {upcomingCount}
+                      </Text>
+                    )}
+
+                  </View>
+                </GlassCard>
+              </Pressable>
+
+              {/* Completed */}
+              <Pressable
+                onPress={() => router.push('/(customer)/bookings')}
+                className="w-[31%]"
+              >
+                <GlassCard className="h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
+                  <View className="flex-1 items-center justify-center">
+                    <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
+                      Completed
+                    </Text>
+
+                    {bookingsLoading ? (
+                      <LoadingSkeleton height={24} width={40} borderRadius={8} />
+                    ) : (
+                      <Text className="text-slate-900 text-2xl font-black text-center">
+                        {completedCount}
+                      </Text>
+                    )}
+
+                  </View>
+                </GlassCard>
+              </Pressable>
+
+            </View>
+          </AnimatedSection>
+
+          {/* Categories Section */}
+          {categories && categories.length > 0 && (
+            <View className="mb-10">
+              <View className="flex-row justify-between items-center px-luxury mb-5">
+                <Text className="text-slate-900 text-lg font-bold tracking-tight uppercase">
+                  Categories
+                </Text>
+                <Pressable onPress={() => router.push('/(customer)/browse/categories')}>
+                  <Text className="text-accent-premium font-bold text-sm">See All</Text>
+                </Pressable>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 24, gap: 16 }}
+              >
+                {categories.map((item, index) => (
+                  <View key={item.value || `cat-${index}`}>
+                    {renderCategoryItem({ item, index })}
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Featured Businesses Section */}
+          <View>
+            <View className="flex-row justify-between items-center px-luxury mb-6">
+              <Text className="text-slate-900 text-lg font-bold tracking-tight uppercase">Your Favourite Salons</Text>
+              <Pressable onPress={() => router.push('/(customer)/browse')}>
+                <Text className="text-accent-premium font-bold text-sm">Browse All</Text>
+              </Pressable>
+            </View>
+
+            {isLoading ? (
+              <View className="px-luxury flex-row">
+                <LoadingSkeleton width={280} height={260} borderRadius={24} className="mr-4" />
+                <LoadingSkeleton width={280} height={260} borderRadius={24} />
+              </View>
+            ) : isError ? (
+              <View className="px-luxury">
+                <GlassCard className="items-center bg-white border border-slate-200">
+                  <Text className="text-error font-medium mb-4">Failed to load featured businesses</Text>
+                  <Pressable onPress={() => refetch()} className="bg-white px-6 py-2 rounded-full border border-slate-200">
+                    <Text className="text-slate-900 font-bold">Retry</Text>
+                  </Pressable>
+                </GlassCard>
+              </View>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16, gap: 16 }}
+              >
+                {businesses?.slice(0, 5).map((item, index) => (
+                  <View key={item.id || `biz-${index}`}>
+                    <BusinessCard
+                      item={item}
+                      index={index}
+                      onPress={() => handleBusinessPress(item)}
+                    />
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </PremiumBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  headerBanner: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
-  },
-  greetingText: {
-    fontSize: 14,
-  },
-  userName: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 2,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 24,
-    gap: 12,
-  },
-  searchText: {
-    fontSize: 15,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  seeAllText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  skeletonList: {
-    paddingHorizontal: 20,
-  },
-  errorBox: {
-    marginHorizontal: 20,
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  errorMsg: {
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  retryBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  listContent: {
-    paddingHorizontal: 20,
-    gap: 16,
-  },
-  salonCard: {
-    width: 260,
-    marginBottom: 8,
-    padding: 12,
-  },
-  salonImg: {
-    width: '100%',
-    height: 120,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  salonInfo: {
-    gap: 4,
-  },
-  salonName: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  salonAddress: {
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-    gap: 4,
-  },
-  ratingText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-});

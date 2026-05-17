@@ -1,41 +1,18 @@
 import React from 'react';
-import { View, StyleSheet, ViewProps, useColorScheme } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { View, ViewProps } from 'react-native';
 
 interface CardProps extends ViewProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-export const Card: React.FC<CardProps> = ({ children, style, ...props }) => {
-  const colorScheme = useColorScheme() || 'light';
-  const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
-
+export const Card: React.FC<CardProps> = ({ children, className = '', ...props }) => {
   return (
     <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: theme.card,
-          shadowColor: isDark ? '#000000' : '#64748B',
-        },
-        style,
-      ]}
+      className={`bg-luxury-charcoal border border-white/5 rounded-premium p-4 shadow-xl shadow-black/40 ${className}`}
       {...props}
     >
       {children}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 12,
-    padding: 16,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-    marginBottom: 16,
-  },
-});
