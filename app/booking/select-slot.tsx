@@ -18,13 +18,13 @@ import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SelectSlotScreen() {
-  const { selectedSalon, selectedService, setSlot } = useBookingStore();
+  const { selectedBusiness, selectedService, setSlot } = useBookingStore();
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
 
-  const { data: slots, isLoading, isError } = useSlots(selectedSalon?.id || null, selectedDate);
+  const { data: slots, isLoading, isError } = useSlots(selectedBusiness?.id || null, selectedDate);
 
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
@@ -46,7 +46,7 @@ export default function SelectSlotScreen() {
     return list;
   }, []);
 
-  if (!selectedSalon || !selectedService) {
+  if (!selectedBusiness || !selectedService) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
         <Text style={[styles.errorMsg, { color: theme.text }]}>Missing booking criteria.</Text>
@@ -99,7 +99,7 @@ export default function SelectSlotScreen() {
         style={[
           styles.slotBox,
           { backgroundColor: theme.card, borderColor: theme.border },
-          !item.is_available && { opacity: 0.4, backgroundColor: isDark ? '#1E293B' : '#F8FAFC' },
+          !item.is_available && { opacity: 0.4, backgroundColor: isDark ? '#1A1A1A' : '#F8FAFC' },
         ]}
         disabled={!item.is_available}
         onPress={() => handleSlotPress(item)}
@@ -172,7 +172,7 @@ export default function SelectSlotScreen() {
           </View>
         ) : !slots || slots.length === 0 ? (
           <View style={styles.emptyWrap}>
-            <Ionicons name="time-outline" size={40} color={theme.gray} />
+            <Ionicons name="time-outline" size={40} color={theme.textSecondary} />
             <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
               No slots configured for this date.
             </Text>

@@ -3,11 +3,8 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   TextInputProps,
-  useColorScheme,
 } from 'react-native';
-import { THEME } from '@/constants/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -16,57 +13,30 @@ interface InputProps extends TextInputProps {
 
 export const Input = forwardRef<TextInput, InputProps>(
   ({ label, error, secureTextEntry, ...props }, ref) => {
-    const colorScheme = useColorScheme() || 'light';
-    const isDark = colorScheme === 'dark';
-    const theme = isDark ? THEME.dark : THEME.light;
-
     return (
-      <View style={styles.container}>
-        {label ? (
-          <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
-        ) : null}
+      <View className="mb-5 w-full">
+        {label && (
+          <Text className="text-textLight text-sm font-semibold mb-2 ml-1 tracking-wide uppercase opacity-70">
+            {label}
+          </Text>
+        )}
         <TextInput
           ref={ref}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.card,
-              color: theme.text,
-              borderColor: error ? theme.error : theme.border,
-            },
-          ]}
-          placeholderTextColor={theme.gray}
+          className={`bg-white/5 border rounded-premium px-5 py-4 text-white text-lg ${
+            error ? 'border-error/50' : 'border-white/10'
+          } focus:border-accent-premium/50`}
+          placeholderTextColor="rgba(255,255,255,0.3)"
           secureTextEntry={secureTextEntry}
           {...props}
         />
-        {error ? <Text style={[styles.errorText, { color: theme.error }]}>{error}</Text> : null}
+        {error && (
+          <Text className="text-error text-xs mt-2 ml-1 font-medium italic">
+            {error}
+          </Text>
+        )}
       </View>
     );
   }
 );
 
 Input.displayName = 'Input';
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-    width: '100%',
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    minHeight: 48,
-  },
-  errorText: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-});

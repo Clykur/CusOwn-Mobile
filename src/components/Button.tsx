@@ -27,7 +27,15 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  const activeTheme = isDark ? THEME.dark : THEME.light;
+
+  const theme = {
+    primary: activeTheme.primary,
+    secondary: activeTheme.secondary,
+    error: activeTheme.error,
+    border: activeTheme.border,
+    text: activeTheme.text,
+  };
 
   const getContainerStyle = () => {
     switch (variant) {

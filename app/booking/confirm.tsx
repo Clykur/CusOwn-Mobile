@@ -17,14 +17,14 @@ import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ConfirmBookingScreen() {
-  const { selectedSalon, selectedService, selectedSlot, resetBooking } = useBookingStore();
+  const { selectedBusiness, selectedService, selectedSlot, resetBooking } = useBookingStore();
   const { mutateAsync: createBooking, isPending } = useCreateBooking();
 
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
   const theme = isDark ? THEME.dark : THEME.light;
 
-  if (!selectedSalon || !selectedService || !selectedSlot) {
+  if (!selectedBusiness || !selectedService || !selectedSlot) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
         <Text style={[styles.errorMsg, { color: theme.text }]}>Incomplete booking workflow state.</Text>
@@ -38,7 +38,7 @@ export default function ConfirmBookingScreen() {
   const handleConfirm = async () => {
     try {
       await createBooking({
-        salon_id: selectedSalon.id,
+        business_id: selectedBusiness.id,
         service_id: selectedService.id,
         slot_id: selectedSlot.id,
         date: selectedSlot.date,
@@ -79,10 +79,10 @@ export default function ConfirmBookingScreen() {
 
         <View style={styles.receiptWrapper}>
           <Card style={[styles.receiptCard, { backgroundColor: theme.card }]}>
-            <Text style={[styles.sectionHeading, { color: theme.textSecondary }]}>Salon Location</Text>
-            <Text style={[styles.valText, { color: theme.text }]}>{selectedSalon.name}</Text>
+            <Text style={[styles.sectionHeading, { color: theme.textSecondary }]}>Business Location</Text>
+            <Text style={[styles.valText, { color: theme.text }]}>{selectedBusiness.salon_name}</Text>
             <Text style={[styles.subValText, { color: theme.textSecondary }]}>
-              {selectedSalon.address}
+              {selectedBusiness.address}
             </Text>
 
             <View style={[styles.divider, { backgroundColor: theme.border }]} />

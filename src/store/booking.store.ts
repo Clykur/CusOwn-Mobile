@@ -1,23 +1,27 @@
 import { create } from 'zustand';
-import { Salon, Service } from '@/types/salon.types';
+import { Business, Service } from '@/types/business.types';
 import { Slot } from '@/types/slot.types';
 
 interface BookingState {
-  selectedSalon: Salon | null;
+  selectedBusiness: Business | null;
   selectedService: Service | null;
+  selectedServices: Service[];
   selectedSlot: Slot | null;
-  setSalon: (salon: Salon) => void;
+  setBusiness: (business: Business) => void;
   setService: (service: Service) => void;
+  setSelectedServices: (services: Service[]) => void;
   setSlot: (slot: Slot) => void;
   resetBooking: () => void;
 }
 
 export const useBookingStore = create<BookingState>((set) => ({
-  selectedSalon: null,
+  selectedBusiness: null,
   selectedService: null,
+  selectedServices: [],
   selectedSlot: null,
-  setSalon: (salon) => set({ selectedSalon: salon, selectedService: null, selectedSlot: null }),
-  setService: (service) => set({ selectedService: service, selectedSlot: null }),
+  setBusiness: (business) => set({ selectedBusiness: business, selectedService: null, selectedServices: [], selectedSlot: null }),
+  setService: (service) => set({ selectedService: service, selectedServices: [service], selectedSlot: null }),
+  setSelectedServices: (services) => set({ selectedServices: services, selectedService: services[0] || null, selectedSlot: null }),
   setSlot: (slot) => set({ selectedSlot: slot }),
-  resetBooking: () => set({ selectedSalon: null, selectedService: null, selectedSlot: null }),
+  resetBooking: () => set({ selectedBusiness: null, selectedService: null, selectedServices: [], selectedSlot: null }),
 }));

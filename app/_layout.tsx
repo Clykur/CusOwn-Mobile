@@ -1,19 +1,22 @@
+import '../global.css';
 import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
-import { Stack, router, useSegments } from 'expo-router';
+import { Platform, View, ActivityIndicator } from 'react-native';
+import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
 import Constants from 'expo-constants';
+import * as SplashScreen from 'expo-splash-screen';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { useAuthStore, Role } from '@/store/auth.store';
+import { useOnboardingStore } from '@/store/onboarding.store';
 import { supabase } from '@/lib/supabase';
-import { axiosInstance } from '@/api/axiosInstance';
-import { ENDPOINTS } from '@/constants/api';
+import { logger, LogTag } from '@/utils/logger';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
+
 // NOTE: expo-notifications remote notifications are not supported in Expo Go (SDK 53+).
-// Keep this file compiling in Expo Go by avoiding static imports.
-// Remote push registration will be done via a dedicated module that can be excluded/used in Dev Builds.
 let Notifications: typeof import('expo-notifications') | null = null;
 
-// We use a safe require pattern to avoid crashes in Expo Go (SDK 53+)
 const isExpoGo = Constants?.executionEnvironment === 'storeClient';
 
 if (!isExpoGo) {
@@ -34,23 +37,28 @@ if (!isExpoGo) {
   }
 }
 
-
 export default function RootLayout() {
   const { session, role, isLoading, setSession } = useAuthStore();
+  const { onboardingCompleted } = useOnboardingStore();
   const segments = useSegments();
+  const navigationState = useRootNavigationState();
+  const isNavigationReady = !!navigationState?.key;
 
   // ─── Initialize Auth ──────────────────────────────────────────────────
   useEffect(() => {
+    logger.info(LogTag.API, '🔄 RootLayout: Initializing Supabase session...');
+
     // 1. Check for an existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
+      logger.info(LogTag.AUTH, session ? '✅ RootLayout: Session restored' : 'ℹ️ RootLayout: No initial session');
       setSession(session);
     });
 
-    // 2. Listen for auth state changes (sign-in, sign-out, token refresh)
+    // 2. Listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('[AUTH] State changed:', _event);
+      logger.info(LogTag.AUTH, `🔔 RootLayout: Auth Event: ${_event}`, { user: session?.user.email });
       setSession(session);
     });
 
@@ -61,31 +69,56 @@ export default function RootLayout() {
 
   // ─── Routing & Protection ─────────────────────────────────────────────
   useEffect(() => {
-    // Wait for the initial session check to finish
-    if (isLoading) return;
+    // Wait for the initial session check to finish and navigation to be ready
+    if (isLoading || !isNavigationReady) return;
+
+    // Hide splash screen once ready
+    SplashScreen.hideAsync();
 
     const rootSegment = segments[0];
-    const inAuthGroup = rootSegment === '(auth)';
-    const isCallback = rootSegment === 'google-callback';
-    const isAtRoot = !rootSegment;
+    const isPublic = rootSegment === '(public)';
+    const isAuth = rootSegment === '(auth)';
+    const isSplash = isPublic && segments[0] === 'splash';
+    const isCallback = rootSegment === 'google-callback' || (isAuth && (segments as string[])[1] === 'google-callback');
+    const isAtRoot = !rootSegment || rootSegment === 'index';
 
-    // 1. If signed in, route to appropriate dashboard
-    if (session && role) {
+    logger.info(LogTag.AUTH, `🛣️ RootLayout: Navigation Update`, {
+      session: !!session,
+      role,
+      segment: rootSegment
+    });
+
+    // Let the custom splash screen control its own destiny if it is rendering
+    if (isSplash) return;
+
+    // 1. Handle Redirect after Sign-in
+    if (session) {
+      if (!role) {
+        logger.info(LogTag.AUTH, '⏳ RootLayout: Session exists but role is null, waiting for resolution...');
+        return;
+      }
+
       const target = role === 'Owner' ? '/(owner)' : '/(customer)';
-      
-      // Only redirect if they are currently in the login screens
-      if (inAuthGroup || isCallback || isAtRoot) {
+
+      // Only redirect if they are currently in the public/auth screens (except callback)
+      if ((isPublic || isAuth) && !isCallback) {
+        logger.info(LogTag.AUTH, `🚀 RootLayout: Navigating to ${target}`);
         router.replace(target as any);
       }
-      
-      // Register for notifications once logged in
+
       registerForPushNotificationsAsync();
-    } 
-    // 2. If not signed in and trying to access protected routes
-    else if (!session && !inAuthGroup && !isCallback) {
-      router.replace('/(auth)/welcome');
     }
-  }, [session, role, isLoading, segments]);
+    // 2. Handle Not Signed In
+    else if (!session && !isPublic && !isAuth && !isAtRoot) {
+      logger.info(LogTag.AUTH, '🛑 RootLayout: Unauthenticated access attempt, redirecting...');
+      router.replace('/(public)/welcome');
+    }
+    // 3. Handle Onboarding Not Completed (even if signed in or not)
+    else if (!onboardingCompleted && !isPublic && !isAuth && !isAtRoot) {
+      logger.info(LogTag.AUTH, 'ℹ️ RootLayout: Onboarding not completed, redirecting...');
+      router.replace('/(public)/welcome');
+    }
+  }, [session, role, isLoading, segments, onboardingCompleted, isNavigationReady]);
 
   const registerForPushNotificationsAsync = async () => {
     if (!Notifications) return;
@@ -99,26 +132,40 @@ export default function RootLayout() {
       }
       if (finalStatus === 'granted') {
         const tokenData = await Notifications.getExpoPushTokenAsync();
-        if (tokenData?.data) {
-          await axiosInstance
-            .post(ENDPOINTS.NOTIFICATIONS_REGISTER, {
-              token: tokenData.data,
-              platform: Platform.OS,
+        const { user } = useAuthStore.getState();
+
+        if (tokenData?.data && user?.id) {
+          await supabase
+            .from('user_profiles')
+            .update({
+              push_token: tokenData.data,
+              platform: Platform.OS
             })
-            .catch(() => {});
+            .eq('id', user.id);
         }
       }
     } catch {
-      // ignore push token errors in emulator
+      // ignore
     }
   };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0F172A" />
+      </View>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(public)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(customer)" options={{ headerShown: false }} />
         <Stack.Screen name="(owner)" options={{ headerShown: false }} />
+        <Stack.Screen name="setup" options={{ headerShown: false }} />
         <Stack.Screen name="booking" options={{ headerShown: false }} />
         <Stack.Screen
           name="booking-detail/[id]"

@@ -18,18 +18,17 @@ export const bookingKeys = {
   detail: (id: string) => [...bookingKeys.all(), 'detail', id] as const,
 };
 
-export const salonKeys = {
-  all: () => ['salons'] as const,
-  list: (search?: string) => [...salonKeys.all(), 'list', { search }] as const,
-  featured: () => [...salonKeys.all(), 'featured'] as const,
-  detail: (id: string) => [...salonKeys.all(), 'detail', id] as const,
-  services: (salonId: string) => [...salonKeys.all(), 'services', salonId] as const,
+export const businessKeys = {
+  all: () => ['businesses'] as const,
+  list: (filters?: any) => [...businessKeys.all(), 'list', filters] as const,
+  featured: () => [...businessKeys.all(), 'featured'] as const,
+  detail: (id: string) => [...businessKeys.all(), 'detail', id] as const,
+  services: (businessId: string) => [...businessKeys.all(), 'services', businessId] as const,
 };
 
 export const slotKeys = {
   all: () => ['slots'] as const,
-  available: (salonId: string, serviceId: string, date: string) =>
-    [...slotKeys.all(), { salonId, serviceId, date }] as const,
+  list: (businessId: string, date: string) => [...slotKeys.all(), businessId, date] as const,
 };
 
 export const ownerKeys = {
@@ -40,11 +39,7 @@ export const ownerKeys = {
 
 export const queryKeys = {
   bookings: bookingKeys,
-  salons: salonKeys,
-  slots: {
-    all: slotKeys.all,
-    list: (salonId: string, date: string) => [...slotKeys.all(), salonId, date] as const,
-    available: slotKeys.available,
-  },
+  businesses: businessKeys,
+  slots: slotKeys,
   owner: ownerKeys,
 };

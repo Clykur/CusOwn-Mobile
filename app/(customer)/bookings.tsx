@@ -1,259 +1,208 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  TouchableOpacity,
-  useColorScheme,
+  Pressable,
   FlatList,
+  RefreshControl,
 } from 'react-native';
-import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router, useFocusEffect } from 'expo-router';
 import { useBookings } from '@/hooks/useBookings';
 import { Booking } from '@/types/booking.types';
-import { Card } from '@/components/Card';
 import { Badge } from '@/components/Badge';
+import { Avatar } from '@/components/Avatar';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
-import { THEME } from '@/constants/theme';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Ionicons } from '@expo/vector-icons';
 
+type BookingFilterType = 'upcoming' | 'completed' | 'cancelled';
+
 export default function CustomerBookingsScreen() {
-  const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
+  const [filter, setFilter] = useState<BookingFilterType>('upcoming');
+  const [refreshing, setRefreshing] = useState(false);
   const { data: bookings, isLoading, isError, refetch } = useBookings('Customer');
 
-  const colorScheme = useColorScheme() || 'light';
-  const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
-  const filteredBookings = React.useMemo(() => {
+  const filteredBookings = useMemo(() => {
     if (!bookings) return [];
-    const now = new Date();
-    return bookings.filter((b: Booking) => {
-      const bDate = b.date ? new Date(b.date) : new Date();
-      const isPast =
-        b.status === 'completed' || b.status === 'cancelled' || bDate < now;
-      return filter === 'past' ? isPast : !isPast;
+    return bookings.filter((b: any) => {
+      const status = (b.status || 'pending').toLowerCase();
+      if (filter === 'upcoming') {
+        return status === 'pending' || status === 'confirmed';
+      }
+      if (filter === 'completed') {
+        return status === 'completed';
+      }
+      if (filter === 'cancelled') {
+        return status === 'cancelled' || status === 'rejected' || status === 'expired' || status === 'no_show';
+      }
+      return true;
     });
   }, [bookings, filter]);
 
-  const renderBookingCard = ({ item }: { item: Booking }) => {
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  const renderBookingCard = ({ item, index }: { item: any; index: number }) => {
+    const salonName = item.business?.salon_name || item.salon?.salon_name || 'Business Partner';
+    const salonAddress = item.business?.address || item.salon?.address || 'Premium Suite';
+    const salonImage = item.business?.image_url ||
+      item.business?.cover_photo_url ||
+      item.salon?.image_url ||
+      item.salon?.cover_photo_url ||
+      null;
+
+    const displayPrice = item.price || item.service?.price || 0;
+
     return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => router.push(`/booking-detail/${item.id}`)}
-      >
-        <Card style={[styles.bookingCard, { backgroundColor: theme.card }]}>
-          <View style={styles.cardHeader}>
-            <View style={styles.salonRow}>
-              <Ionicons name="business" size={16} color={theme.textSecondary} />
-              <Text style={[styles.salonName, { color: theme.text }]} numberOfLines={1}>
-                {item.salon?.name || 'Salon Studio'}
-              </Text>
+      <AnimatedSection delay={index * 50} direction="up" className="mb-4">
+        <Pressable
+          onPress={() => router.push(`/booking-detail/${item.id}`)}
+        >
+          <GlassCard className="border-slate-200/80 bg-white/90 shadow-sm p-5">
+            <View className="flex-row justify-between items-center mb-4">
+              <View className="flex-row items-center flex-1 mr-2 gap-x-3">
+                <Avatar
+                  url={salonImage}
+                  name={salonName}
+                  size={42}
+                  className="border border-slate-100"
+                />
+                <View className="flex-1">
+                  <Text className="text-slate-900 font-extrabold text-base" numberOfLines={1}>
+                    {salonName}
+                  </Text>
+                  <Text className="text-slate-500 text-xs mt-0.5" numberOfLines={1}>
+                    {salonAddress}
+                  </Text>
+                </View>
+              </View>
+              <Badge status={item.status} />
             </View>
-            <Badge status={item.status} />
-          </View>
 
-          <View style={styles.serviceDivider} />
+            <View className="h-[1px] bg-slate-100 mb-4" />
 
-          <View style={styles.detailsContainer}>
-            <Text style={[styles.serviceName, { color: theme.text }]}>
-              {item.service?.name || 'Curated Session'}
-            </Text>
-            <View style={styles.timePriceRow}>
-              <View style={styles.iconText}>
-                <Ionicons name="time-outline" size={14} color={theme.textSecondary} />
-                <Text style={[styles.timeText, { color: theme.textSecondary }]}>
-                  {item.date} at {item.time}
+            <View className="gap-y-3">
+              <View className="flex-row justify-between items-start">
+                <View className="flex-1 mr-4">
+                  <Text className="text-slate-900 text-lg font-black tracking-tight" numberOfLines={1}>
+                    {item.services && item.services.length > 0
+                      ? item.services.map((s: any) => s.name).join(', ')
+                      : (item.service?.name || 'Curated Session')}
+                  </Text>
+                  <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-1">
+                    Booking ID: {item.booking_id || item.reference || '—'}
+                  </Text>
+                </View>
+                <View className="bg-neutral-900 px-3 py-1 rounded-lg">
+                  <Text className="text-white font-black text-sm">
+                    ₹{displayPrice.toFixed(0)}
+                  </Text>
+                </View>
+              </View>
+
+              <View className="flex-row items-center gap-x-2 mt-1">
+                <Ionicons name="calendar-outline" size={14} color="#64748B" />
+                <Text className="text-slate-500 text-xs font-semibold">
+                  {item.date} • {item.time}
                 </Text>
               </View>
-              <Text style={[styles.priceText, { color: theme.primary }]}>
-                ${item.price?.toFixed(2) || item.service?.price?.toFixed(2) || '45.00'}
-              </Text>
             </View>
-          </View>
-        </Card>
-      </TouchableOpacity>
+          </GlassCard>
+        </Pressable>
+      </AnimatedSection>
     );
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.tabsContainer}>
-        <TouchableOpacity
-          style={[
-            styles.tabBtn,
-            filter === 'upcoming' && [styles.activeTabBtn, { borderBottomColor: theme.primary }],
-          ]}
-          onPress={() => setFilter('upcoming')}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              { color: filter === 'upcoming' ? theme.primary : theme.textSecondary },
-            ]}
-          >
-            Upcoming
+    <PremiumBackground>
+      <SafeAreaView className="flex-1" edges={['top']}>
+        {/* Cinematic Page Title */}
+        <View className="px-luxury pt-5 pb-2">
+          <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+            My Bookings
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.tabBtn,
-            filter === 'past' && [styles.activeTabBtn, { borderBottomColor: theme.primary }],
-          ]}
-          onPress={() => setFilter('past')}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              { color: filter === 'past' ? theme.primary : theme.textSecondary },
-            ]}
-          >
-            Past & Completed
-          </Text>
-        </TouchableOpacity>
-      </View>
+          <Text className="text-slate-900 text-3xl font-black tracking-tight">Your Appointments</Text>
+        </View>
 
-      {isLoading ? (
-        <View style={styles.skeletonContainer}>
-          <LoadingSkeleton height={130} borderRadius={12} style={{ marginBottom: 12 }} />
-          <LoadingSkeleton height={130} borderRadius={12} />
-        </View>
-      ) : isError ? (
-        <View style={[styles.errorBox, { backgroundColor: theme.card }]}>
-          <Text style={[styles.errorMsg, { color: theme.error }]}>Failed to load your reservations</Text>
-          <TouchableOpacity onPress={() => refetch()} style={styles.retryBtn}>
-            <Text style={{ color: theme.primary, fontWeight: '600' }}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredBookings}
-          renderItem={renderBookingCard}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="calendar-clear-outline" size={48} color={theme.gray} />
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>No Bookings Found</Text>
-              <Text style={[styles.emptySubtitle, { color: theme.textSecondary }]}>
-                You have no {filter} booking schedules recorded yet.
+        {/* Custom Header Tab Bar */}
+        <View className="flex-row px-luxury pt-3 pb-1 border-b border-slate-100 bg-white/95 mt-2">
+          {(['upcoming', 'completed', 'cancelled'] as const).map((tab) => (
+            <Pressable
+              key={tab}
+              className={`flex-1 py-3 items-center border-b-2 ${filter === tab ? 'border-accent-premium' : 'border-transparent'
+                }`}
+              onPress={() => setFilter(tab)}
+            >
+              <Text className={`text-xs font-black uppercase tracking-wider ${filter === tab ? 'text-accent-premium' : 'text-slate-400'
+                }`}>
+                {tab}
               </Text>
-            </View>
-          }
-        />
-      )}
-    </View>
+            </Pressable>
+          ))}
+        </View>
+
+        {isLoading ? (
+          <View className="flex-1 px-luxury pt-6">
+            <LoadingSkeleton height={140} borderRadius={20} className="mb-4" />
+            <LoadingSkeleton height={140} borderRadius={20} className="mb-4" />
+            <LoadingSkeleton height={140} borderRadius={20} />
+          </View>
+        ) : isError ? (
+          <View className="flex-1 justify-center items-center px-luxury">
+            <GlassCard className="items-center w-full bg-white border border-slate-200 p-6">
+              <Ionicons name="alert-circle-outline" size={48} color="#000000" />
+              <Text className="text-slate-900 text-lg font-bold mt-4 text-center">
+                Failed to load your reservations
+              </Text>
+              <Pressable
+                onPress={() => refetch()}
+                className="mt-6 bg-black border border-black px-8 py-3 rounded-full"
+              >
+                <Text className="text-white font-bold">Retry Connection</Text>
+              </Pressable>
+            </GlassCard>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredBookings}
+            renderItem={renderBookingCard}
+            keyExtractor={(item, index) => item.id || `booking-${index}`}
+            contentContainerClassName="px-luxury pt-6 pb-24"
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#000000"
+                colors={['#000000']}
+              />
+            }
+            ListEmptyComponent={
+              <AnimatedSection direction="up" className="items-center justify-center pt-24">
+                <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center mb-6 border border-slate-200">
+                  <Ionicons name="calendar-clear-outline" size={36} color="#64748B" />
+                </View>
+                <Text className="text-slate-900 text-xl font-black uppercase tracking-tight mb-2">No Bookings Found</Text>
+                <Text className="text-slate-500 text-center px-8 text-sm leading-relaxed">
+                  You have no {filter} booking schedules recorded under this account at the moment.
+                </Text>
+              </AnimatedSection>
+            }
+          />
+        )}
+      </SafeAreaView>
+    </PremiumBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-    marginBottom: 12,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  activeTabBtn: {},
-  tabText: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  skeletonContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-  },
-  errorBox: {
-    marginHorizontal: 20,
-    marginTop: 20,
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  errorMsg: {
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  retryBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  listContent: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 24,
-  },
-  bookingCard: {
-    padding: 16,
-    marginBottom: 12,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  salonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 8,
-    gap: 6,
-  },
-  salonName: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  serviceDivider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-    marginBottom: 12,
-  },
-  detailsContainer: {
-    gap: 8,
-  },
-  serviceName: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  timePriceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  iconText: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  timeText: {
-    fontSize: 13,
-  },
-  priceText: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 60,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: 12,
-    marginBottom: 6,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
-});

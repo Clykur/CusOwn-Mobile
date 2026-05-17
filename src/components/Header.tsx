@@ -18,11 +18,11 @@ export const Header = ({ title, showBack = false, rightElement, onBackPress }: H
     <View className="flex-row items-center justify-between py-4 bg-background">
       <View className="flex-1 flex-row items-center">
         {showBack && (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={onBackPress || (() => navigation.goBack())}
             className="p-2 mr-2"
           >
-            <Ionicons name="chevron-back" size={24} color="#0F172A" />
+            <Ionicons name="chevron-back" size={24} color="#000000" />
           </TouchableOpacity>
         )}
         {title && (

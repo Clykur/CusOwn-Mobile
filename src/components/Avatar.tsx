@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Image } from 'expo-image';
 
 interface AvatarProps {
@@ -7,9 +7,10 @@ interface AvatarProps {
   name?: string;
   size?: number;
   style?: any;
+  className?: string;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ url, name = '', size = 48, style }) => {
+export const Avatar: React.FC<AvatarProps> = ({ url, name = '', size = 48, style, className }) => {
   const [hasError, setHasError] = useState(false);
 
   const getInitials = (str: string) => {
@@ -26,7 +27,7 @@ export const Avatar: React.FC<AvatarProps> = ({ url, name = '', size = 48, style
     for (let i = 0; i < str.length; i++) {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#6366F1'];
+    const colors = ['#000000', '#1A1A1A', '#333333', '#4D4D4D', '#666666', '#808080'];
     return colors[Math.abs(hash) % colors.length];
   };
 
@@ -34,6 +35,7 @@ export const Avatar: React.FC<AvatarProps> = ({ url, name = '', size = 48, style
 
   return (
     <View
+      className={className}
       style={[
         styles.container,
         {
@@ -52,7 +54,9 @@ export const Avatar: React.FC<AvatarProps> = ({ url, name = '', size = 48, style
           source={{ uri: url }}
           style={{ width: size, height: size, borderRadius: radius }}
           contentFit="cover"
-          transition={200}
+          // On Android, cross-fade transition uses a hardware bitmap which crashes
+          // when rendered inside a software-layer parent (e.g. BlurView). Disable it.
+          transition={Platform.OS === 'android' ? 0 : 200}
           onError={() => setHasError(true)}
         />
       )}

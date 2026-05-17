@@ -1,50 +1,46 @@
 import { useState, useEffect } from 'react';
-import { Alert, Platform, Linking } from 'react-native';
+import { Alert, Platform } from 'react-native';
+import * as Linking from 'expo-linking';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
+import { logger, LogTag } from '@/utils/logger';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth.store';
 import { LoginFormValues, RegisterFormValues } from '@/schemas/auth.schema';
 import { STRINGS } from '@/constants/strings';
+import { router } from 'expo-router';
 
 // Ensure any in-progress auth sessions can complete (required by expo-web-browser).
 WebBrowser.maybeCompleteAuthSession();
-
-const LOG_TAG = '[OAUTH]';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { setSession, clearSession } = useAuthStore();
 
-  // ─── Environment-Adaptive Redirect URI ────────────────────────────────
-  // We hardcode the Proxy URL for dev to ensure Android stability.
-  // Prod uses the native 'cusown://' scheme.
-  const redirectUrl = __DEV__
-    ? "https://auth.expo.io/@karthiknaramala9949/cusown"
-    : AuthSession.makeRedirectUri({ scheme: 'cusown', path: 'google-callback' });
-
-  useEffect(() => {
-    console.log(LOG_TAG, '--- AUTH CONFIG ---');
-    console.log(LOG_TAG, 'Platform:', Platform.OS);
-    console.log(LOG_TAG, 'Redirect URI:', redirectUrl);
-    console.log(LOG_TAG, '-------------------');
-  }, [redirectUrl]);
-
   // ─── Email Sign-In ────────────────────────────────────────────────────
   const signInWithEmail = async (values: LoginFormValues) => {
     setLoading(true);
     setError(null);
     try {
+      logger.info(LogTag.AUTH, `Attempting email sign-in for: ${values.email}`);
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
       });
 
-      if (authError) throw new Error(authError.message);
-      if (data.session) await setSession(data.session);
+      if (authError) {
+        logger.error(LogTag.AUTH, `Sign-in failed: ${authError.message}`);
+        throw new Error(authError.message);
+      }
+
+      if (data.session) {
+        logger.info(LogTag.AUTH, `Sign-in successful for: ${values.email}`);
+        await setSession(data.session);
+      }
       return data;
     } catch (err: any) {
+      logger.error(LogTag.AUTH, `Unexpected error during sign-in`, err);
       setError(err.message || STRINGS.ERRORS.GENERIC);
       throw err;
     } finally {
@@ -57,6 +53,7 @@ export const useAuth = () => {
     setLoading(true);
     setError(null);
     try {
+      logger.info(LogTag.AUTH, `Attempting email sign-up for: ${values.email} as ${values.role}`);
       const { data, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -68,10 +65,34 @@ export const useAuth = () => {
         },
       });
 
-      if (authError) throw new Error(authError.message);
-      if (data.session) await setSession(data.session);
+      if (authError) {
+        logger.error(LogTag.AUTH, `Sign-up failed: ${authError.message}`);
+        throw new Error(authError.message);
+      }
+
+      if (data.session) {
+        logger.info(LogTag.AUTH, `Sign-up successful for: ${values.email}`);
+
+        // Ensure the profile is created/updated with the correct user_type immediately
+        try {
+          await supabase
+            .from('user_profiles')
+            .update({
+              user_type: values.role.toLowerCase(),
+              full_name: values.fullName
+            })
+            .eq('id', data.session.user.id);
+        } catch (syncErr) {
+          logger.error(LogTag.AUTH, 'Failed to sync profile after signup', syncErr);
+        }
+
+        await setSession(data.session);
+      } else {
+        logger.info(LogTag.AUTH, `Sign-up request sent. Verification may be required.`);
+      }
       return data;
     } catch (err: any) {
+      logger.error(LogTag.AUTH, `Unexpected error during sign-up`, err);
       setError(err.message || STRINGS.ERRORS.GENERIC);
       throw err;
     } finally {
@@ -79,51 +100,116 @@ export const useAuth = () => {
     }
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (role: string) => {
     setLoading(true);
     setError(null);
     try {
-      console.log(LOG_TAG, '1. Starting Official PKCE Flow...');
-      console.log(LOG_TAG, '   Redirecting to:', redirectUrl);
+      logger.info(LogTag.AUTH, '1. 🚀 Initializing Google OAuth Flow...');
 
-      // 1. Let Supabase start the OAuth process
+      // Optimized Redirect URI generation for Expo Go / Dev Builds
+      // We let AuthSession decide the best URI but ensure the path is consistent.
+      const redirectUri = AuthSession.makeRedirectUri({
+        path: '(auth)/google-callback',
+      });
+
+      logger.info(LogTag.AUTH, `2. 🔗 Generated Redirect URI: ${redirectUri}`);
+      logger.info(LogTag.AUTH, `   ⚠️  IMPORTANT: Copy the URI above and add it to your Supabase "Redirect URLs" whitelist!`);
+
+      // 1. Get the OAuth URL from Supabase
       const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectUrl,
+          redirectTo: redirectUri,
           skipBrowserRedirect: true,
+          queryParams: {
+            prompt: 'select_account',
+            access_type: 'offline',
+          },
         },
       });
 
       if (oauthError) throw oauthError;
-      if (!data?.url) throw new Error('No auth URL returned');
+      if (!data?.url) throw new Error('Could not generate authentication URL');
 
-      // 2. Open the browser and wait for the redirect
-      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+      logger.info(LogTag.AUTH, `3. 🌐 Opening Auth Session...`);
 
+      // 2. Open the auth session
+      // For universal apps, using the redirectUri as the second param is critical
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
+
+      logger.info(LogTag.AUTH, `4. 📥 Browser Result Type: ${result.type}`);
+
+      // 3. Handle the result
       if (result.type === 'success') {
         const { url } = result;
-        
-        // 3. Extract the code from the URL (handles both # and ? formats)
-        const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1]);
-        const code = params.get('code');
+        logger.info(LogTag.AUTH, `5. 🔎 Parsing Callback URL: ${url}`);
 
-        if (!code) throw new Error('Auth code missing from redirect');
+        // Supabase with PKCE might return code in query params or fragment
+        const parsed = Linking.parse(url);
+        const code = (parsed.queryParams?.code || parsed.queryParams?.['#code']) as string;
+        const errorMsg = parsed.queryParams?.error_description || parsed.queryParams?.error;
 
-        console.log(LOG_TAG, '2. Exchanging code for session...');
-        const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
-        
-        if (sessionError) throw sessionError;
-        
-        if (sessionData.session) {
-          console.log(LOG_TAG, '3. ✅ Sign-in successful!');
-          await setSession(sessionData.session);
+        if (errorMsg) {
+          logger.error(LogTag.AUTH, `❌ OAuth Error returned: ${errorMsg}`);
+          throw new Error(Array.isArray(errorMsg) ? errorMsg[0] : errorMsg);
         }
+
+        if (!code) {
+          logger.warn(LogTag.AUTH, '⚠️ No code found in result URL. This might be handled by google-callback.tsx');
+          return;
+        }
+
+        // Check if session was already handled by google-callback.tsx (deep link)
+        const currentStoreSession = useAuthStore.getState().session;
+        if (currentStoreSession) {
+          logger.info(LogTag.AUTH, '✅ Session already handled by deep link listener.');
+          return;
+        }
+
+        logger.info(LogTag.AUTH, '6. 🔑 Exchanging code for session...');
+        const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (sessionError) {
+          if (sessionError.message.includes('already used') || sessionError.message.includes('verifier not found')) {
+            logger.info(LogTag.AUTH, 'ℹ️ Code already exchanged (likely by google-callback.tsx).');
+            return;
+          }
+          throw sessionError;
+        }
+
+       if (sessionData.session) {
+  logger.info(
+    LogTag.AUTH,
+    '7. ✨ Session established! Updating state...'
+  );
+
+  await setSession(sessionData.session);
+
+  // Save selected role
+  await supabase
+    .from('user_profiles')
+    .upsert({
+      id: sessionData.session.user.id,
+      user_type: role.toLowerCase(),
+    });
+
+  // Route based on selected role
+  if (role === 'Owner') {
+    router.replace('/(owner)');
+  } else {
+    router.replace('/(customer)');
+  }
+}
+      } else if (result.type === 'cancel') {
+        logger.info(LogTag.AUTH, '⏹️ Sign-in cancelled by user');
+      } else {
+        logger.warn(LogTag.AUTH, `⚠️ Unexpected browser result type: ${result.type}`);
       }
     } catch (err: any) {
-      console.error(LOG_TAG, '   AUTH_ERROR:', err.message);
-      setError(err.message || 'Authentication failed');
-      Alert.alert('Sign In Failed', err.message);
+      logger.error(LogTag.AUTH, `❌ OAuth Flow Failed: ${err.message}`, err);
+      const userFriendlyError = err.message || 'Failed to sign in with Google';
+      setError(userFriendlyError);
+      Alert.alert('Sign In Failed', userFriendlyError);
     } finally {
       setLoading(false);
     }
