@@ -11,14 +11,14 @@ export default function SuccessScreen() {
     <PremiumBackground>
       <View className="flex-1 items-center justify-center px-luxury">
         <AnimatedSection direction="down" className="items-center">
-          <View className="w-24 h-24 rounded-full bg-accent-premium/20 items-center justify-center mb-8 border border-accent-premium/30">
-            <Ionicons name="checkmark-done" size={48} color="#FFFFFF" />
+          <View className="w-24 h-24 rounded-full bg-slate-100 items-center justify-center mb-8 border border-slate-200">
+            <Ionicons name="checkmark-done" size={48} color="#000000" />
           </View>
-          <Text className="text-white text-5xl font-bold tracking-tighter text-center mb-6">
+          <Text className="text-slate-900 text-3xl font-black tracking-tight text-center mb-6">
             Identity{"\n"}
-            <Text className="text-accent-premium">Established.</Text>
+            <Text className="text-slate-500">Established.</Text>
           </Text>
-          <Text className="text-textLight text-lg text-center leading-relaxed mb-16">
+          <Text className="text-slate-500 text-base text-center leading-relaxed mb-16 font-medium">
             Your premium business profile has been successfully integrated into the CusOwn network.
           </Text>
         </AnimatedSection>

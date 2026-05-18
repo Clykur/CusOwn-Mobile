@@ -3,6 +3,8 @@ import { View, Text, ScrollView, Pressable, RefreshControl, Modal, TextInput } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { useOwnerBusinesses, useOwnerAnalytics } from '@/hooks/useOwner';
 import { router } from 'expo-router';
@@ -10,17 +12,46 @@ import { router } from 'expo-router';
 type DateFilterType = 'all' | 'today' | 'week' | 'month' | 'custom';
 type TrendTabType = 'bookings' | 'revenue';
 
-const MetricCard = ({ title, value, icon, delay = 0 }: { title: string, value: string | number, icon: any, delay?: number }) => (
-  <AnimatedSection delay={delay} direction="up" className="w-[48%] mb-4">
-    <View className="bg-white border border-slate-200 p-5 rounded-2xl h-32 justify-between">
-      <View className="w-8 h-8 rounded-full bg-slate-50 items-center justify-center border border-slate-100">
-        <Ionicons name={icon} size={16} color="#64748B" />
+const MetricCard = ({
+  title,
+  value,
+  icon,
+  delay = 0,
+}: {
+  title: string;
+  value: string | number;
+  icon: any;
+  delay?: number;
+}) => (
+  <AnimatedSection
+    delay={delay}
+    direction="up"
+    className="w-[48%] mb-4"
+  >
+    <GlassCard className="p-5 border border-slate-200/70 rounded-[30px] h-36 bg-white/90">
+
+      {/* Top */}
+      <View className="flex-row items-center justify-start mb-6">
+        <View className="w-8 h-8 rounded-2xl bg-slate-100 items-start justify-center">
+          <Ionicons
+            name={icon}
+            size={22}
+            color="#0F172A"
+          />
+        </View>
+
+        <Text className="text-[11px] font-bold uppercase tracking-[2px] text-slate-400">
+          {title}
+        </Text>
       </View>
-      <View>
-        <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{title}</Text>
-        <Text className="text-slate-900 text-xl font-extrabold mt-1">{value}</Text>
+
+      {/* Value */}
+      <View className="-mt-5">
+        <Text className="text-[24px] leading-[38px] font-black text-slate-900">
+          {value}
+        </Text>
       </View>
-    </View>
+    </GlassCard>
   </AnimatedSection>
 );
 
@@ -38,7 +69,7 @@ export default function OwnerAnalyticsScreen() {
   // Compute exact human-readable date bounds for the filters
   const dateBounds = useMemo(() => {
     const now = new Date();
-    
+
     const formatLabelDate = (d: Date) => {
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       return `${months[d.getMonth()]} ${d.getDate()}`;
@@ -54,10 +85,10 @@ export default function OwnerAnalyticsScreen() {
     // Week boundaries (Monday to Sunday)
     const day = now.getDay();
     const daysSinceMonday = day === 0 ? 6 : day - 1;
-    
+
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() - daysSinceMonday);
-    
+
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
 
@@ -108,12 +139,12 @@ export default function OwnerAnalyticsScreen() {
     return params;
   }, [selectedBusinessId, dateFilter, startDate, endDate, dateBounds]);
 
-  const { 
-    data: analytics, 
-    isLoading: analyticsLoading, 
-    isError: analyticsError, 
+  const {
+    data: analytics,
+    isLoading: analyticsLoading,
+    isError: analyticsError,
     refetch: refetchAnalytics,
-    error: apiError 
+    error: apiError
   } = useOwnerAnalytics(analyticsParams);
 
   const onRefresh = useCallback(async () => {
@@ -134,11 +165,11 @@ export default function OwnerAnalyticsScreen() {
     else if (dateFilter === 'week') dateStr = `This Week (${dateBounds.weekLabel})`;
     else if (dateFilter === 'month') dateStr = `This Month (${dateBounds.monthLabel})`;
     else if (dateFilter === 'custom') {
-      dateStr = (startDate || endDate) 
-        ? `Custom: ${startDate || 'any'} to ${endDate || 'any'}` 
+      dateStr = (startDate || endDate)
+        ? `Custom: ${startDate || 'any'} to ${endDate || 'any'}`
         : 'Custom Date';
     }
-    
+
     return `${selectedBusinessName} • ${dateStr}`;
   }, [selectedBusinessName, dateFilter, startDate, endDate, dateBounds]);
 
@@ -252,7 +283,7 @@ export default function OwnerAnalyticsScreen() {
 
   if (businessesLoading || (analyticsLoading && !analytics)) {
     return (
-      <View className="flex-1 bg-slate-50">
+      <PremiumBackground>
         <SafeAreaView className="flex-1" edges={['top']}>
           <View className="px-luxury py-6">
             <LoadingSkeleton height={40} width={150} className="mb-8" />
@@ -265,96 +296,94 @@ export default function OwnerAnalyticsScreen() {
             </View>
           </View>
         </SafeAreaView>
-      </View>
+      </PremiumBackground>
     );
   }
 
   if (analyticsError) {
     return (
-      <View className="flex-1 bg-slate-50">
+      <PremiumBackground>
         <SafeAreaView className="flex-1" edges={['top']}>
           <View className="flex-1 justify-center items-center px-luxury">
-            <View className="bg-white border border-slate-200 items-center w-full p-8 rounded-2xl">
+            <GlassCard className="items-center w-full bg-white border border-slate-200 p-6">
               <Ionicons name="alert-circle-outline" size={48} color="#000000" />
-              <Text className="text-slate-900 text-lg font-extrabold mt-4 text-center">
+              <Text className="text-slate-900 text-lg font-bold mt-4 text-center">
                 Sync Error
               </Text>
               <Text className="text-slate-500 text-center mt-2 mb-8 text-sm font-medium">
                 We couldn't fetch your analytics data. Please check your connection or try again later.
                 {apiError instanceof Error ? `\n\nError: ${apiError.message}` : ''}
               </Text>
-              <Pressable 
-                onPress={onRefresh} 
-                className="bg-slate-900 py-4 px-10 rounded-full items-center justify-center active:bg-slate-800 w-full"
+              <Pressable
+                onPress={onRefresh}
+                className="bg-black py-4 px-10 rounded-full items-center justify-center active:bg-slate-900 w-full"
               >
                 <Text className="text-white font-extrabold text-sm uppercase tracking-widest">Retry Sync</Text>
               </Pressable>
-            </View>
+            </GlassCard>
           </View>
         </SafeAreaView>
-      </View>
+      </PremiumBackground>
     );
   }
 
   const noData = !analytics?.overview || analytics?.overview?.totalBookings === 0;
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['top']}>
-        {/* Header */}
-        <View className="px-luxury py-6 flex-row justify-between items-end border-b border-slate-200 bg-white">
+        {/* Cinematic Header & Filter Action */}
+        <View className="px-luxury pt-5 pb-2 flex-row justify-between items-center">
           <View className="flex-1 mr-4">
             <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">Performance</Text>
-            <Text className="text-slate-900 text-3xl font-extrabold tracking-tight" numberOfLines={1}>
-              Analytics
-            </Text>
+            <Text className="text-slate-900 text-3xl font-black tracking-tight">Analytics</Text>
             <Text className="text-slate-500 text-xs mt-1" numberOfLines={1}>
               {filterSummary}
             </Text>
           </View>
-          <Pressable 
+          <Pressable
             onPress={() => setShowFilter(true)}
-            className="bg-slate-50 p-3 rounded-2xl border border-slate-200 active:bg-slate-100"
+            className="bg-white/80 p-3 rounded-2xl border border-slate-200/80 active:bg-white shadow-sm"
           >
-            <Ionicons name="funnel-outline" size={20} color="#334155" />
+            <Ionicons name="funnel-outline" size={20} color="#000000" />
           </Pressable>
         </View>
 
-        <ScrollView 
+        <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerClassName="pb-12"
           refreshControl={
             <RefreshControl
               refreshing={analyticsLoading}
               onRefresh={onRefresh}
-              tintColor="#0F172A"
+              tintColor="#000000"
             />
           }
         >
           {noData && !analyticsLoading ? (
             <AnimatedSection className="px-luxury pt-12 items-center">
-              <View className="bg-white border border-slate-200 w-full p-8 items-center rounded-2xl">
+              <GlassCard className="border border-slate-200/80 w-full p-8 items-center rounded-luxury">
                 <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center mb-6">
                   <Ionicons name="bar-chart-outline" size={40} color="#94A3B8" />
                 </View>
-                <Text className="text-slate-900 text-xl font-extrabold mb-2">No Data Available</Text>
+                <Text className="text-slate-900 text-xl font-bold mb-2">No Data Available</Text>
                 <Text className="text-slate-500 text-center px-6 text-sm font-medium leading-relaxed">
                   There is no performance data for the selected period or business hub.
                 </Text>
-                <Pressable 
-                  onPress={() => router.push('/(owner)/businesses')} 
-                  className="mt-8 bg-slate-900 py-4 px-10 rounded-full items-center justify-center active:bg-slate-800 w-full"
+                <Pressable
+                  onPress={() => router.push('/(owner)/businesses')}
+                  className="mt-8 bg-black py-4 px-10 rounded-full items-center justify-center active:bg-slate-900 w-full"
                 >
                   <Text className="text-white font-extrabold text-sm uppercase tracking-widest">Launch Your Hub</Text>
                 </Pressable>
-              </View>
+              </GlassCard>
             </AnimatedSection>
           ) : (
             <>
               {/* Key Metrics */}
               <View className="px-luxury pt-6 mb-6">
                 <AnimatedSection direction="up">
-                  <View className="bg-white border border-slate-200 p-8 rounded-2xl overflow-hidden relative">
+                  <GlassCard className="border-slate-200/80 p-8 rounded-luxury overflow-hidden relative shadow-sm">
                     <Text className="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">Total Revenue</Text>
                     <View className="flex-row items-baseline">
                       <Text className="text-slate-900 text-4xl font-extrabold tracking-tight">
@@ -365,47 +394,47 @@ export default function OwnerAnalyticsScreen() {
                         <Text className="text-neutral-800 text-[10px] font-bold ml-1">+12%</Text>
                       </View>
                     </View>
-                  </View>
+                  </GlassCard>
                 </AnimatedSection>
               </View>
 
               <View className="px-luxury flex-row flex-wrap justify-between">
-                <MetricCard 
-                  title="Volume" 
-                  value={analytics?.overview?.totalBookings || 0} 
-                  icon="calendar-outline" 
-                  delay={100} 
+                <MetricCard
+                  title="Volume"
+                  value={analytics?.overview?.totalBookings || 0}
+                  icon="calendar-outline"
+                  delay={100}
                 />
-                <MetricCard 
-                  title="Success" 
-                  value={`${Math.round(analytics?.overview?.conversionRate || 0)}%`} 
-                  icon="checkmark-circle-outline" 
-                  delay={200} 
+                <MetricCard
+                  title="Success"
+                  value={`${Math.round(analytics?.overview?.conversionRate || 0)}%`}
+                  icon="checkmark-circle-outline"
+                  delay={200}
                 />
-                <MetricCard 
-                  title="No-Show" 
-                  value={`${Math.round(analytics?.overview?.noShowRate || 0)}%`} 
-                  icon="alert-circle-outline" 
-                  delay={300} 
+                <MetricCard
+                  title="No-Show"
+                  value={`${Math.round(analytics?.overview?.noShowRate || 0)}%`}
+                  icon="alert-circle-outline"
+                  delay={300}
                 />
-                <MetricCard 
-                  title="Cancelled" 
-                  value={analytics?.overview?.cancelledBookings || 0} 
-                  icon="close-circle-outline" 
-                  delay={400} 
+                <MetricCard
+                  title="Cancelled"
+                  value={analytics?.overview?.cancelledBookings || 0}
+                  icon="close-circle-outline"
+                  delay={400}
                 />
               </View>
 
               {/* Trend Charts (Interactive Columns View) */}
               <View className="px-luxury mb-6">
                 <AnimatedSection direction="up" delay={450}>
-                  <View className="bg-white border border-slate-200 p-6 rounded-2xl">
+                  <GlassCard className="border-slate-200/80 p-2 rounded-luxury">
                     <View className="flex-row items-center justify-between mb-6">
                       <Text className="text-slate-900 text-base font-extrabold">Activity Trends</Text>
-                      
+
                       {/* Sub-tabs */}
                       <View className="flex-row bg-slate-100 p-1 rounded-full border border-slate-200">
-                        <Pressable 
+                        <Pressable
                           onPress={() => { setTrendTab('bookings'); setActiveBarIndex(null); }}
                           className={`px-4 py-1.5 rounded-full ${trendTab === 'bookings' ? 'bg-white' : ''}`}
                         >
@@ -413,7 +442,7 @@ export default function OwnerAnalyticsScreen() {
                             Bookings
                           </Text>
                         </Pressable>
-                        <Pressable 
+                        <Pressable
                           onPress={() => { setTrendTab('revenue'); setActiveBarIndex(null); }}
                           className={`px-4 py-1.5 rounded-full ${trendTab === 'revenue' ? 'bg-white' : ''}`}
                         >
@@ -432,8 +461,8 @@ export default function OwnerAnalyticsScreen() {
                         const isActive = activeBarIndex === index;
 
                         return (
-                          <Pressable 
-                            key={index} 
+                          <Pressable
+                            key={index}
                             onPress={() => setActiveBarIndex(isActive ? null : index)}
                             className="items-center justify-end mx-3"
                           >
@@ -447,29 +476,28 @@ export default function OwnerAnalyticsScreen() {
                               </View>
                             )}
 
-                            <View 
-                              style={{ height: barHeight }} 
-                              className={`w-8 rounded-t-lg transition-colors ${
-                                isActive 
-                                  ? 'bg-black' 
-                                  : 'bg-neutral-300'
-                              }`} 
+                            <View
+                              style={{ height: barHeight }}
+                              className={`w-8 rounded-t-lg transition-colors ${isActive
+                                ? 'bg-black'
+                                : 'bg-neutral-300'
+                                }`}
                             />
                             <Text className="text-slate-400 text-[8px] font-bold mt-2">{point.label}</Text>
                           </Pressable>
                         );
                       })}
                     </ScrollView>
-                  </View>
+                  </GlassCard>
                 </AnimatedSection>
               </View>
 
               {/* Status Breakdown & Peak Hours Section */}
               <View className="px-luxury mb-6">
                 <AnimatedSection direction="up" delay={500}>
-                  <View className="bg-white border border-slate-200 p-6 rounded-2xl mb-6">
+                  <GlassCard className="border-slate-200/80 p-2 rounded-luxury mb-6">
                     <Text className="text-slate-900 text-base font-extrabold mb-4">Booking Status Allocation</Text>
-                    
+
                     {/* Stacked percentage bar */}
                     <View className="h-4 bg-slate-100 rounded-full flex-row overflow-hidden mb-6">
                       {statusSummary.confirmedPct > 0 && (
@@ -515,14 +543,14 @@ export default function OwnerAnalyticsScreen() {
                         </Text>
                       </View>
                     </View>
-                  </View>
+                  </GlassCard>
                 </AnimatedSection>
 
                 {/* Peak Booking Hours */}
                 <AnimatedSection direction="up" delay={550}>
-                  <View className="bg-white border border-slate-200 p-6 rounded-2xl mb-6">
+                  <GlassCard className="border-slate-200/80 p-2 rounded-luxury mb-6">
                     <Text className="text-slate-900 text-base font-extrabold mb-4">Peak Traffic Hours</Text>
-                    
+
                     <View className="space-y-3">
                       {peakHoursData.map((hour, index) => {
                         const widthPct = Math.max((hour.count / maxPeakCount) * 100, 3);
@@ -530,9 +558,9 @@ export default function OwnerAnalyticsScreen() {
                           <View key={index} className="flex-row items-center">
                             <Text className="w-20 text-slate-500 text-[10px] font-bold">{hour.label}</Text>
                             <View className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden mr-3">
-                              <View 
-                                style={{ width: `${widthPct}%` }} 
-                                className="bg-slate-800 h-full rounded-full" 
+                              <View
+                                style={{ width: `${widthPct}%` }}
+                                className="bg-slate-800 h-full rounded-full"
                               />
                             </View>
                             <Text className="text-slate-900 text-xs font-extrabold w-6 text-right">
@@ -542,20 +570,20 @@ export default function OwnerAnalyticsScreen() {
                         );
                       })}
                     </View>
-                  </View>
+                  </GlassCard>
                 </AnimatedSection>
 
                 {/* Service Performance Rankings */}
                 <AnimatedSection direction="up" delay={600}>
-                  <View className="bg-white border border-slate-200 p-6 rounded-2xl">
+                  <GlassCard className="border-slate-200/80 p-2 rounded-luxury">
                     <Text className="text-slate-900 text-base font-extrabold mb-4">Popular Treatments</Text>
-                    
-                    <View className="space-y-4">
+
+                    <View className="space-y-2">
                       {servicesData.map((service: any, index: number) => {
                         const widthPct = Math.max((service.count / maxServiceCount) * 100, 3);
                         return (
-                          <View key={index} className="space-y-1.5">
-                            <View className="flex-row justify-between items-center">
+                          <View key={index} className="space-y-2">
+                            <View className="flex-row justify-between items-center mt-1 mb-1">
                               <Text className="text-slate-700 text-xs font-bold" numberOfLines={1}>
                                 {service.name}
                               </Text>
@@ -564,35 +592,18 @@ export default function OwnerAnalyticsScreen() {
                               </Text>
                             </View>
                             <View className="bg-slate-100 h-2.5 rounded-full overflow-hidden w-full">
-                              <View 
-                                style={{ width: `${widthPct}%` }} 
-                                className="bg-black h-full rounded-full" 
+                              <View
+                                style={{ width: `${widthPct}%` }}
+                                className="bg-black h-full rounded-full"
                               />
                             </View>
                           </View>
                         );
                       })}
                     </View>
-                  </View>
+                  </GlassCard>
                 </AnimatedSection>
               </View>
-
-              {/* Intelligence Section */}
-              <AnimatedSection delay={650} direction="up" className="px-luxury">
-                <View className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-                  <View className="flex-row items-center gap-x-3 mb-4">
-                    <View className="w-10 h-10 rounded-full bg-slate-800 items-center justify-center border border-slate-700">
-                      <Ionicons name="bulb-outline" size={20} color="#FFFFFF" />
-                    </View>
-                    <Text className="text-white font-extrabold text-sm uppercase tracking-wider">Intelligence Insight</Text>
-                  </View>
-                  <Text className="text-slate-300 text-xs leading-5">
-                    {analytics?.overview?.confirmedBookings && analytics.overview.confirmedBookings > 10
-                      ? "Your business is showing strong momentum. Consider optimizing high-traffic slots for premium pricing to maximize revenue."
-                      : "Focus on increasing your booking velocity by sharing your booking link on WhatsApp and Instagram stories."}
-                  </Text>
-                </View>
-              </AnimatedSection>
             </>
           )}
         </ScrollView>
@@ -604,21 +615,21 @@ export default function OwnerAnalyticsScreen() {
           animationType="fade"
           onRequestClose={() => setShowFilter(false)}
         >
-          <Pressable 
+          <Pressable
             className="flex-1 justify-end"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)' }}
+            style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)' }}
             onPress={() => setShowFilter(false)}
           >
-            <View className="bg-white rounded-t-[40px] p-6 border-t border-slate-200 max-h-[90%]">
+            <View className="bg-white rounded-t-[40px] p-6 border-t border-slate-200 max-h-[90%] shadow-lg">
               <View className="items-center mb-6">
                 <View className="w-12 h-1.5 bg-slate-200 rounded-full mb-6" />
-                <Text className="text-slate-900 text-xl font-extrabold uppercase tracking-wider">Configure Filters</Text>
+                <Text className="text-slate-900 text-xl font-black uppercase tracking-wider">Configure Filters</Text>
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
                 {/* 1. Hub Selection */}
-                <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">Select Hub</Text>
-                
+                <Text className="text-[10px] text-slate-400 font-black uppercase tracking-[2px] mb-3">Select Hub</Text>
+
                 <Pressable
                   onPress={() => setSelectedBusinessId('all')}
                   className={`px-4 py-3.5 border-b border-slate-100 flex-row items-center justify-between rounded-xl mb-2 ${selectedBusinessId === 'all' ? 'bg-slate-50' : ''}`}
@@ -629,7 +640,7 @@ export default function OwnerAnalyticsScreen() {
                       All Hubs (Portfolio)
                     </Text>
                   </View>
-                  {selectedBusinessId === 'all' && <Ionicons name="checkmark-circle" size={20} color="#000000" />}
+                  {selectedBusinessId === 'all' && <Ionicons name="checkmark" size={20} color="#000000" />}
                 </Pressable>
 
                 {businessesData?.map((biz: any) => (
@@ -644,15 +655,15 @@ export default function OwnerAnalyticsScreen() {
                         {biz.salon_name}
                       </Text>
                     </View>
-                    {selectedBusinessId === biz.id && <Ionicons name="checkmark-circle" size={20} color="#000000" />}
+                    {selectedBusinessId === biz.id && <Ionicons name="checkmark" size={20} color="#000000" />}
                   </Pressable>
                 ))}
 
-                <View className="h-[1px] bg-slate-100 my-5" />
+                <View className="h-[0.5px] bg-slate-100 my-5" />
 
                 {/* 2. Date Selection */}
-                <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">Select Period</Text>
-                
+                <Text className="text-[10px] text-slate-400 font-black uppercase tracking-[2px] mb-3">Select Period</Text>
+
                 {([
                   { key: 'all', label: 'All Dates', icon: 'infinite-outline', desc: '' },
                   { key: 'today', label: 'Today', icon: 'today-outline', desc: dateBounds.todayLabel },
@@ -678,7 +689,7 @@ export default function OwnerAnalyticsScreen() {
                         ) : null}
                       </View>
                     </View>
-                    {dateFilter === period.key && <Ionicons name="checkmark-circle" size={20} color="#000000" />}
+                    {dateFilter === period.key && <Ionicons name="checkmark" size={20} color="#000000" />}
                   </Pressable>
                 ))}
 
@@ -710,15 +721,15 @@ export default function OwnerAnalyticsScreen() {
               </ScrollView>
 
               <Pressable
-                onPress={() => setShowFilter(false)} 
-                className="bg-slate-900 py-4 rounded-full items-center justify-center active:bg-slate-800"
+                onPress={() => setShowFilter(false)}
+                className="bg-black py-4 rounded-full items-center justify-center active:bg-slate-950"
               >
-                <Text className="text-white font-extrabold text-sm uppercase tracking-widest">Apply & Close</Text>
+                <Text className="text-white font-black text-sm uppercase tracking-widest">Apply & Close</Text>
               </Pressable>
             </View>
           </Pressable>
         </Modal>
       </SafeAreaView>
-    </View>
+    </PremiumBackground>
   );
 }

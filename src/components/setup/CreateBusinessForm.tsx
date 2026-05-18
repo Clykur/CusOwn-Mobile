@@ -191,40 +191,40 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
   return (
     <View className="space-y-6">
       {error && (
-        <View className="bg-neutral-800/80 border border-neutral-700 rounded-lg p-4 mb-4">
-          <Text className="text-neutral-100 text-sm font-medium">{error}</Text>
+        <View className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
+          <Text className="text-red-700 text-sm font-medium">{error}</Text>
         </View>
       )}
 
       {/* Core Details */}
-      <View>
-        <Text className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-3">Business Name *</Text>
+      <View className="mb-4">
+        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">Business Name *</Text>
         <TextInput 
-          className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-medium"
+          className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="The Signature Salon"
-          placeholderTextColor="rgba(255,255,255,0.2)"
+          placeholderTextColor="#94A3B8"
           value={formData.salon_name}
           onChangeText={(val) => handleChange('salon_name', val)}
         />
       </View>
 
-      <View>
-        <Text className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-3">Owner Name *</Text>
+      <View className="mb-4">
+        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">Owner Name *</Text>
         <TextInput 
-          className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-medium"
+          className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="John Doe"
-          placeholderTextColor="rgba(255,255,255,0.2)"
+          placeholderTextColor="#94A3B8"
           value={formData.owner_name}
           onChangeText={(val) => handleChange('owner_name', val)}
         />
       </View>
 
-      <View>
-        <Text className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-3">WhatsApp Number *</Text>
+      <View className="mb-4">
+        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">WhatsApp Number *</Text>
         <TextInput 
-          className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-medium"
+          className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="10-digit number"
-          placeholderTextColor="rgba(255,255,255,0.2)"
+          placeholderTextColor="#94A3B8"
           value={formData.whatsapp_number}
           onChangeText={(val) => handleChange('whatsapp_number', val.replace(/\D/g, '').slice(0, 10))}
           keyboardType="phone-pad"
@@ -233,19 +233,19 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       </View>
 
       {/* Category Selection */}
-      <View>
-        <Text className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-4">Business Type *</Text>
+      <View className="mb-5">
+        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-3">Business Type *</Text>
         {fetchingCategories ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color="#000000" />
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
             {categories.map(cat => (
               <TouchableOpacity 
                 key={cat.value}
                 onPress={() => handleChange('category', cat.value)}
-                className={`px-6 py-3 rounded-full mr-3 border ${formData.category === cat.value ? 'bg-white border-white' : 'bg-transparent border-white/20'}`}
+                className={`px-5 py-3 rounded-full mr-3 border ${formData.category === cat.value ? 'bg-black border-black' : 'bg-white border-slate-200/80'}`}
               >
-                <Text className={`font-semibold ${formData.category === cat.value ? 'text-black' : 'text-white'}`}>
+                <Text className={`font-black text-xs uppercase tracking-wider ${formData.category === cat.value ? 'text-white' : 'text-slate-700'}`}>
                   {cat.label}
                 </Text>
               </TouchableOpacity>
@@ -255,41 +255,41 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       </View>
 
       {/* Operational Details */}
-      <View>
-        <Text className="text-white text-sm font-bold uppercase tracking-widest mb-6 border-b border-white/10 pb-2">Operational Details</Text>
-        <View className="flex-row gap-4 mb-6">
+      <View className="mb-4">
+        <Text className="text-slate-900 text-sm font-black uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Operational Details</Text>
+        <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
-            <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Open Time</Text>
+            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">Open Time</Text>
             <TextInput 
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-medium"
+              className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               value={formData.opening_time}
               onChangeText={(val) => handleChange('opening_time', val)}
               placeholder="10:00"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="#94A3B8"
             />
           </View>
           <View className="flex-1">
-            <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Close Time</Text>
+            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">Close Time</Text>
             <TextInput 
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-medium"
+              className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               value={formData.closing_time}
               onChangeText={(val) => handleChange('closing_time', val)}
               placeholder="21:00"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="#94A3B8"
             />
           </View>
         </View>
 
-        <View className="mb-6">
-          <Text className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-4">Slot Duration *</Text>
+        <View className="mb-5 mt-2">
+          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-3">Slot Duration *</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
             {SLOT_DURATIONS.map(dur => (
               <TouchableOpacity 
                 key={dur}
                 onPress={() => handleChange('slot_duration', dur)}
-                className={`px-5 py-2 rounded-full mr-3 border ${formData.slot_duration === dur ? 'bg-white border-white' : 'bg-transparent border-white/20'}`}
+                className={`px-5 py-3 rounded-full mr-3 border ${formData.slot_duration === dur ? 'bg-black border-black' : 'bg-white border-slate-200/80'}`}
               >
-                <Text className={`font-semibold ${formData.slot_duration === dur ? 'text-black' : 'text-white'}`}>
+                <Text className={`font-black text-xs uppercase tracking-wider ${formData.slot_duration === dur ? 'text-white' : 'text-slate-700'}`}>
                   {dur} min
                 </Text>
               </TouchableOpacity>
@@ -297,12 +297,12 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
           </ScrollView>
         </View>
 
-        <View className="mb-6">
-          <Text className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-3">Concurrent Bookings</Text>
+        <View className="mb-4">
+          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">Concurrent Bookings</Text>
           <TextInput 
-            className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-medium"
+            className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="1"
-            placeholderTextColor="rgba(255,255,255,0.2)"
+            placeholderTextColor="#94A3B8"
             value={formData.concurrent_booking_capacity}
             onChangeText={(val) => handleChange('concurrent_booking_capacity', val)}
             keyboardType="number-pad"
@@ -311,11 +311,11 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       </View>
 
       {/* Services Section */}
-      <View>
-        <View className="flex-row justify-between items-center mb-6 border-b border-white/10 pb-2">
-          <Text className="text-white text-sm font-bold uppercase tracking-widest">Services</Text>
+      <View className="mb-4">
+        <View className="flex-row justify-between items-center mb-4 border-b border-slate-100 pb-2">
+          <Text className="text-slate-900 text-sm font-black uppercase tracking-wider">Services</Text>
           <TouchableOpacity onPress={handleAddService}>
-            <Text className="text-white text-xs font-bold uppercase">+ Add Service</Text>
+            <Text className="text-black text-[10px] font-black uppercase tracking-[2px]">+ Add Service</Text>
           </TouchableOpacity>
         </View>
         
@@ -336,20 +336,20 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       </View>
 
       {/* Location Section */}
-      <View>
-        <View className="flex-row justify-between items-center mb-6 border-b border-white/10 pb-2">
-          <Text className="text-white text-sm font-bold uppercase tracking-widest">Location Details</Text>
+      <View className="mb-4">
+        <View className="flex-row justify-between items-center mb-4 border-b border-slate-100 pb-2">
+          <Text className="text-slate-900 text-sm font-black uppercase tracking-wider">Location Details</Text>
           <TouchableOpacity onPress={handleUseLocation} disabled={loading}>
-            <Text className="text-white text-xs font-bold uppercase">Use My Location</Text>
+            <Text className="text-black text-[10px] font-black uppercase tracking-[2px]">Use My Location</Text>
           </TouchableOpacity>
         </View>
 
         <View className="mb-4">
-          <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Address *</Text>
+          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">Address *</Text>
           <TextInput 
-            className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-medium"
+            className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="Street address, building"
-            placeholderTextColor="rgba(255,255,255,0.2)"
+            placeholderTextColor="#94A3B8"
             value={formData.address}
             onChangeText={(val) => handleChange('address', val)}
             multiline
@@ -358,21 +358,21 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
 
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
-            <Text className="text-slate-400 text-xs font-bold uppercase mb-2">City *</Text>
+            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">City *</Text>
             <TextInput 
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-medium"
+              className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               placeholder="City"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="#94A3B8"
               value={formData.city}
               onChangeText={(val) => handleChange('city', val)}
             />
           </View>
           <View className="flex-1">
-            <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Locality *</Text>
+            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">Locality *</Text>
             <TextInput 
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-medium"
+              className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               placeholder="Locality"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="#94A3B8"
               value={formData.location}
               onChangeText={(val) => handleChange('location', val)}
             />
@@ -381,21 +381,21 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
 
         <View className="flex-row gap-4">
           <View className="flex-1">
-            <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Sub-Area</Text>
+            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">Sub-Area</Text>
             <TextInput 
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-medium"
+              className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               placeholder="Optional"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="#94A3B8"
               value={formData.area}
               onChangeText={(val) => handleChange('area', val)}
             />
           </View>
           <View className="flex-1">
-            <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Pincode</Text>
+            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">Pincode</Text>
             <TextInput 
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-medium"
+              className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               placeholder="Optional"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="#94A3B8"
               value={formData.pincode}
               onChangeText={(val) => handleChange('pincode', val)}
               keyboardType="number-pad"

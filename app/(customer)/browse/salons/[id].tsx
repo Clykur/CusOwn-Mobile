@@ -11,6 +11,7 @@ import { useBusinessDetail } from '@/hooks/useBusinesses';
 import { useBookingStore } from '@/store/booking.store';
 import { Service } from '@/types/business.types';
 import { apiService } from '@/services/api.service';
+import { getShopStatus } from '@/utils/time';
 
 export default function SalonDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -124,41 +125,8 @@ export default function SalonDetailsScreen() {
     }
   };
 
-  const isShopCurrentlyOpen = () => {
-    const toMinutes = (t: any) => {
-      if (!t || typeof t !== 'string') return null;
-      const s = t.trim().toUpperCase();
-      const match = s.match(/^([0-9]{1,2}):([0-9]{2})\s*(AM|PM)?$/);
-      if (!match) return null;
-      let hours = Number(match[1]);
-      const minutes = Number(match[2]);
-      const ampm = match[3];
-
-      if (ampm) {
-        if (ampm === 'PM' && hours !== 12) hours += 12;
-        if (ampm === 'AM' && hours === 12) hours = 0;
-      }
-
-      if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
-      return hours * 60 + minutes;
-    };
-
-    const start = toMinutes(business.opening_time);
-    const end = toMinutes(business.closing_time);
-    if (start == null || end == null) return true;
-
-    const now = new Date();
-    const current = now.getHours() * 60 + now.getMinutes();
-
-    // handle overnight shifts
-    if (end < start) {
-      return current >= start || current < end;
-    }
-
-    return current >= start && current < end;
-  };
-
-  const shopIsOpen = isShopCurrentlyOpen();
+  const shopStatus = getShopStatus(business?.opening_time, business?.closing_time);
+  const shopIsOpen = shopStatus.isOpen;
 
   // Normalise reviews. Backend may return either:
   // - customer: { full_name } and/or created_at
@@ -210,7 +178,23 @@ export default function SalonDetailsScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 160 }}>
         {/* Hero Header */}
         <View className="h-[360px] w-full relative">
-          <Avatar url={business.image_url} name={business.salon_name} size={400} className="w-full h-full object-cover" />
+          {business.owner_image ? (
+            <Image
+              source={{ uri: business.owner_image }}
+              className="w-full h-full object-cover"
+            />
+          ) : business.image_url ? (
+            <Image
+              source={{ uri: business.image_url }}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Avatar
+              name={business.salon_name}
+              size={400}
+              className="w-full h-full object-cover"
+            />
+          )}
           <View className="absolute inset-0 bg-black/30" />
 
           <Pressable
@@ -258,10 +242,10 @@ export default function SalonDetailsScreen() {
                 </Text>
                 <View
                   className="w-1.5 h-1.5 rounded-full ml-auto mr-1"
-                  style={{ backgroundColor: shopIsOpen ? '#22C55E' : '#94A3B8' }}
+                  style={{ backgroundColor: shopIsOpen ? '#22C55E' : '#EF4444' }}
                 />
-                <Text className={shopIsOpen ? 'text-green-600 font-bold text-xs' : 'text-slate-400 font-bold text-xs'}>
-                  {shopIsOpen ? 'Open Now' : 'Shop Closed'}
+                <Text className={shopIsOpen ? 'text-green-600 font-bold text-xs' : 'text-rose-500 font-bold text-xs'}>
+                  {shopIsOpen ? 'Open Now' : 'Closed'}
                 </Text>
               </View>
 
@@ -270,11 +254,19 @@ export default function SalonDetailsScreen() {
                 <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Owner Info</Text>
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center">
-                    <View className="w-12 h-12 rounded-full bg-slate-900 items-center justify-center border border-slate-200 shadow-sm mr-3">
-                      <Text className="text-white font-bold text-base">
-                        {business.owner_name ? business.owner_name.charAt(0) : 'O'}
-                      </Text>
-                    </View>
+                    {business.owner_image ? (
+                      <Image
+                        source={{ uri: business.owner_image }}
+                        className="w-12 h-12 rounded-full mr-3 border border-slate-200 shadow-sm"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <View className="w-12 h-12 rounded-full bg-slate-900 items-center justify-center border border-slate-200 shadow-sm mr-3">
+                        <Text className="text-white font-bold text-base">
+                          {business.owner_name ? business.owner_name.charAt(0) : 'O'}
+                        </Text>
+                      </View>
+                    )}
                     <View>
                       <Text className="text-slate-900 font-bold text-base">{business.owner_name || 'Salon Owner'}</Text>
                       <Text className="text-slate-500 text-xs">Verified Business Partner</Text>
@@ -334,7 +326,7 @@ export default function SalonDetailsScreen() {
                   <Pressable
                     key={service.id}
                     onPress={() => handleSelectService(service)}
-                    className={`bg-white border p-5 rounded-3xl flex-row items-center transition-all ${isSelected ? 'border-black bg-slate-50 shadow-sm' : 'border-slate-200'
+                    className={`bg-white border p-5 rounded-3xl flex-row items-center ${isSelected ? 'border-black bg-slate-50 shadow-sm' : 'border-slate-200'
                       }`}
                   >
                     <View className="flex-1 mr-4">
@@ -355,13 +347,16 @@ export default function SalonDetailsScreen() {
                         </Text>
                       </View>
                     </View>
-
-                    <View
-                      className={`w-7 h-7 rounded-full border items-center justify-center ${isSelected ? 'bg-black border-black' : 'border-slate-300 bg-white'
-                        }`}
+                    <Pressable
+                      onPress={() => {
+                        handleBookNow()
+                      }}
+                      className="bg-black px-4 py-2 rounded-xl items-center justify-center"
                     >
-                      {isSelected ? <Ionicons name="checkmark" size={16} color="white" /> : null}
-                    </View>
+                      <Text className="text-white font-bold text-xs">
+                        Book
+                      </Text>
+                    </Pressable>
                   </Pressable>
                 );
               })}
@@ -393,16 +388,19 @@ export default function SalonDetailsScreen() {
                     <Text className="text-slate-400 text-xs">{rev.date}</Text>
                   </View>
                   <View className="flex-row items-center mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Ionicons
-                        key={i}
-                        name={i < Math.round(rev.rating) ? 'star' : 'star-outline'}
-                        size={14}
-                        color="#EAB308"
-                        className="mr-0.5"
-                      />
-                    ))}
-                    <Text className="text-slate-700 font-bold text-xs ml-1.5">
+                    <View className="flex-row items-center">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Ionicons
+                          key={star}
+                          name={star <= Math.round(rev.rating) ? 'star' : 'star-outline'}
+                          size={16}
+                          color="#FACC15"
+                          style={{ marginRight: 2 }}
+                        />
+                      ))}
+                    </View>
+
+                    <Text className="text-amber-500 font-extrabold text-xs ml-2">
                       {Number.isFinite(rev.rating) ? rev.rating.toFixed(1) : '0.0'}
                     </Text>
                   </View>

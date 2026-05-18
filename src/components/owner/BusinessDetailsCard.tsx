@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { GlassCard } from '../ui/GlassCard';
 import { Business } from '@/types/business.types';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,10 +14,10 @@ interface BusinessDetailsCardProps {
 const DetailField = ({ label, value, icon }: { label: string; value: string | number; icon: any }) => (
   <View className="mb-4">
     <View className="flex-row items-center mb-1">
-      <Ionicons name={icon} size={14} color="#FFFFFF" className="mr-2" />
-      <Text className="text-slate-400 text-xs font-bold uppercase tracking-widest">{label}</Text>
+      <Ionicons name={icon} size={14} color="#64748B" className="mr-2" />
+      <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px]">{label}</Text>
     </View>
-    <Text className="text-white text-base font-medium ml-6">{value}</Text>
+    <Text className="text-slate-900 text-base font-semibold ml-6">{value}</Text>
   </View>
 );
 
@@ -28,23 +28,23 @@ export const BusinessDetailsCard: React.FC<BusinessDetailsCardProps> = ({
   deleteLoading,
 }) => {
   return (
-    <GlassCard className="p-6 mb-8">
-      <View className="flex-row justify-between items-center mb-6 border-b border-white/10 pb-4">
-        <Text className="text-white text-xl font-bold">Business Details</Text>
+    <GlassCard className="p-6 mb-8 border-slate-200/80 shadow-sm rounded-luxury">
+      <View className="flex-row justify-between items-center mb-6 border-b border-slate-100 pb-4">
+        <Text className="text-slate-900 text-xl font-black">Business Details</Text>
         <View className="flex-row gap-3">
           {onEdit && (
-            <TouchableOpacity onPress={onEdit} className="bg-white/10 px-4 py-2 rounded-full border border-white/20">
-              <Text className="text-white font-semibold text-xs">Edit</Text>
-            </TouchableOpacity>
+            <Pressable onPress={onEdit} className="bg-black px-4 py-2.5 rounded-full active:bg-slate-950 shadow-sm">
+              <Text className="text-white font-black text-xs uppercase tracking-wider">Edit</Text>
+            </Pressable>
           )}
           {onDelete && (
-            <TouchableOpacity 
+            <Pressable 
               onPress={onDelete} 
               disabled={deleteLoading}
-              className="bg-white/5 px-4 py-2 rounded-full border border-white/10"
+              className="bg-white px-4 py-2.5 rounded-full border border-slate-200/80 active:bg-slate-50 shadow-sm"
             >
-              <Text className="text-white/60 font-semibold text-xs">{deleteLoading ? '...' : 'Delete'}</Text>
-            </TouchableOpacity>
+              <Text className="text-slate-700 font-black text-xs uppercase tracking-wider">{deleteLoading ? '...' : 'Delete'}</Text>
+            </Pressable>
           )}
         </View>
       </View>

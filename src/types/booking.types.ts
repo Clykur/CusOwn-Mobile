@@ -18,6 +18,9 @@ export interface Booking {
   time: string; // HH:mm
   status: BookingStatus;
   price: number;
+  total_price?: number;
+  totalPrice?: number;
+  services?: Service[];
   total_price_cents?: number;
   total_duration_minutes?: number;
   no_show?: boolean;

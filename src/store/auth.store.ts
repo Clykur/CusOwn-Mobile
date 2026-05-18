@@ -12,6 +12,7 @@ interface AuthState {
   user: User | null;
   session: Session | null;
   profile: UserProfile | null;
+  profileImageUrl: string | null;
   role: Role;
   isLoading: boolean;
   setSession: (session: Session | null) => Promise<void>;
@@ -25,6 +26,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   session: null,
   profile: null,
+  profileImageUrl: null,
   role: null,
   isLoading: true,
   setSession: async (session) => {
@@ -33,7 +35,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // 1. If no session, clear and return
     if (!session) {
-      set({ session: null, user: null, profile: null, role: null, isLoading: false });
+      set({ session: null, user: null, profile: null, profileImageUrl: null, role: null, isLoading: false });
       return;
     }
 
@@ -114,10 +116,41 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     }
 
-    set({ session, user, profile, role, isLoading: false });
+    // 6. Resolve signed avatar URL if profile has profile_media_id
+    let profileImageUrl: string | null = null;
+    if (profile?.profile_media_id) {
+      try {
+        const { default: apiClient } = await import('@/lib/api-client');
+        const signedResult = await apiClient.get<any>(`/media/signed-url`, {
+          params: { mediaId: profile.profile_media_id },
+        });
+        profileImageUrl = signedResult?.url ?? null;
+      } catch (err: any) {
+        logger.warn(LogTag.AUTH, `[STORE] Failed to fetch signed URL: ${err.message}`);
+      }
+
+      if (!profileImageUrl) {
+        try {
+          const { data: mediaData } = await supabase
+            .from('media')
+            .select('storage_path, bucket_name')
+            .eq('id', profile.profile_media_id)
+            .single();
+          if (mediaData) {
+            profileImageUrl = supabase.storage
+              .from(mediaData.bucket_name || 'business-media')
+              .getPublicUrl(mediaData.storage_path).data.publicUrl;
+          }
+        } catch (fbErr: any) {
+          logger.warn(LogTag.AUTH, `[STORE] Direct public URL fallback failed: ${fbErr.message}`);
+        }
+      }
+    }
+
+    set({ session, user, profile, profileImageUrl, role, isLoading: false });
   },
   clearSession: async () => {
-    set({ session: null, user: null, profile: null, role: null, isLoading: false });
+    set({ session: null, user: null, profile: null, profileImageUrl: null, role: null, isLoading: false });
   },
   restoreSession: async () => {
     set({ isLoading: false });
@@ -138,7 +171,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (data) {
         const role: Role = (data.user_type === 'owner' || data.user_type === 'both') ? 'Owner' : 'Customer';
-        set({ profile: data, role });
+        
+        let profileImageUrl: string | null = null;
+        if (data.profile_media_id) {
+          try {
+            const { default: apiClient } = await import('@/lib/api-client');
+            const signedResult = await apiClient.get<any>(`/media/signed-url`, {
+              params: { mediaId: data.profile_media_id },
+            });
+            profileImageUrl = signedResult?.url ?? null;
+          } catch (err: any) {
+            logger.warn(LogTag.AUTH, `[STORE] Failed to fetch signed URL on refresh: ${err.message}`);
+          }
+
+          if (!profileImageUrl) {
+            try {
+              const { data: mediaData } = await supabase
+                .from('media')
+                .select('storage_path, bucket_name')
+                .eq('id', data.profile_media_id)
+                .single();
+              if (mediaData) {
+                profileImageUrl = supabase.storage
+                  .from(mediaData.bucket_name || 'business-media')
+                  .getPublicUrl(mediaData.storage_path).data.publicUrl;
+              }
+            } catch (fbErr: any) {
+              logger.warn(LogTag.AUTH, `[STORE] Direct public URL fallback failed on refresh: ${fbErr.message}`);
+            }
+          }
+        }
+        
+        set({ profile: data, role, profileImageUrl });
       }
     } catch (err) {
       logger.error(LogTag.AUTH, '[STORE] Error refreshing profile:', err);

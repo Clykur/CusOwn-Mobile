@@ -16,6 +16,7 @@ export interface Service {
 }
 
 export interface Business {
+  cover_photo_url: string | undefined;
   created_at: string | number | Date;
   id: string;
   owner_user_id: string;
@@ -40,6 +41,7 @@ export interface Business {
   review_count: number;
   is_featured?: boolean;
   services?: Service[];
+  owner_image?: string;
 }
 
 export interface BusinessStats {

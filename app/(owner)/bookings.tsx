@@ -22,8 +22,11 @@ import { useOwnerBusinesses } from '@/hooks/useOwner';
 import { Booking } from '@/types/booking.types';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { BookingCard } from '@/components/owner/BookingCard';
+import { OwnerBookingDetailModal } from '@/components/owner/OwnerBookingDetailModal';
 
 type DateFilterType = 'all' | 'today' | 'week' | 'month' | 'custom';
 
@@ -35,6 +38,8 @@ export default function OwnerBookingsScreen() {
   const [endDate, setEndDate] = useState<string>(''); // YYYY-MM-DD
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>('all');
   const [showFilter, setShowFilter] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const { data: bookings, isLoading, isError, refetch } = useBookings('Owner');
   const { data: businessesData } = useOwnerBusinesses();
@@ -211,6 +216,10 @@ export default function OwnerBookingsScreen() {
       <BookingCard
         item={item}
         index={index}
+        onPress={(booking) => {
+          setSelectedBooking(booking);
+          setShowDetailModal(true);
+        }}
         onAccept={handleAccept}
         onReject={handleReject}
         onUndoAccept={handleUndoAccept}
@@ -221,83 +230,77 @@ export default function OwnerBookingsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['top']}>
-        {/* Hub Header & Status Filters */}
-        <View className="px-luxury pt-6 pb-5 bg-white border-b border-slate-200">
-          <View className="flex-row justify-between items-end mb-5">
-            <View className="flex-1 mr-4">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">Bookings</Text>
-              <Text className="text-slate-900 text-3xl font-extrabold tracking-tight" numberOfLines={1}>
-                Bookings
-              </Text>
-              <Text className="text-slate-500 text-xs mt-1" numberOfLines={1}>
-                {filterSummary}
-              </Text>
-            </View>
-            <Pressable
-              onPress={() => setShowFilter(true)}
-              className="bg-slate-50 p-3 rounded-2xl border border-slate-200 active:bg-slate-100"
-            >
-              <Ionicons name="funnel-outline" size={20} color="#334155" />
-            </Pressable>
+        {/* Cinematic Header & Filter Action */}
+        <View className="px-luxury pt-5 pb-2 flex-row justify-between items-center">
+          <View className="flex-1 mr-4">
+            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">Bookings</Text>
+            <Text className="text-slate-900 text-3xl font-black tracking-tight">Reservations</Text>
+            <Text className="text-slate-500 text-xs mt-1" numberOfLines={1}>
+              {filterSummary}
+            </Text>
           </View>
+          <Pressable
+            onPress={() => setShowFilter(true)}
+            className="bg-white/80 p-3 rounded-2xl border border-slate-200/80 active:bg-white shadow-sm"
+          >
+            <Ionicons name="funnel-outline" size={20} color="#000000" />
+          </Pressable>
+        </View>
 
-          {/* Status Filters */}
-          <View className="flex-row gap-x-2">
-            {(['all', 'pending', 'confirmed', 'rejected'] as const).map((tab) => (
-              <Pressable
-                key={tab}
-                className={`flex-1 py-2.5 items-center rounded-full border ${filter === tab
-                  ? 'bg-slate-900 border-slate-900'
-                  : 'bg-slate-50 border-slate-200'
-                  }`}
-                onPress={() => setFilter(tab)}
-              >
-                <Text className={`text-[10px] font-black uppercase tracking-widest ${filter === tab ? 'text-white' : 'text-slate-600'
-                  }`}>
-                  {tab}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+        {/* Custom Premium Header Tab Bar */}
+        <View className="flex-row px-luxury pt-3 pb-1 border-b border-slate-100 bg-white/95 mt-2">
+          {(['all', 'pending', 'confirmed', 'rejected'] as const).map((tab) => (
+            <Pressable
+              key={tab}
+              className={`flex-1 py-3 items-center border-b-2 ${filter === tab ? 'border-accent-premium' : 'border-transparent'
+                }`}
+              onPress={() => setFilter(tab)}
+            >
+              <Text className={`text-xs font-black uppercase tracking-wider ${filter === tab ? 'text-accent-premium' : 'text-slate-400'
+                }`}>
+                {tab}
+              </Text>
+            </Pressable>
+          ))}
         </View>
 
         {isLoading ? (
           <View className="flex-1 px-luxury pt-6">
-            <LoadingSkeleton height={130} borderRadius={28} className="mb-4" />
-            <LoadingSkeleton height={130} borderRadius={28} className="mb-4" />
-            <LoadingSkeleton height={130} borderRadius={28} />
+            <LoadingSkeleton height={140} borderRadius={20} className="mb-4" />
+            <LoadingSkeleton height={140} borderRadius={20} className="mb-4" />
+            <LoadingSkeleton height={140} borderRadius={20} />
           </View>
         ) : isError ? (
           <View className="flex-1 justify-center items-center px-luxury">
-            <View className="bg-white border border-slate-200 items-center w-full p-8 rounded-2xl">
+            <GlassCard className="items-center w-full bg-white border border-slate-200 p-6">
               <Ionicons name="alert-circle-outline" size={48} color="#000000" />
-              <Text className="text-slate-900 text-lg font-extrabold mt-4 text-center">
-                Failed to load hub reservations
+              <Text className="text-slate-900 text-lg font-bold mt-4 text-center">
+                Failed to load your reservations
               </Text>
               <Pressable
                 onPress={() => refetch()}
-                className="mt-8 bg-slate-900 border border-slate-900 px-10 py-4 rounded-full active:bg-slate-800"
+                className="mt-6 bg-black border border-black px-8 py-3 rounded-full"
               >
                 <Text className="text-white font-bold uppercase tracking-widest text-xs">Retry Connection</Text>
               </Pressable>
-            </View>
+            </GlassCard>
           </View>
         ) : (
           <FlatList
             data={filteredBookings}
             renderItem={renderBookingCard}
             keyExtractor={(item) => item.id}
-            contentContainerClassName="px-luxury pt-6 pb-12"
+            contentContainerClassName="px-luxury pt-6 pb-24"
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <AnimatedSection direction="up" className="items-center justify-center pt-24">
-                <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center mb-6">
-                  <Ionicons name="calendar-clear-outline" size={40} color="#94A3B8" />
+                <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center mb-6 border border-slate-200">
+                  <Ionicons name="calendar-clear-outline" size={36} color="#64748B" />
                 </View>
-                <Text className="text-slate-900 text-xl font-extrabold mb-2">No Results Found</Text>
-                <Text className="text-slate-500 text-center px-12 text-sm font-medium">
+                <Text className="text-slate-900 text-xl font-black uppercase tracking-tight mb-2">No Bookings Found</Text>
+                <Text className="text-slate-500 text-center px-8 text-sm leading-relaxed">
                   No incoming entries matching the selected status, hub, and date filters.
                 </Text>
               </AnimatedSection>
@@ -314,18 +317,18 @@ export default function OwnerBookingsScreen() {
         >
           <Pressable
             className="flex-1 justify-end"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)' }}
+            style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)' }}
             onPress={() => setShowFilter(false)}
           >
-            <View className="bg-white rounded-t-[40px] p-6 border-t border-slate-200 max-h-[90%]">
+            <View className="bg-white rounded-t-[40px] p-6 border-t border-slate-200 max-h-[90%] shadow-lg">
               <View className="items-center mb-6">
                 <View className="w-12 h-1.5 bg-slate-200 rounded-full mb-6" />
-                <Text className="text-slate-900 text-xl font-extrabold uppercase tracking-wider">Configure Filters</Text>
+                <Text className="text-slate-900 text-xl font-black uppercase tracking-wider">Configure Filters</Text>
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
                 {/* 1. Hub Selection */}
-                <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">Select Hub</Text>
+                <Text className="text-[10px] text-slate-400 font-black uppercase tracking-[2px] mb-3">Select Hub</Text>
 
                 <Pressable
                   onPress={() => setSelectedBusinessId('all')}
@@ -337,7 +340,7 @@ export default function OwnerBookingsScreen() {
                       All Hubs (Portfolio)
                     </Text>
                   </View>
-                  {selectedBusinessId === 'all' && <Ionicons name="checkmark-circle" size={20} color="#000000" />}
+                  {selectedBusinessId === 'all' && <Ionicons name="checkmark" size={20} color="#000000" />}
                 </Pressable>
 
                 {businessesData?.map((biz: any) => (
@@ -352,14 +355,14 @@ export default function OwnerBookingsScreen() {
                         {biz.salon_name}
                       </Text>
                     </View>
-                    {selectedBusinessId === biz.id && <Ionicons name="checkmark-circle" size={20} color="#000000" />}
+                    {selectedBusinessId === biz.id && <Ionicons name="checkmark" size={20} color="#000000" />}
                   </Pressable>
                 ))}
 
-                <View className="h-[1px] bg-slate-100 my-5" />
+                <View className="h-[0.5px] bg-slate-100 my-5" />
 
                 {/* 2. Date Selection */}
-                <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">Select Period</Text>
+                <Text className="text-[10px] text-slate-400 font-black uppercase tracking-[2px] mb-3">Select Period</Text>
 
                 {([
                   { key: 'all', label: 'All Dates', icon: 'infinite-outline', desc: '' },
@@ -386,7 +389,7 @@ export default function OwnerBookingsScreen() {
                         ) : null}
                       </View>
                     </View>
-                    {dateFilter === period.key && <Ionicons name="checkmark-circle" size={20} color="#000000" />}
+                    {dateFilter === period.key && <Ionicons name="checkmark" size={20} color="#000000" />}
                   </Pressable>
                 ))}
 
@@ -419,14 +422,28 @@ export default function OwnerBookingsScreen() {
 
               <Pressable
                 onPress={() => setShowFilter(false)}
-                className="bg-slate-900 py-4 rounded-full items-center justify-center active:bg-slate-800"
+                className="bg-black py-4 rounded-full items-center justify-center active:bg-slate-950"
               >
-                <Text className="text-white font-extrabold text-sm uppercase tracking-widest">Apply & Close</Text>
+                <Text className="text-white font-black text-sm uppercase tracking-widest">Apply & Close</Text>
               </Pressable>
             </View>
           </Pressable>
         </Modal>
+
+        <OwnerBookingDetailModal
+          visible={showDetailModal}
+          booking={selectedBooking}
+          onClose={() => {
+            setShowDetailModal(false);
+            setSelectedBooking(null);
+          }}
+          onAccept={handleAccept}
+          onReject={handleReject}
+          onUndoAccept={handleUndoAccept}
+          onUndoReject={handleUndoReject}
+          onNoShow={handleNoShow}
+        />
       </SafeAreaView>
-    </View>
+    </PremiumBackground>
   );
 }

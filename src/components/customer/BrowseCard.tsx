@@ -11,6 +11,8 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Business } from '@/types/business.types';
 import { Avatar } from '../Avatar';
 
+import { getShopStatus } from '@/utils/time';
+
 interface Props {
     item: Business;
     index?: number;
@@ -20,6 +22,8 @@ export const BrowseCard = ({
     item,
     index = 0,
 }: Props) => {
+    const status = getShopStatus(item.opening_time, item.closing_time);
+
     return (
         <AnimatedSection
             delay={index * 50}
@@ -35,13 +39,34 @@ export const BrowseCard = ({
             >
                 <View className="flex-row bg-white border border-slate-200 rounded-[28px] p-4 shadow-sm">
 
-                    {/* Left Image */}
-                    <Avatar
-                        url={item.image_url}
-                        name={item.salon_name}
-                        size={80}
-                        className="w-[120px] h-[120px] rounded-full"
-                    />
+                    {/* Left Image with Owner Profile Overlay */}
+                    <View className="relative">
+                        {item.owner_image ? (
+                            <Image
+                                source={{ uri: item.owner_image }}
+                                className="w-[80px] h-[80px] rounded-full"
+                                style={{ objectFit: 'cover' }}
+                            />
+                        ) : item.image_url ? (
+                            <Image
+                                source={{ uri: item.image_url }}
+                                className="w-[80px] h-[80px] rounded-full"
+                                style={{ objectFit: 'cover' }}
+                            />
+                        ) : (
+                            <Avatar
+                                name={item.salon_name}
+                                size={80}
+                                className="w-[80px] h-[80px] rounded-full"
+                            />
+                        )}
+                        {item.owner_image ? (
+                            <Image
+                                source={{ uri: item.owner_image }}
+                                className="absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white shadow-md"
+                            />
+                        ) : null}
+                    </View>
 
 
                     {/* Right Content */}
@@ -86,8 +111,8 @@ export const BrowseCard = ({
 
                             <View className="w-1 h-1 rounded-full bg-slate-300 mx-2" />
 
-                            <Text className="text-slate-500 text-[11px] font-bold uppercase tracking-wide">
-                                Open Now
+                            <Text className={`${status.isOpen ? 'text-green-600' : 'text-rose-500'} text-[11px] font-bold uppercase tracking-wide`}>
+                                {status.isOpen ? 'Open Now' : 'Closed'}
                             </Text>
 
                         </View>

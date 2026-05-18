@@ -22,7 +22,7 @@ export default function EditBusinessScreen() {
     return (
       <PremiumBackground>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator color="#FFFFFF" size="large" />
+          <ActivityIndicator color="#000000" size="large" />
         </View>
       </PremiumBackground>
     );
@@ -32,8 +32,8 @@ export default function EditBusinessScreen() {
     return (
       <PremiumBackground>
         <View className="flex-1 justify-center items-center px-10">
-          <Text className="text-white text-xl font-bold mb-4 text-center">Business Not Found</Text>
-          <Text className="text-slate-400 text-center mb-8">We couldn't locate the hub details you're trying to edit.</Text>
+          <Text className="text-slate-900 text-xl font-black mb-4 text-center">Business Not Found</Text>
+          <Text className="text-slate-500 text-center mb-8 font-medium">We couldn't locate the hub details you're trying to edit.</Text>
           <EditBusinessForm
             business={{} as any}
             onCancel={() => router.back()}
@@ -56,17 +56,14 @@ export default function EditBusinessScreen() {
             showsVerticalScrollIndicator={false}
           >
             <AnimatedSection direction="down" className="mb-8">
-              <Text className="text-accent-premium text-sm font-bold tracking-[6px] uppercase mb-4">
-                Refinement
-              </Text>
-              <Text className="text-black text-4xl font-bold tracking-tighter leading-[44px]">
-                Edit Your{"\n"}
-                <Text className="text-accent-premium">Hub</Text> Profile.
+              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">Refinement</Text>
+              <Text className="text-slate-900 text-3xl font-black tracking-tight">
+                Edit Hub Profile
               </Text>
             </AnimatedSection>
 
             <AnimatedSection delay={200}>
-              <GlassCard className="p-6">
+              <GlassCard className="p-6 border-slate-200/80 shadow-sm rounded-luxury">
                 <EditBusinessForm
                   business={business}
                   onSuccess={handleSuccess}

@@ -82,9 +82,8 @@ export const useProfileImage = () => {
       logger.info(LogTag.API, `[ProfileImage] Got mediaId: ${mediaId}`);
 
       // 5. Fetch the signed URL (same as web uses for display)
-      const signedResult = await apiClient.get<any>(`/media/signed-url`, {
-        params: { mediaId },
-      });
+      const { apiService } = await import('@/services/api.service');
+      const signedResult = await apiService.getSignedUrl(mediaId);
 
       const signedUrl: string | null = signedResult?.url ?? null;
 

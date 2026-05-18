@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
+import dayjs from 'dayjs';
 import { useAuthStore } from '@/store/auth.store';
 import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
 import { useBookings } from '@/hooks/useBookings';
@@ -22,7 +23,7 @@ import { BusinessCard } from '@/components/customer/BusinessCard';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CustomerHomeScreen() {
-  const { user } = useAuthStore();
+  const { user, profileImageUrl } = useAuthStore();
   const { data: businesses, isLoading, isError, refetch } = useBusinesses();
   const { data: categories } = useCategories();
   const { data: bookings, isLoading: bookingsLoading, refetch: refetchBookings } = useBookings('Customer');
@@ -35,9 +36,48 @@ export default function CustomerHomeScreen() {
     }, [refetchBookings, refetch])
   );
 
-  const totalCount = bookings?.length || 0;
-  const upcomingCount = bookings?.filter((b: any) => b.status === 'pending' || b.status === 'confirmed').length || 0;
-  const completedCount = bookings?.filter((b: any) => b.status === 'completed').length || 0;
+  // Compute dynamic counts based on the same normalized booking status logic as bookings.tsx
+  const normalizedBookings = useMemo(() => {
+    if (!bookings) return [];
+    const now = dayjs();
+    return bookings.map((b: any) => {
+      let status = (b.status || 'pending').toLowerCase();
+      const bookingDateTime = dayjs(`${b.date} ${b.time}`);
+      const bookingEndTime = bookingDateTime.add(b.duration || 60, 'minutes');
+
+      // Auto-categorize based on time
+      if (now.isAfter(bookingEndTime)) {
+        if (status === 'confirmed') {
+          status = 'completed';
+        } else if (status === 'pending') {
+          status = 'cancelled';
+        }
+      }
+
+      // Check for expired confirmed bookings
+      if (status === 'confirmed') {
+        if (bookingEndTime.isBefore(now)) {
+          status = 'completed';
+        }
+      }
+
+      return {
+        ...b,
+        normalizedStatus: status,
+      };
+    });
+  }, [bookings]);
+
+  const totalCount = normalizedBookings.length;
+  const upcomingCount = normalizedBookings.filter(
+    (b: any) => b.normalizedStatus === 'pending' || b.normalizedStatus === 'confirmed'
+  ).length;
+  const completedCount = normalizedBookings.filter(
+    (b: any) =>
+      b.normalizedStatus === 'completed' ||
+      b.normalizedStatus === 'cancelled' ||
+      b.normalizedStatus === 'rejected'
+  ).length;
 
   const handleBusinessPress = (business: Business) => {
     router.push(`/(customer)/browse/salons/${business.id}`);
@@ -74,7 +114,12 @@ export default function CustomerHomeScreen() {
               </Text>
             </View>
             <Pressable onPress={() => router.push('/(customer)/profile')}>
-              <Avatar name={user?.user_metadata?.full_name || 'User'} size={50} className="border-2 border-accent-premium/30" />
+              <Avatar
+                url={profileImageUrl}
+                name={user?.user_metadata?.full_name || 'User'}
+                size={50}
+                className="border-2 border-accent-premium/30"
+              />
             </Pressable>
           </AnimatedSection>
 

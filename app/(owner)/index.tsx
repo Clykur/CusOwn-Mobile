@@ -33,6 +33,7 @@ import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Ionicons } from '@expo/vector-icons';
 import { BookingCard } from '@/components/owner/BookingCard';
 import { PremiumButton } from '@/components/ui/PremiumButton';
+import { OwnerBookingDetailModal } from '@/components/owner/OwnerBookingDetailModal';
 
 type StatusFilter = 'all' | 'pending' | 'confirmed' | 'rejected' | 'cancelled';
 
@@ -43,6 +44,8 @@ export default function OwnerDashboardScreen() {
   const [fromDate, setFromDate] = useState<string | null>(null);
   const [toDate, setToDate] = useState<string | null>(null);
   const [businessImages, setBusinessImages] = useState<Record<string, string>>({});
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const {
     data: dashboard,
     isLoading: bookingsLoading,
@@ -55,10 +58,6 @@ export default function OwnerDashboardScreen() {
   const { data: businesses } = useOwnerBusinesses();
   useEffect(() => {
     const loadBusinessImages = async () => {
-      console.log(
-        'BUSINESSES FULL:',
-        JSON.stringify(businesses, null, 2)
-      );
 
       if (!businesses?.length) return;
 
@@ -66,6 +65,14 @@ export default function OwnerDashboardScreen() {
 
       await Promise.all(
         businesses.map(async (biz) => {
+          if (biz.owner_image) {
+            imageMap[biz.id] = biz.owner_image;
+            return;
+          }
+          if (biz.image_url) {
+            imageMap[biz.id] = biz.image_url;
+            return;
+          }
           try {
             const businessAny = biz as any;
 
@@ -89,7 +96,8 @@ export default function OwnerDashboardScreen() {
               }
             }
           } catch (e) {
-            console.log('Failed loading business image');
+            const { logger, LogTag } = require('@/utils/logger');
+            logger.error(LogTag.API, 'Failed loading business image');
           }
         })
       );
@@ -189,8 +197,6 @@ export default function OwnerDashboardScreen() {
     item: Booking;
     index: number;
   }) => {
-    console.log('BOOKING BUSINESS ID:', item.business_id);
-    console.log('IMAGE:', businessImages[item.business_id]);
     return (
       <BookingCard
         item={item}
@@ -199,7 +205,12 @@ export default function OwnerDashboardScreen() {
           businessImages[
           item.business?.id || item.business_id
           ]
-        } onAccept={handleAccept}
+        }
+        onPress={(booking) => {
+          setSelectedBooking(booking);
+          setShowDetailModal(true);
+        }}
+        onAccept={handleAccept}
         onReject={handleReject}
         onUndoAccept={handleUndoAccept}
         onUndoReject={handleUndoReject}
@@ -223,19 +234,19 @@ export default function OwnerDashboardScreen() {
           {/* Dashboard Header */}
           <AnimatedSection direction="down" className="px-luxury pt-4 pb-6">
             <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">Welcome back</Text>
-            <Text className="text-slate-900 text-3xl font-bold tracking-tight">Dashboard</Text>
+            <Text className="text-slate-900 text-3xl font-black tracking-tight">Dashboard</Text>
           </AnimatedSection>
 
           {/* Search & Filters */}
           <AnimatedSection delay={100} direction="up" className="px-luxury mb-8">
-            <View className="flex-row items-center bg-white border border-slate-200 rounded-2xl px-4 py-3 mb-4 shadow-sm">
+            <View className="flex-row items-center bg-white/80 border border-slate-200/80 rounded-2xl px-4 py-3.5 mb-4 shadow-sm">
               <Ionicons name="search-outline" size={20} color="#94A3B8" />
               <TextInput
                 placeholder="Search clients or services..."
                 placeholderTextColor="#94A3B8"
                 value={searchTerm}
                 onChangeText={setSearchTerm}
-                className="flex-1 ml-3 text-slate-900 text-sm"
+                className="flex-1 ml-3 text-slate-900 text-sm font-semibold"
               />
               {searchTerm.length > 0 && (
                 <Pressable onPress={() => setSearchTerm('')}>
@@ -253,13 +264,13 @@ export default function OwnerDashboardScreen() {
               >
                 <Pressable
                   onPress={() => setSelectedBusinessId(null)}
-                  className={`px-4 py-2 rounded-xl border ${selectedBusinessId === null
+                  className={`px-4 py-2.5 rounded-xl border ${selectedBusinessId === null
                     ? 'bg-black border-black'
-                    : 'bg-white border-slate-200'
+                    : 'bg-white/80 border-slate-200/80'
                     }`}
                 >
                   <Text
-                    className={`text-lg font-bold ${selectedBusinessId === null
+                    className={`text-[10px] font-black uppercase tracking-wider ${selectedBusinessId === null
                       ? 'text-white'
                       : 'text-slate-500'
                       }`}
@@ -272,32 +283,30 @@ export default function OwnerDashboardScreen() {
                   <Pressable
                     key={biz.id}
                     onPress={() => setSelectedBusinessId(biz.id)}
-                    className={`flex-row items-center px-4 py-2 rounded-xl border ${selectedBusinessId === biz.id
+                    className={`flex-row items-center px-4 py-2.5 rounded-xl border ${selectedBusinessId === biz.id
                       ? 'bg-black border-black'
-                      : 'bg-white border-slate-200'
+                      : 'bg-white/80 border-slate-200/80'
                       }`}
                   >
                     {businessImages[biz.id] ? (
                       <Image
                         source={{ uri: businessImages[biz.id] }}
                         style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 14,
+                          width: 20,
+                          height: 20,
+                          borderRadius: 10,
                         }}
                       />
                     ) : (
-                      <View className="w-7 h-7 rounded-full bg-slate-200 items-center justify-center">
-                        <Ionicons
-                          name="business"
-                          size={14}
-                          color="#64748B"
-                        />
+                      <View className="w-5 h-5 rounded-full bg-slate-900 items-center justify-center border border-slate-200 shadow-sm">
+                        <Text className="text-white font-bold text-[8px]">
+                          {biz.owner_name ? biz.owner_name.charAt(0) : biz.salon_name ? biz.salon_name.charAt(0) : 'O'}
+                        </Text>
                       </View>
                     )}
 
                     <Text
-                      className={`text-lg font-bold ml-2 ${selectedBusinessId === biz.id
+                      className={`text-[10px] font-black uppercase tracking-wider ml-2 ${selectedBusinessId === biz.id
                         ? 'text-white'
                         : 'text-slate-500'
                         }`}
@@ -435,6 +444,20 @@ export default function OwnerDashboardScreen() {
             )}
           </View>
         </ScrollView>
+
+        <OwnerBookingDetailModal
+          visible={showDetailModal}
+          booking={selectedBooking}
+          onClose={() => {
+            setShowDetailModal(false);
+            setSelectedBooking(null);
+          }}
+          onAccept={handleAccept}
+          onReject={handleReject}
+          onUndoAccept={handleUndoAccept}
+          onUndoReject={handleUndoReject}
+          onNoShow={handleNoShow}
+        />
       </SafeAreaView>
     </PremiumBackground>
   );
