@@ -5,7 +5,7 @@
 export const parseTimeToMinutes = (t: string | null | undefined): number | null => {
   if (!t || typeof t !== 'string') return null;
   const cleaned = t.trim().toUpperCase();
-  
+
   // 1. Check if format is HH:MM:SS or HH:MM (24-hour style, e.g., "14:30:00" or "14:30")
   const match24 = cleaned.match(/^([0-9]{1,2}):([0-9]{2})(?::([0-9]{2}))?$/);
   if (match24) {
@@ -51,13 +51,13 @@ export interface ShopStatus {
 
 export const getShopStatus = (
   openingTime: string | null | undefined,
-  closingTime: string | null | undefined
+  closingTime: string | null | undefined,
 ): ShopStatus => {
   const start = parseTimeToMinutes(openingTime);
   const end = parseTimeToMinutes(closingTime);
 
   if (start === null || end === null) {
-    return { isOpen: true, statusText: "Open Now" };
+    return { isOpen: true, statusText: 'Open Now' };
   }
 
   const now = new Date();
@@ -72,7 +72,7 @@ export const getShopStatus = (
   }
 
   if (isOpen) {
-    return { isOpen: true, statusText: "Open Now" };
+    return { isOpen: true, statusText: 'Open Now' };
   }
 
   // It is closed. Let's calculate when it opens!
@@ -82,13 +82,13 @@ export const getShopStatus = (
     diffMinutes = start - current;
   } else {
     // Opens tomorrow
-    diffMinutes = (1440 - current) + start;
+    diffMinutes = 1440 - current + start;
   }
 
   const hoursLeft = Math.floor(diffMinutes / 60);
   const minutesLeft = diffMinutes % 60;
 
-  let opensInText = "";
+  let opensInText = '';
   if (hoursLeft === 0) {
     opensInText = `Opens in ${minutesLeft} mins`;
   } else if (hoursLeft < 12) {
@@ -100,8 +100,8 @@ export const getShopStatus = (
 
   return {
     isOpen: false,
-    statusText: "Closed",
+    statusText: 'Closed',
     opensInText,
-    reopeningTime: formatMinutesTo12Hour(start)
+    reopeningTime: formatMinutesTo12Hour(start),
   };
 };

@@ -29,6 +29,6 @@ export const useActiveRoleStore = create<ActiveRoleState>()(
     {
       name: 'active-role-storage',
       storage: createJSONStorage(() => secureStorageAdapter),
-    }
-  )
+    },
+  ),
 );

@@ -1,10 +1,6 @@
 import React from 'react';
 import { Pressable, Text, PressableProps, View, ActivityIndicator } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -59,14 +55,8 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
       {...props}
     >
       <View className="flex-row items-center justify-center">
-        {loading && (
-          <ActivityIndicator 
-            size="small" 
-            color="#FFF" 
-            className="mr-2" 
-          />
-        )}
-        <Text 
+        {loading && <ActivityIndicator size="small" color="#FFF" className="mr-2" />}
+        <Text
           className={`text-lg font-bold tracking-tight ${
             variant === 'primary' ? 'text-white' : 'text-accent-premium'
           } ${textClassName}`}

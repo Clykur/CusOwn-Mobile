@@ -9,10 +9,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "platforms": ["ios", "android"],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -46,13 +43,14 @@
           "data": [
             {
               "scheme": "cusown",
-              "pathPrefix": "/(auth)/google-callback"
+              "host": "google-callback"
+            },
+            {
+              "scheme": "cusown",
+              "pathPrefix": "/google-callback"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },

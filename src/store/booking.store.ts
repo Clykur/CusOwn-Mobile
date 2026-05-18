@@ -19,9 +19,23 @@ export const useBookingStore = create<BookingState>((set) => ({
   selectedService: null,
   selectedServices: [],
   selectedSlot: null,
-  setBusiness: (business) => set({ selectedBusiness: business, selectedService: null, selectedServices: [], selectedSlot: null }),
-  setService: (service) => set({ selectedService: service, selectedServices: [service], selectedSlot: null }),
-  setSelectedServices: (services) => set({ selectedServices: services, selectedService: services[0] || null, selectedSlot: null }),
+  setBusiness: (business) =>
+    set({
+      selectedBusiness: business,
+      selectedService: null,
+      selectedServices: [],
+      selectedSlot: null,
+    }),
+  setService: (service) =>
+    set({ selectedService: service, selectedServices: [service], selectedSlot: null }),
+  setSelectedServices: (services) =>
+    set({ selectedServices: services, selectedService: services[0] || null, selectedSlot: null }),
   setSlot: (slot) => set({ selectedSlot: slot }),
-  resetBooking: () => set({ selectedBusiness: null, selectedService: null, selectedServices: [], selectedSlot: null }),
+  resetBooking: () =>
+    set({
+      selectedBusiness: null,
+      selectedService: null,
+      selectedServices: [],
+      selectedSlot: null,
+    }),
 }));

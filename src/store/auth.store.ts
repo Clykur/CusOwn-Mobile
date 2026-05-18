@@ -35,122 +35,151 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // 1. If no session, clear and return
     if (!session) {
-      set({ session: null, user: null, profile: null, profileImageUrl: null, role: null, isLoading: false });
+      set({
+        session: null,
+        user: null,
+        profile: null,
+        profileImageUrl: null,
+        role: null,
+        isLoading: false,
+      });
       return;
     }
 
     // 2. Skip redundant fetches if session hasn't changed and role is already known
     if (session.access_token === currentSession?.access_token && get().role) {
+      set({ session, user, isLoading: false });
       return;
     }
 
-    // 3. Update state immediately so apiClient interceptor has access to the token
-    // We only set isLoading: true if we don't have a role yet (initial sign-in/restore)
-    // This prevents "flickering" loading states during session refreshes
     const shouldShowLoading = !get().role;
     set({ session, user, isLoading: shouldShowLoading });
 
     let role: Role = null;
     let profile: UserProfile | null = null;
 
-    // 4. Determine Role & Profile
-    const activeRole = useActiveRoleStore.getState().activeRole;
-    if (activeRole) {
-      role = activeRole;
-      logger.info(LogTag.AUTH, `[STORE] Using active role from session: ${role}`);
-    }
-
-    // Then fetch fresh profile via API (Source of Truth for profile data)
     try {
-      // Dynamic import to avoid circular dependency with apiClient
-      const { default: apiClient } = await import('@/lib/api-client');
-
-      // This call will now have the token because we called set({ session }) above
-      const data = await apiClient.get<any>('/user/profile');
-
-      if (data && data.profile) {
-        profile = data.profile;
-        const userType = profile?.user_type?.toLowerCase();
-
-        // If no active role was set, determine it from the API profile.
-        // This handles the case of subsequent app opens where we don't go through role selection.
-        if (!role) {
-          role = (userType === 'owner' || userType === 'both') ? 'Owner' : 'Customer';
-          logger.info(LogTag.AUTH, `[STORE] Verified role from API: ${role}`);
-        }
-
-        // Mark onboarding as completed if we found a verified profile
-        useOnboardingStore.getState().setOnboardingCompleted(true);
+      // 4. Determine Role & Profile
+      const activeRole = useActiveRoleStore.getState().activeRole;
+      if (activeRole) {
+        role = activeRole;
+        logger.info(LogTag.AUTH, `[STORE] Using active role from session: ${role}`);
       }
-    } catch (err: any) {
-      logger.warn(LogTag.AUTH, `[STORE] Profile fetch failed: ${err.message}.`);
-    }
 
-    // 5. Last resort fallback / First-time login profile sync
-    if (user && !profile) {
-      // If we have an active role, use it. Otherwise, fallback to onboarding role or 'Customer'
-      const selectedRole = activeRole || useOnboardingStore.getState().selectedRole;
-      role = role || selectedRole || 'Customer';
-      logger.info(LogTag.AUTH, `[STORE] No profile found. Syncing initial profile as ${role}`);
-
+      // Then fetch fresh profile via API (Source of Truth for profile data)
       try {
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .upsert({
-            id: user.id,
-            user_type: role.toLowerCase() as any,
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'id' })
-          .select()
-          .single();
+        // Dynamic import to avoid circular dependency with api.service
+        const { apiService } = await import('@/services/api.service');
 
-        if (error) throw error;
-        if (data) {
-          profile = data;
-          // Mark onboarding as completed after successful sync
+        const data = await apiService.getProfile();
+
+        if (data && data.profile) {
+          profile = data.profile;
+          const userType = profile?.user_type?.toLowerCase();
+
+          // If no active role was set, determine it from the API profile.
+          // This handles the case of subsequent app opens where we don't go through role selection.
+          if (!role) {
+            role = userType === 'owner' || userType === 'both' ? 'Owner' : 'Customer';
+            logger.info(LogTag.AUTH, `[STORE] Verified role from API: ${role}`);
+          }
+
+          // Mark onboarding as completed if we found a verified profile
           useOnboardingStore.getState().setOnboardingCompleted(true);
         }
-      } catch (syncErr) {
-        logger.error(LogTag.AUTH, '[STORE] Failed to sync profile to DB:', syncErr);
-      }
-    }
-
-    // 6. Resolve signed avatar URL if profile has profile_media_id
-    let profileImageUrl: string | null = null;
-    if (profile?.profile_media_id) {
-      try {
-        const { default: apiClient } = await import('@/lib/api-client');
-        const signedResult = await apiClient.get<any>(`/media/signed-url`, {
-          params: { mediaId: profile.profile_media_id },
-        });
-        profileImageUrl = signedResult?.url ?? null;
       } catch (err: any) {
-        logger.warn(LogTag.AUTH, `[STORE] Failed to fetch signed URL: ${err.message}`);
+        logger.warn(LogTag.AUTH, `[STORE] Profile fetch failed: ${err.message}.`);
       }
 
-      if (!profileImageUrl) {
+      // 5. Last resort fallback / First-time login profile sync
+      if (user && !profile) {
+        // If we have an active role, use it. Otherwise, fallback to onboarding role or 'Customer'
+        const selectedRole = activeRole || useOnboardingStore.getState().selectedRole;
+        role = role || selectedRole || 'Customer';
+        logger.info(LogTag.AUTH, `[STORE] No profile found. Syncing initial profile as ${role}`);
+
         try {
-          const { data: mediaData } = await supabase
-            .from('media')
-            .select('storage_path, bucket_name')
-            .eq('id', profile.profile_media_id)
+          const { data, error } = await supabase
+            .from('user_profiles')
+            .upsert(
+              {
+                id: user.id,
+                user_type: role.toLowerCase() as any,
+                full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'id' },
+            )
+            .select()
             .single();
-          if (mediaData) {
-            profileImageUrl = supabase.storage
-              .from(mediaData.bucket_name || 'business-media')
-              .getPublicUrl(mediaData.storage_path).data.publicUrl;
+
+          if (error) throw error;
+          if (data) {
+            profile = data;
+            // Mark onboarding as completed after successful sync
+            useOnboardingStore.getState().setOnboardingCompleted(true);
           }
-        } catch (fbErr: any) {
-          logger.warn(LogTag.AUTH, `[STORE] Direct public URL fallback failed: ${fbErr.message}`);
+        } catch (syncErr) {
+          logger.error(LogTag.AUTH, '[STORE] Failed to sync profile to DB:', syncErr);
         }
       }
-    }
 
-    set({ session, user, profile, profileImageUrl, role, isLoading: false });
+      // 6. Resolve signed avatar URL if profile has profile_media_id
+      let profileImageUrl: string | null = null;
+      if (profile?.profile_media_id) {
+        try {
+          const { apiService } = await import('@/services/api.service');
+          const signedResult = await apiService.getSignedUrl(profile.profile_media_id);
+          profileImageUrl = signedResult?.url ?? null;
+        } catch (err: any) {
+          logger.warn(LogTag.AUTH, `[STORE] Failed to fetch signed URL: ${err.message}`);
+        }
+
+        if (!profileImageUrl) {
+          try {
+            const { data: mediaData } = await supabase
+              .from('media')
+              .select('storage_path, bucket_name')
+              .eq('id', profile.profile_media_id)
+              .single();
+            if (mediaData) {
+              profileImageUrl = supabase.storage
+                .from(mediaData.bucket_name || 'business-media')
+                .getPublicUrl(mediaData.storage_path).data.publicUrl;
+            }
+          } catch (fbErr: any) {
+            logger.warn(LogTag.AUTH, `[STORE] Direct public URL fallback failed: ${fbErr.message}`);
+          }
+        }
+      }
+
+      set({ session, user, profile, profileImageUrl, role, isLoading: false });
+    } catch (err) {
+      logger.error(LogTag.AUTH, '[STORE] setSession failed', err);
+      const fallbackRole: Role =
+        get().role ||
+        useActiveRoleStore.getState().activeRole ||
+        useOnboardingStore.getState().selectedRole ||
+        'Customer';
+      set({
+        session,
+        user,
+        profile: get().profile,
+        profileImageUrl: get().profileImageUrl,
+        role: fallbackRole,
+        isLoading: false,
+      });
+    }
   },
   clearSession: async () => {
-    set({ session: null, user: null, profile: null, profileImageUrl: null, role: null, isLoading: false });
+    set({
+      session: null,
+      user: null,
+      profile: null,
+      profileImageUrl: null,
+      role: null,
+      isLoading: false,
+    });
   },
   restoreSession: async () => {
     set({ isLoading: false });
@@ -170,18 +199,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         .single();
 
       if (data) {
-        const role: Role = (data.user_type === 'owner' || data.user_type === 'both') ? 'Owner' : 'Customer';
-        
+        const role: Role =
+          data.user_type === 'owner' || data.user_type === 'both' ? 'Owner' : 'Customer';
+
         let profileImageUrl: string | null = null;
         if (data.profile_media_id) {
           try {
-            const { default: apiClient } = await import('@/lib/api-client');
-            const signedResult = await apiClient.get<any>(`/media/signed-url`, {
-              params: { mediaId: data.profile_media_id },
-            });
+            const { apiService } = await import('@/services/api.service');
+            const signedResult = await apiService.getSignedUrl(data.profile_media_id);
             profileImageUrl = signedResult?.url ?? null;
           } catch (err: any) {
-            logger.warn(LogTag.AUTH, `[STORE] Failed to fetch signed URL on refresh: ${err.message}`);
+            logger.warn(
+              LogTag.AUTH,
+              `[STORE] Failed to fetch signed URL on refresh: ${err.message}`,
+            );
           }
 
           if (!profileImageUrl) {
@@ -197,11 +228,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                   .getPublicUrl(mediaData.storage_path).data.publicUrl;
               }
             } catch (fbErr: any) {
-              logger.warn(LogTag.AUTH, `[STORE] Direct public URL fallback failed on refresh: ${fbErr.message}`);
+              logger.warn(
+                LogTag.AUTH,
+                `[STORE] Direct public URL fallback failed on refresh: ${fbErr.message}`,
+              );
             }
           }
         }
-        
+
         set({ profile: data, role, profileImageUrl });
       }
     } catch (err) {

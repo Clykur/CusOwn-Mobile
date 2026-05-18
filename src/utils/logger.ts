@@ -55,19 +55,26 @@ class Logger {
         data: error.response?.data,
         message: error.message,
       });
-      
+
       if (error.response?.status === 403 || error.response?.status === 401) {
         this.warn(LogTag.DB, `Potential RLS/Auth issue detected for ${url}`);
       }
     } else {
-      const rowCount = Array.isArray(response?.data) ? response.data.length : (response?.data ? 1 : 0);
+      const rowCount = Array.isArray(response?.data)
+        ? response.data.length
+        : response?.data
+          ? 1
+          : 0;
       this.info(LogTag.API, `✅ SUCCESS: ${url}`, {
         status: response.status,
         rowCount,
       });
 
       if (rowCount === 0 && (url.includes('select') || url.includes('list'))) {
-        this.warn(LogTag.DB, `Empty result set returned for ${url}. Check RLS policies if data was expected.`);
+        this.warn(
+          LogTag.DB,
+          `Empty result set returned for ${url}. Check RLS policies if data was expected.`,
+        );
       }
     }
   }

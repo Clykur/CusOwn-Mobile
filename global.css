@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @layer utilities {
-
   /* Backgrounds */
   .bg-premium {
     @apply bg-slate-50;
