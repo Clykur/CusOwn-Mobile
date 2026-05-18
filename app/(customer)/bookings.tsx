@@ -5,18 +5,20 @@ import {
   Pressable,
   FlatList,
   RefreshControl,
+  Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
-import { useBookings } from '@/hooks/useBookings';
-import { Booking } from '@/types/booking.types';
+import { useBookings, useUpdateBookingStatus } from '@/hooks/useBookings';
+import { getBookingPrice } from '@/services/api.service';
 import { Badge } from '@/components/Badge';
-import { Avatar } from '@/components/Avatar';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/ui/AnimatedSection';
 import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
 
 type BookingFilterType = 'upcoming' | 'completed' | 'cancelled';
 
@@ -25,16 +27,34 @@ export default function CustomerBookingsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { data: bookings, isLoading, isError, refetch } = useBookings('Customer');
 
-  useFocusEffect(
-    useCallback(() => {
-      refetch();
-    }, [refetch])
-  );
+
+
 
   const filteredBookings = useMemo(() => {
     if (!bookings) return [];
+    const now = dayjs();
+
     return bookings.filter((b: any) => {
-      const status = (b.status || 'pending').toLowerCase();
+      let status = (b.status || 'pending').toLowerCase();
+      const bookingDateTime = dayjs(`${b.date} ${b.time}`);
+      const bookingEndTime = bookingDateTime.add(b.duration || 60, 'minutes'); // Default to 60 mins if duration not present
+
+      // Auto-categorize based on time
+      if (now.isAfter(bookingEndTime)) {
+        if (status === 'confirmed') {
+          status = 'completed'; // Confirmed and time passed -> Completed
+        } else if (status === 'pending') {
+          status = 'cancelled'; // Pending and time passed -> Cancelled (auto-rejected)
+        }
+      }
+
+      // Check for expired confirmed bookings
+      if (status === 'confirmed') {
+        if (bookingEndTime.isBefore(now)) {
+          status = 'completed'; // Treat as completed if end time has passed
+        }
+      }
+
       if (filter === 'upcoming') {
         return status === 'pending' || status === 'confirmed';
       }
@@ -63,22 +83,16 @@ export default function CustomerBookingsScreen() {
       item.salon?.cover_photo_url ||
       null;
 
-    const displayPrice = item.price || item.service?.price || 0;
+    const displayPrice = getBookingPrice(item);
 
     return (
       <AnimatedSection delay={index * 50} direction="up" className="mb-4">
         <Pressable
           onPress={() => router.push(`/booking-detail/${item.id}`)}
         >
-          <GlassCard className="border-slate-200/80 bg-white/90 shadow-sm p-5">
-            <View className="flex-row justify-between items-center mb-4">
-              <View className="flex-row items-center flex-1 mr-2 gap-x-3">
-                <Avatar
-                  url={salonImage}
-                  name={salonName}
-                  size={42}
-                  className="border border-slate-100"
-                />
+          <GlassCard className="border-slate-200/80 bg-white/95 shadow-sm p-2 rounded-luxury">
+            <View className="flex-row justify-between items-center mb-2">
+              <View className="flex-row items-center flex-1">
                 <View className="flex-1">
                   <Text className="text-slate-900 font-extrabold text-base" numberOfLines={1}>
                     {salonName}
@@ -91,7 +105,7 @@ export default function CustomerBookingsScreen() {
               <Badge status={item.status} />
             </View>
 
-            <View className="h-[1px] bg-slate-100 mb-4" />
+            <View className="h-[0.5px] bg-slate-100 mb-4" />
 
             <View className="gap-y-3">
               <View className="flex-row justify-between items-start">
@@ -105,9 +119,9 @@ export default function CustomerBookingsScreen() {
                     Booking ID: {item.booking_id || item.reference || '—'}
                   </Text>
                 </View>
-                <View className="bg-neutral-900 px-3 py-1 rounded-lg">
+                <View className="bg-black px-3.5 py-1.5 rounded-xl">
                   <Text className="text-white font-black text-sm">
-                    ₹{displayPrice.toFixed(0)}
+                    ₹{displayPrice % 1 === 0 ? displayPrice.toFixed(0) : displayPrice.toFixed(2)}
                   </Text>
                 </View>
               </View>
@@ -118,6 +132,8 @@ export default function CustomerBookingsScreen() {
                   {item.date} • {item.time}
                 </Text>
               </View>
+
+
             </View>
           </GlassCard>
         </Pressable>

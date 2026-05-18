@@ -44,8 +44,12 @@ apiClient.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
 
-      // 2. Attach Traceability Headers (Matching Web App)
-      const requestId = `mob-${Math.random().toString(36).substr(2, 9)}-${Date.now().toString(36)}`;
+      // 2. Attach Traceability Headers (Matching Web App validation, must be a valid UUID)
+      const requestId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
       config.headers['x-request-id'] = requestId;
 
       if (CONFIG.IS_DEV) {

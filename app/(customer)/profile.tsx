@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Switch,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,10 +18,12 @@ import { useAuthStore } from '@/store/auth.store';
 import { apiService } from '@/services/api.service';
 import { Avatar } from '@/components/Avatar';
 import { Ionicons } from '@expo/vector-icons';
+import { useProfileImage } from '@/hooks/useProfileImage';
 
 export default function CustomerProfileScreen() {
-  const { user } = useAuthStore();
+  const { user, profileImageUrl } = useAuthStore();
   const { signOut } = useAuth();
+  const { pickAndUpload, uploading } = useProfileImage();
 
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -62,8 +65,15 @@ export default function CustomerProfileScreen() {
               setProfileImage(signed.url);
             }
           } catch (e) {
-            console.log('Failed to fetch signed image URL for customer profile');
+            const { logger, LogTag } = require('@/utils/logger');
+            logger.error(LogTag.API, 'Failed to fetch signed image URL for customer profile');
           }
+        } else if (data.profile?.media?.signed_url) {
+          setProfileImage(data.profile.media.signed_url);
+        } else if (data.profile?.media?.url) {
+          setProfileImage(data.profile.media.url);
+        } else if (data.profile_image_url) {
+          setProfileImage(data.profile_image_url);
         }
       }
     } catch (err: any) {
@@ -190,13 +200,43 @@ export default function CustomerProfileScreen() {
           {/* Profile Overview */}
           <View className="flex-row items-start justify-between mb-6">
             <View className="flex-row flex-1">
-              <View className="relative">
-                <Avatar
-                  url={profileImage}
-                  name={profileData?.profile?.full_name || 'User'}
-                  size={88}
-                />
-              </View>
+              <Pressable
+                disabled={!editMode || uploading}
+                onPress={async () => {
+                  const uploadedUrl = await pickAndUpload();
+                  if (uploadedUrl) {
+                    setProfileImage(uploadedUrl);
+                  }
+                }}
+              >
+                <View className="relative">
+                  {profileImage || profileImageUrl ? (
+                    <Image
+                      source={{ uri: (profileImage || profileImageUrl) as string }}
+                      style={{
+                        width: 88,
+                        height: 88,
+                        borderRadius: 44,
+                      }}
+                    />
+                  ) : (
+                    <Avatar
+                      name={profileData?.profile?.full_name || 'User'}
+                      size={88}
+                    />
+                  )}
+
+                  {editMode && (
+                    <View className="absolute bottom-0 right-0 bg-[#0F172A] w-8 h-8 rounded-full items-center justify-center border-2 border-white">
+                      <Ionicons
+                        name={uploading ? 'hourglass-outline' : 'camera-outline'}
+                        size={16}
+                        color="#FFFFFF"
+                      />
+                    </View>
+                  )}
+                </View>
+              </Pressable>
 
               <View className="ml-4 flex-1 justify-center">
                 <Text className="text-[24px] font-semibold text-[#0F172A]">

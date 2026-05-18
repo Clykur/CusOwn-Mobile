@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, JSX } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,7 +14,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { apiService } from '@/services/api.service';
 import { Service } from '@/types/business.types';
 import { queryKeys, queryClient } from '@/lib/queryClient';
-
+import { useBookingDetail, useRescheduleBooking } from '@/hooks/useBookings';
 
 export default function BookingScreen() {
   const [isMounted, setIsMounted] = useState(false);
@@ -34,11 +34,13 @@ export default function BookingScreen() {
   return <BookingScreenInner />;
 }
 
-function BookingScreenInner() {
-  const { id } = useLocalSearchParams();
+function BookingScreenInner(): JSX.Element {
+  const { id, bookingId, serviceIds, selectedDate: initialDate, selectedTime: initialTime } = useLocalSearchParams();
   const { data: business, isLoading: businessLoading } = useBusinessDetail(id as string);
-  const { selectedService, selectedServices: storeSelectedServices } = useBookingStore();
+  const { selectedService, selectedServices: storeSelectedServices, resetBooking } = useBookingStore();
   const { user, profile } = useAuthStore();
+
+  const { data: existingBooking, isLoading: existingBookingLoading } = useBookingDetail(bookingId as string);
 
   // Create 14 days of date selections using local time timezone-safe
   const availableDates = useMemo(() => {
@@ -72,6 +74,14 @@ function BookingScreenInner() {
   const [customerPhone, setCustomerPhone] = useState(profile?.phone_number || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // For rescheduling
+  const isRescheduling = !!bookingId;
+  const { mutate: rescheduleBooking, isPending: isReschedulingPending } = useRescheduleBooking();
+
+
+
+
+
   // Sync profile details if they load late
   useEffect(() => {
     if (profile?.full_name && !customerName) {
@@ -91,6 +101,30 @@ function BookingScreenInner() {
       .then(setServices)
       .catch((err) => console.error('Error fetching services on booking page:', err));
   }, [id]);
+
+  // Pre-fill form for rescheduling
+  useEffect(() => {
+    if (isRescheduling && existingBooking && services.length > 0) {
+      // Set selected services
+      const preselectedServices = services.filter(srv =>
+        existingBooking.services?.some((es: any) => es.id === srv.id) ||
+        existingBooking.service?.id === srv.id
+      );
+      if (preselectedServices.length > 0) {
+        setSelectedServices(preselectedServices);
+      }
+
+      // Set selected date
+      const initialDateObj = availableDates.find(d => d.dateString === existingBooking.date);
+      if (initialDateObj) {
+        setSelectedDate(initialDateObj);
+      }
+
+      // Set customer details
+      setCustomerName(existingBooking.customer_name || profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || '');
+      setCustomerPhone(existingBooking.customer_phone || profile?.phone_number || '');
+    }
+  }, [isRescheduling, existingBooking, services, availableDates, profile, user]);
 
   // Get active services
   const servicesList = services;
@@ -251,9 +285,19 @@ function BookingScreenInner() {
     setSelectedSlot(null);
   }, [selectedDate]);
 
+  // Pre-select slot if initialTime is provided (for rescheduling)
+  useEffect(() => {
+    if (initialTime && normalizedSlots.length > 0) {
+      const preselectedSlot = normalizedSlots.find(slot => slot.time === initialTime);
+      if (preselectedSlot) {
+        setSelectedSlot(preselectedSlot);
+      }
+    }
+  }, [initialTime, normalizedSlots]);
+
   // Active services are fetched and parsed at the top of the component scope
 
-  const handleConfirmBooking = async () => {
+  const handleCreateOrRescheduleBooking = async () => {
     if (!business || selectedServices.length === 0 || !selectedSlot) {
       Alert.alert('Error', 'Please select a date, time, and service.');
       return;
@@ -276,33 +320,51 @@ function BookingScreenInner() {
         customer_phone: customerPhone.trim(),
       };
 
-      const response = await apiService.createBooking(bookingPayload);
+      if (isRescheduling && bookingId) {
+        await rescheduleBooking({ bookingId: bookingId as string, payload: bookingPayload });
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
+        router.replace('/(customer)/bookings'); // Go back to bookings list after reschedule
+      } else {
+        const response = await apiService.createBooking(bookingPayload);
 
-      // Invalidate the cache to trigger refetching
-      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
+        // Invalidate the cache to trigger refetching
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
 
-      // Extract booking identifiers safely
-      const bookingId = response?.id || response?.booking_id || response?.reference || `BK-${Math.floor(10000 + Math.random() * 90000)}`;
+        // Extract booking identifiers safely
+        const bookingId = response?.id || response?.booking_id || response?.reference || `BK-${Math.floor(10000 + Math.random() * 90000)}`;
 
-      // Format date for success screen
-      const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const friendlyDate = selectedDate.rawDate.toLocaleDateString('en-US', options);
+        // Format date for success screen
+        const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const friendlyDate = selectedDate.rawDate.toLocaleDateString('en-US', options);
 
-      router.replace({
-        pathname: '/(customer)/booking-success',
-        params: {
-          salonName: business.salon_name,
-          serviceName: selectedServices.map(s => s.name).join(', '),
-          bookingDate: friendlyDate,
-          bookingTime: selectedSlot.label,
-          bookingId: bookingId,
-        }
-      });
+        router.replace({
+          pathname: '/(customer)/booking-success',
+          params: {
+            salonName: business.salon_name,
 
+            serviceName: selectedServices
+              .map(s => s.name)
+              .join(', '),
+
+            bookingDate: friendlyDate,
+
+            bookingTime: selectedSlot.label,
+
+            bookingId: bookingId,
+
+            totalPrice: String(totalPrice),
+
+            salonImage:
+              business.image_url ||
+              business.cover_photo_url ||
+              '',
+
+          }
+        });
+      }
     } catch (err: any) {
-      console.log('[BOOKING ERROR]:', err);
       Alert.alert(
-        'Booking Failed',
+        isRescheduling ? 'Rescheduling Failed' : 'Booking Failed',
         err.response?.data?.message || err.message || 'An error occurred while reserving your slot. Please try again.'
       );
     } finally {
@@ -310,7 +372,7 @@ function BookingScreenInner() {
     }
   };
 
-  if (businessLoading) {
+  if (businessLoading || (isRescheduling && existingBookingLoading)) {
     return (
       <PremiumBackground>
         <View className="flex-1 items-center justify-center">
@@ -327,7 +389,7 @@ function BookingScreenInner() {
         <View className="flex-1 items-center justify-center px-6">
           <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
           <Text className="text-slate-900 text-xl font-bold mt-4">Invalid Business ID</Text>
-          <PremiumButton title="Go Back" onPress={() => router.back()} className="w-48 h-12 mt-6" />
+          <PremiumButton title="Go Back" onPress={() => router.replace('/(customer)/browse')} className="w-48 h-12 mt-6" />
         </View>
       </PremiumBackground>
     );
@@ -337,12 +399,26 @@ function BookingScreenInner() {
     <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['top']}>
         {/* Header */}
-        <View className="px-6 py-4 flex-row items-center border-b border-slate-100 bg-white/70">
-          <Pressable onPress={() => router.back()} className="w-10 h-10 rounded-full bg-slate-100 items-center justify-center mr-4">
+        <View
+          className="px-6 py-4 flex-row items-center border-b border-slate-100"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
+        >
+          <Pressable
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace(`/(customer)/browse/salons/${id}`);
+              }
+            }}
+            className="w-10 h-10 rounded-full bg-slate-100 items-center justify-center mr-4"
+          >
             <Ionicons name="arrow-back" size={20} color="#0F172A" />
           </Pressable>
           <View>
-            <Text className="text-slate-900 font-black text-xl tracking-tight">Book Appointment</Text>
+            <Text className="text-slate-900 font-black text-xl tracking-tight">
+              {isRescheduling ? 'Reschedule Appointment' : 'Book Appointment'}
+            </Text>
             <Text className="text-slate-500 text-xs font-semibold" numberOfLines={1}>
               {business.salon_name}
             </Text>
@@ -353,7 +429,10 @@ function BookingScreenInner() {
           {/* Service Selector Card */}
           <View className="px-luxury mt-5">
             <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Selected Services</Text>
-            <GlassCard className="p-5 border border-slate-200 bg-white/95 shadow-sm rounded-3xl">
+            <GlassCard
+              className="p-5 border border-slate-200 rounded-3xl"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
+            >
               <View className="gap-y-3">
                 {selectedServices.map((srv) => (
                   <View key={srv.id} className="flex-row items-center justify-between py-1">
@@ -389,11 +468,11 @@ function BookingScreenInner() {
                         <Pressable
                           key={service.id}
                           onPress={() => toggleService(service)}
-                          className={`px-4 py-2.5 rounded-2xl border transition-all ${isSelected ? 'bg-black border-black shadow-sm' : 'bg-slate-50 border-slate-200'
+                          className={`px-4 py-2.5 rounded-2xl border ${isSelected ? 'bg-black border-black' : 'bg-slate-50 border-slate-200'
                             }`}
                         >
                           <Text className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-slate-600'}`}>
-                            {isSelected ? '✓ ' : '+ '}{service.name} (${service.price})
+                            {isSelected ? '✓ ' : '+ '}{service.name} (₹{service.price})
                           </Text>
                         </Pressable>
                       );
@@ -416,7 +495,7 @@ function BookingScreenInner() {
                   <Pressable
                     key={item.dateString}
                     onPress={() => setSelectedDate(item)}
-                    className={`w-16 h-24 rounded-3xl border items-center justify-center mr-3 transition-all ${isSelected ? 'bg-black border-black shadow-md' : 'bg-white border-slate-200'
+                    className={`w-16 h-24 rounded-3xl border items-center justify-center mr-3 ${isSelected ? 'bg-black border-black' : 'bg-white border-slate-200'
                       }`}
                   >
                     <Text className={`text-[10px] font-bold tracking-wider uppercase ${isSelected ? 'text-slate-400' : 'text-slate-400'}`}>
@@ -463,11 +542,11 @@ function BookingScreenInner() {
                         key={slot.id}
                         disabled={!isAvailable}
                         onPress={() => setSelectedSlot(slot)}
-                        className={`w-[30%] py-4 rounded-2xl border items-center justify-center transition-all ${!isAvailable
-                            ? 'bg-slate-100 border-slate-200'
-                            : isSelected
-                              ? 'bg-black border-black shadow-md'
-                              : 'bg-white border-slate-200'
+                        className={`w-[30%] py-4 rounded-2xl border items-center justify-center ${!isAvailable
+                          ? 'bg-slate-100 border-slate-200'
+                          : isSelected
+                            ? 'bg-black border-black'
+                            : 'bg-white border-slate-200'
                           }`}
                       >
                         <Text className={`text-sm font-bold ${isAvailable ? (isSelected ? 'text-white' : 'text-slate-900') : 'text-slate-400'}`}>
@@ -491,7 +570,10 @@ function BookingScreenInner() {
           {/* Contact Details Card */}
           <View className="px-luxury mt-6">
             <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Recipient Info</Text>
-            <GlassCard className="p-5 border border-slate-200 bg-white/95 shadow-sm rounded-3xl">
+            <GlassCard
+              className="p-5 border border-slate-200 rounded-3xl"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
+            >
               <View className="mb-4">
                 <Text className="text-slate-600 text-xs font-bold uppercase mb-1.5">Full Name</Text>
                 <View className="flex-row items-center border border-slate-200 rounded-2xl h-12 px-4 bg-slate-50">
@@ -525,7 +607,17 @@ function BookingScreenInner() {
         </ScrollView>
 
         {/* Sticky Confirm Booking Button */}
-        <View className="absolute bottom-0 left-0 right-0 bg-white/80 border-t border-slate-100 px-6 pt-4 pb-10 shadow-lg">
+        <View
+          className="absolute bottom-0 left-0 right-0 border-t border-slate-100 px-6 pt-4 pb-10"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -3 },
+            shadowOpacity: 0.08,
+            shadowRadius: 10,
+            elevation: 8,
+          }}
+        >
           <View className="flex-row justify-between items-center mb-4">
             <View>
               <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Date & Time</Text>
@@ -537,15 +629,15 @@ function BookingScreenInner() {
             </View>
             <View className="items-end">
               <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Total Price</Text>
-              <Text className="text-slate-900 font-black text-xl">${totalPrice}</Text>
+              <Text className="text-slate-900 font-black text-xl">₹{totalPrice}</Text>
             </View>
           </View>
 
           <PremiumButton
-            title={isSubmitting ? "Confirming Slot..." : "Confirm & Book Slot"}
-            disabled={!selectedSlot || isSubmitting}
-            onPress={handleConfirmBooking}
-            className={`w-full h-14 rounded-2xl ${(!selectedSlot || isSubmitting) ? 'opacity-50' : ''}`}
+            title={isRescheduling ? 'Reschedule Appointment' : 'Confirm Booking'}
+            onPress={handleCreateOrRescheduleBooking}
+            loading={isSubmitting || isReschedulingPending}
+            className="w-full h-14"
           />
         </View>
       </SafeAreaView>

@@ -33,19 +33,34 @@ export default function OwnerTabsLayout() {
       screenOptions={{
         headerShown: false,
         headerStyle: {
-          backgroundColor: theme.card,
+          backgroundColor: '#000000', // pure black
         },
-        headerTintColor: theme.text,
+        headerTitleStyle: {
+          fontWeight: '800',
+          fontSize: 18,
+          letterSpacing: 0.5,
+          color: '#F8FAFC',
+        },
+        headerTintColor: '#F8FAFC',
         headerShadowVisible: false,
         tabBarStyle: {
-          backgroundColor: theme.card,
+          backgroundColor: '#000000', // pure black
           borderTopColor: 'rgba(255,255,255,0.05)',
-          height: Platform.OS === 'ios' ? 88 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 10,
-          paddingTop: 8,
+          height: Platform.OS === 'ios' ? 94 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 32 : 12,
+          paddingTop: 12,
+          elevation: 0,
+          shadowOpacity: 0,
         },
-        tabBarActiveTintColor: theme.accent,
-        tabBarInactiveTintColor: theme.textSecondary,
+        tabBarActiveTintColor: '#FFFFFF', // pure white
+        tabBarInactiveTintColor: '#64748B',
+        tabBarLabelStyle: {
+          fontWeight: '700',
+          fontSize: 10,
+          textTransform: 'uppercase',
+          letterSpacing: 1,
+          marginTop: 4,
+        },
       }}
     >
       <Tabs.Screen
@@ -53,7 +68,7 @@ export default function OwnerTabsLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <Ionicons name="grid" size={size} color={color} />
+            <Ionicons name="grid" size={22} color={color} />
           ),
         }}
       />
@@ -62,7 +77,7 @@ export default function OwnerTabsLayout() {
         options={{
           title: 'Businesses',
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <Ionicons name="business" size={size} color={color} />
+            <Ionicons name="business" size={22} color={color} />
           ),
         }}
       />
@@ -71,7 +86,7 @@ export default function OwnerTabsLayout() {
         options={{
           title: 'Analytics',
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <Ionicons name="analytics" size={size} color={color} />
+            <Ionicons name="analytics" size={22} color={color} />
           ),
         }}
       />
@@ -80,7 +95,7 @@ export default function OwnerTabsLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <Ionicons name="person" size={22} color={color} />
           ),
         }}
       />

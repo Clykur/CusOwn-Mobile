@@ -126,12 +126,12 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
       )}
 
       <View className="mb-5">
-        <Text className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">
+        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
           Business Name
         </Text>
 
         <TextInput
-          className="border border-slate-200 rounded-2xl px-4 py-4 text-slate-900 font-medium"
+          className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="Enter business name"
           placeholderTextColor="#94A3B8"
           value={formData.salon_name}
@@ -142,12 +142,12 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
       </View>
 
       <View className="mb-5">
-        <Text className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">
+        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
           WhatsApp Number
         </Text>
 
         <TextInput
-          className="border border-slate-200 rounded-2xl px-4 py-4 text-slate-900 font-medium"
+          className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="Enter WhatsApp number"
           placeholderTextColor="#94A3B8"
           value={formData.whatsapp_number}
@@ -163,12 +163,12 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
 
       <View className="flex-row gap-4 mb-5">
         <View className="flex-1">
-          <Text className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">
+          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
             Open Time
           </Text>
 
           <TextInput
-            className="border border-slate-200 rounded-2xl px-4 py-4 text-slate-900 font-medium"
+            className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="09:00"
             placeholderTextColor="#94A3B8"
             value={formData.opening_time}
@@ -179,12 +179,12 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
         </View>
 
         <View className="flex-1">
-          <Text className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">
+          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
             Close Time
           </Text>
 
           <TextInput
-            className="border border-slate-200 rounded-2xl px-4 py-4 text-slate-900 font-medium"
+            className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="21:00"
             placeholderTextColor="#94A3B8"
             value={formData.closing_time}
@@ -196,7 +196,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
       </View>
 
       <View className="mb-6">
-        <Text className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-4">
+        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-4">
           Slot Duration
         </Text>
 
@@ -207,13 +207,13 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
               onPress={() =>
                 handleChange('slot_duration', dur)
               }
-              className={`px-4 py-3 rounded-full border ${formData.slot_duration === dur
-                ? 'bg-slate-900 border-slate-900'
-                : 'border-slate-200'
+              className={`px-5 py-3 rounded-full border ${formData.slot_duration === dur
+                ? 'bg-black border-black'
+                : 'bg-white border-slate-200/80'
                 }`}
             >
               <Text
-                className={`font-semibold text-xs ${formData.slot_duration === dur
+                className={`font-black text-xs uppercase tracking-wider ${formData.slot_duration === dur
                   ? 'text-white'
                   : 'text-slate-700'
                   }`}
@@ -227,19 +227,19 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
 
       <View className="mb-6">
         <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-slate-500 text-xs font-bold uppercase tracking-widest">
+          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px]">
             Location
           </Text>
 
           <TouchableOpacity onPress={handleUseLocation}>
-            <Text className="text-slate-900 text-[10px] font-bold uppercase tracking-widest">
+            <Text className="text-black text-[9px] font-black uppercase tracking-[2px]">
               Update From GPS
             </Text>
           </TouchableOpacity>
         </View>
 
         <TextInput
-          className="border border-slate-200 rounded-2xl px-4 py-4 text-slate-900 font-medium mb-3"
+          className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold mb-3"
           placeholder="Address"
           placeholderTextColor="#94A3B8"
           value={formData.address}
@@ -251,7 +251,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
 
         <View className="flex-row gap-3">
           <TextInput
-            className="flex-1 border border-slate-200 rounded-2xl px-4 py-4 text-slate-900 font-medium"
+            className="flex-1 bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="City"
             placeholderTextColor="#94A3B8"
             value={formData.city}
@@ -261,7 +261,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
           />
 
           <TextInput
-            className="flex-1 border border-slate-200 rounded-2xl px-4 py-4 text-slate-900 font-medium"
+            className="flex-1 bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="Locality"
             placeholderTextColor="#94A3B8"
             value={formData.location}
@@ -284,7 +284,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
             onPress={onCancel}
             className="py-3 items-center"
           >
-            <Text className="text-slate-500 font-bold uppercase tracking-widest text-xs">
+            <Text className="text-slate-500 font-black uppercase tracking-widest text-[10px]">
               Cancel
             </Text>
           </TouchableOpacity>

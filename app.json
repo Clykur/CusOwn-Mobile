@@ -23,7 +23,8 @@
       "expo-secure-store",
       "expo-notifications",
       "expo-asset",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-font"
     ],
     "ios": {
       "bundleIdentifier": "com.cusown.app",
@@ -45,7 +46,7 @@
           "data": [
             {
               "scheme": "cusown",
-              "host": "google-callback"
+              "pathPrefix": "/(auth)/google-callback"
             }
           ],
           "category": [

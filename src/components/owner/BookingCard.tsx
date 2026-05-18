@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Booking } from '@/types/booking.types';
 import { router } from 'expo-router';
 import { Avatar } from '../Avatar';
+import { getBookingPrice } from '@/services/api.service';
 import { supabase } from '@/lib/supabase';
 import { CONFIG } from '@/constants/config';
 
@@ -21,6 +22,7 @@ interface BookingCardProps {
   item: Booking;
   index: number;
   businessImage?: string;
+  onPress?: (item: Booking) => void;
 
   onAccept?: (id: string) => void;
   onReject?: (id: string) => void;
@@ -33,6 +35,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   item,
   index,
   businessImage,
+  onPress,
   onAccept,
   onReject,
   onUndoAccept,
@@ -81,16 +84,20 @@ export const BookingCard: React.FC<BookingCardProps> = ({
       className="mb-4"
     >
       <Pressable
-        onPress={() =>
-          router.push(`/booking-detail/${item.id}`)
-        }
+        onPress={() => {
+          if (onPress) {
+            onPress(item);
+          } else {
+            router.push(`/booking-detail/${item.id}`);
+          }
+        }}
       >
-        <GlassCard className="p-4 border-slate-200/80 shadow-sm rounded-luxury">
+        <GlassCard className="p-2 border-slate-200/80 rounded-luxury">
 
           {/* Header */}
-          <View className="flex-row justify-between items-start mb-4">
+          <View className="flex-row justify-between items-start mb-2">
 
-            <View className="flex-row items-center flex-1 mr-2 gap-x-3">
+            <View className="flex-row items-center flex-1 gap-x-3">
 
               {/* Business Image / Customer Avatar */}
               {businessImage ? (
@@ -121,32 +128,37 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                   {item.customer_name || 'Client Direct'}
                 </Text>
 
-                <Text className="text-slate-500 text-xs mt-1">
-                  {item.service?.name || 'Standard Slot'}
+                <Text className="text-slate-500 text-xs mt-1" numberOfLines={1}>
+                  {item.services && item.services.length > 0
+                    ? item.services.map((s: any) => s.name).join(', ')
+                    : (item.service?.name || 'Standard Slot')}
                 </Text>
 
               </View>
             </View>
-
-            <Badge status={item.status} />
+            <View className="mt-1">
+              <Badge status={item.status} />
+            </View>
           </View>
 
           {/* Divider */}
-          <View className="h-[1px] bg-slate-100 mb-4" />
+          <View className="h-[1px] bg-slate-100 mb-2" />
 
           {/* Footer */}
           <View className="flex-row justify-between items-center">
 
             {/* Date */}
             <View className="flex-row items-center gap-x-2">
-              <Ionicons
-                name="calendar-outline"
-                size={14}
-                color="#64748B"
-              />
+              <View className="gap-x-4">
 
+                <Ionicons
+                  name="calendar-outline"
+                  size={14}
+                  color="#64748B"
+                />
+              </View>
               <Text className="text-slate-600 text-xs font-medium">
-                {item.date} • {item.time}
+                {item.date} - {item.time}
               </Text>
             </View>
 
@@ -191,7 +203,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                     {onNoShow && !item.no_show && (
                       <Pressable
                         onPress={() => onNoShow(item.id)}
-                        className="px-3 py-1.5 rounded-lg bg-slate-500/10 border border-slate-500/20"
+                        className="px-2.5 py-1 rounded-lg bg-slate-500/10 border border-slate-500/20"
                       >
                         <Text className="text-slate-500 text-[10px] font-bold uppercase">
                           No Show
@@ -229,18 +241,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 )}
 
               {/* Price */}
-              {item.status !== 'pending' &&
-                !onUndoAccept &&
-                !onUndoReject && (
-                  <Text className="text-accent-premium text-base font-black">
-                    ₹
-                    {(
-                      item.price ||
-                      item.service?.price ||
-                      0
-                    ).toFixed(0)}
-                  </Text>
-                )}
+              <Text className="text-accent-premium text-base font-black ml-2 align-middle self-center">
+                ₹{getBookingPrice(item).toFixed(0)}
+              </Text>
 
             </View>
           </View>

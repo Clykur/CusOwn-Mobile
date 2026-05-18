@@ -13,9 +13,13 @@ export const useBookings = (roleInput?: 'Customer' | 'Owner') => {
 
   const query = useQuery({
     queryKey: queryKeys.bookings.list(role ? { role } : undefined),
-    queryFn: () => {
+    queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
-      return apiService.getBookings(role || 'Customer');
+      const bookings = await apiService.getBookings(role || 'Customer');
+      if (__DEV__) {
+        logger.info(LogTag.QUERY, '[useBookings] Mapped bookings prices:', bookings.map(b => ({ id: b.id, price: b.price })));
+      }
+      return bookings;
     },
     enabled: !!user?.id,
   });
@@ -110,6 +114,21 @@ export const useUpdateBookingStatus = () => {
     },
     onError: (error) => {
       logger.error(LogTag.API, '❌ Failed to update booking status', error);
+    },
+  });
+};
+
+export const useRescheduleBooking = () => {
+  return useMutation({
+    mutationFn: ({ bookingId, payload }: { bookingId: string; payload: any }) =>
+      apiService.rescheduleBooking(bookingId, payload),
+    onSuccess: (_, variables) => {
+      logger.info(LogTag.API, `✅ Booking ${variables.bookingId} rescheduled successfully`, variables.payload);
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(variables.bookingId) });
+    },
+    onError: (error) => {
+      logger.error(LogTag.API, '❌ Failed to reschedule booking', error);
     },
   });
 };

@@ -87,8 +87,9 @@ export default function CustomerBrowseScreen() {
         postalCode: address?.postalCode || '',
         street: address?.street || '',
       });
-    } catch (error) {
-      console.log('Location Error:', error);
+    } catch (error: any) {
+      const { logger, LogTag } = require('@/utils/logger');
+      logger.error(LogTag.API, 'Location Error:', error);
 
       Alert.alert(
         'Location Error',

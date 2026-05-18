@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { apiService } from '@/services/api.service';
 import { Service } from '@/types/business.types';
 import { Ionicons } from '@expo/vector-icons';
+import { GlassCard } from '../ui/GlassCard';
 
 interface ServicesManagementProps {
   businessId: string;
@@ -105,26 +106,26 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
   };
 
   return (
-    <View className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+    <GlassCard className="p-6 border-slate-200/80 shadow-sm rounded-luxury">
       <View className="flex-row justify-between items-center mb-6 border-b border-slate-100 pb-4">
-        <Text className="text-slate-900 text-xl font-extrabold tracking-tight">Services</Text>
+        <Text className="text-slate-900 text-xl font-black tracking-tight">Services</Text>
         {!showForm && (
-          <TouchableOpacity onPress={openAdd} className="bg-slate-900 px-4 py-2.5 rounded-full active:bg-slate-800">
-            <Text className="text-white font-extrabold text-xs uppercase tracking-wider">+ Add Service</Text>
-          </TouchableOpacity>
+          <Pressable onPress={openAdd} className="bg-black px-5 py-3 rounded-full active:bg-slate-950">
+            <Text className="text-white font-black text-xs uppercase tracking-wider">+ Add Service</Text>
+          </Pressable>
         )}
       </View>
 
       {showForm ? (
         <View className="space-y-4 mb-2">
-          <Text className="text-slate-900 text-sm font-extrabold uppercase tracking-wider mb-2">
+          <Text className="text-slate-900 text-sm font-black uppercase tracking-wider mb-4">
             {editing ? 'Edit Service' : 'Add New Service'}
           </Text>
           
-          <View>
-            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-2">Service Name</Text>
+          <View className="mb-3">
+            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px] mb-2">Service Name</Text>
             <TextInput
-              className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 font-semibold"
+              className="bg-white border border-slate-200/80 rounded-2xl px-4 py-3.5 text-slate-800 font-semibold"
               placeholder="e.g. Haircut"
               placeholderTextColor="#94A3B8"
               value={form.name}
@@ -132,11 +133,11 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             />
           </View>
 
-          <View className="flex-row gap-4 mt-3">
+          <View className="flex-row gap-4 mb-4">
             <View className="flex-1">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-2">Duration (min)</Text>
+              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px] mb-2">Duration (min)</Text>
               <TextInput
-                className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 font-semibold"
+                className="bg-white border border-slate-200/80 rounded-2xl px-4 py-3.5 text-slate-800 font-semibold"
                 placeholder="30"
                 placeholderTextColor="#94A3B8"
                 value={form.duration}
@@ -145,9 +146,9 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
               />
             </View>
             <View className="flex-1">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-2">Price (₹)</Text>
+              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px] mb-2">Price (₹)</Text>
               <TextInput
-                className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 font-semibold"
+                className="bg-white border border-slate-200/80 rounded-2xl px-4 py-3.5 text-slate-800 font-semibold"
                 placeholder="500"
                 placeholderTextColor="#94A3B8"
                 value={form.price}
@@ -157,21 +158,21 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             </View>
           </View>
 
-          <View className="flex-row gap-3 pt-6">
-            <TouchableOpacity 
+          <View className="flex-row gap-3 pt-4">
+            <Pressable 
               onPress={handleSave} 
               disabled={saving}
-              className="flex-1 bg-slate-900 py-3.5 rounded-full items-center active:bg-slate-800"
+              className="flex-1 bg-black py-3.5 rounded-full items-center active:bg-slate-950"
             >
-              {saving ? <ActivityIndicator color="white" /> : <Text className="text-white font-extrabold text-sm uppercase tracking-widest">Save Service</Text>}
-            </TouchableOpacity>
-            <TouchableOpacity 
+              {saving ? <ActivityIndicator color="white" /> : <Text className="text-white font-black text-xs uppercase tracking-widest">Save Service</Text>}
+            </Pressable>
+            <Pressable 
               onPress={() => setShowForm(false)} 
               disabled={saving}
-              className="flex-1 bg-slate-100 py-3.5 rounded-full items-center border border-slate-200 active:bg-slate-200"
+              className="flex-1 bg-white py-3.5 rounded-full items-center border border-slate-200/80 active:bg-slate-50"
             >
-              <Text className="text-slate-700 font-extrabold text-sm uppercase tracking-widest">Cancel</Text>
-            </TouchableOpacity>
+              <Text className="text-slate-700 font-black text-xs uppercase tracking-widest">Cancel</Text>
+            </Pressable>
           </View>
         </View>
       ) : loading ? (
@@ -184,29 +185,29 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
       ) : (
         <View className="space-y-3">
           {services.map((s) => (
-            <View key={s.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex-row justify-between items-center mb-3">
+            <View key={s.id} className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex-row justify-between items-center mb-3">
               <View className="flex-1 mr-4">
                 <Text className="text-slate-900 text-base font-extrabold">{s.name}</Text>
                 <Text className="text-slate-500 text-xs mt-1 font-semibold">{s.duration} mins • ₹{s.price}</Text>
               </View>
               <View className="flex-row gap-x-3">
-                <TouchableOpacity 
+                <Pressable 
                   onPress={() => openEdit(s)}
-                  className="bg-white border border-slate-200 p-2.5 rounded-full active:bg-slate-100"
+                  className="bg-white border border-slate-200/80 p-2.5 rounded-full active:bg-slate-100"
                 >
                   <Ionicons name="pencil-outline" size={16} color="#64748B" />
-                </TouchableOpacity>
-                <TouchableOpacity 
+                </Pressable>
+                <Pressable 
                   onPress={() => handleDelete(s.id)}
-                  className="bg-white border border-slate-200 p-2.5 rounded-full active:bg-neutral-200"
+                  className="bg-white border border-slate-200/80 p-2.5 rounded-full active:bg-neutral-200"
                 >
                   <Ionicons name="trash-outline" size={16} color="#000000" />
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           ))}
         </View>
       )}
-    </View>
+    </GlassCard>
   );
 };

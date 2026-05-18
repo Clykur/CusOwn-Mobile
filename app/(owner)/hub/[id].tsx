@@ -20,6 +20,8 @@ import { apiService } from '@/services/api.service';
 import { Business } from '@/types/business.types';
 import apiClient from '@/lib/api-client';
 import * as ImagePicker from 'expo-image-picker';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { GlassCard } from '@/components/ui/GlassCard';
 
 type TabType = 'overview' | 'services' | 'photos' | 'schedule' | 'reviews';
 
@@ -137,9 +139,8 @@ export default function ManageHubScreen() {
       const fetched = await Promise.all(
         items.map(async (item: any) => {
           try {
-            const signedRes = await apiClient.get<{ url: string }>(`/media/signed-url`, {
-              params: { mediaId: item.id },
-            });
+            const { apiService } = await import('@/services/api.service');
+            const signedRes = await apiService.getSignedUrl(item.id);
             return { id: item.id, url: signedRes?.url || item.url };
           } catch (e) {
             return { id: item.id, url: item.url };
@@ -362,52 +363,56 @@ export default function ManageHubScreen() {
 
   if (loading && !refreshing) {
     return (
-      <View className="flex-1 justify-center items-center bg-slate-50">
-        <ActivityIndicator color="#64748B" size="large" />
-      </View>
+      <PremiumBackground>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator color="#000000" size="large" />
+        </View>
+      </PremiumBackground>
     );
   }
 
   if (!business) {
     return (
-      <View className="flex-1 justify-center items-center p-10 bg-slate-50">
-        <Ionicons name="alert-circle-outline" size={48} color="#000000" />
-        <Text className="text-slate-900 text-xl font-extrabold mt-4 mb-6">Hub Not Found</Text>
-        <Pressable
-          onPress={() => router.back()}
-          className="bg-slate-900 px-6 py-3 rounded-full active:bg-slate-800"
-        >
-          <Text className="text-white font-extrabold text-xs uppercase tracking-widest">Back to Portfolio</Text>
-        </Pressable>
-      </View>
+      <PremiumBackground>
+        <View className="flex-1 justify-center items-center p-10">
+          <Ionicons name="alert-circle-outline" size={48} color="#64748B" />
+          <Text className="text-slate-900 text-xl font-black mt-4 mb-6">Hub Not Found</Text>
+          <Pressable
+            onPress={() => router.back()}
+            className="bg-black px-6 py-3.5 rounded-full active:bg-slate-950"
+          >
+            <Text className="text-white font-black text-xs uppercase tracking-widest">Back to Portfolio</Text>
+          </Pressable>
+        </View>
+      </PremiumBackground>
     );
   }
 
   const renderTabButton = (tab: TabType, label: string, icon: any) => (
     <Pressable
       onPress={() => setActiveTab(tab)}
-      className={`px-4 py-3 rounded-full flex-row items-center mr-2 border ${activeTab === tab ? 'bg-slate-900 border-slate-900' : 'bg-white border-slate-200 active:bg-slate-50'
+      className={`px-4 py-3 rounded-full flex-row items-center mr-2 border ${activeTab === tab ? 'bg-black border-black' : 'bg-white border-slate-200/80 active:bg-slate-50'
         }`}
     >
       <Ionicons name={icon} size={15} color={activeTab === tab ? '#FFFFFF' : '#475569'} className="mr-2" />
       <Text className={`text-xs font-black uppercase tracking-wider ${activeTab === tab ? 'text-white' : 'text-slate-600'}`}>
-        {label}
+        {tab === 'overview' ? 'QR Code' : label}
       </Text>
     </Pressable>
   );
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['top']}>
         <View className="flex-1">
           {/* Header */}
-          <View className="px-luxury pt-6 pb-5 bg-white border-b border-slate-200 mb-6">
+          <View className="px-luxury pt-6 pb-4 mb-4">
             <View className="flex-row justify-between items-start">
               <View className="flex-1 mr-4">
                 <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
                   Management Suite
                 </Text>
-                <Text className="text-slate-900 text-3xl font-extrabold tracking-tight" numberOfLines={2}>
+                <Text className="text-slate-900 text-3xl font-black tracking-tight" numberOfLines={2}>
                   {business.salon_name}
                 </Text>
                 <View className="flex-row items-center mt-2">
@@ -419,7 +424,7 @@ export default function ManageHubScreen() {
               </View>
               <Pressable
                 onPress={() => router.push({ pathname: '/(owner)/edit-business', params: { id } })}
-                className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center border border-slate-200 active:bg-slate-100"
+                className="w-10 h-10 rounded-full bg-white/80 items-center justify-center border border-slate-200/80 active:bg-white shadow-sm"
               >
                 <Ionicons name="settings-outline" size={20} color="#334155" />
               </Pressable>
@@ -444,19 +449,19 @@ export default function ManageHubScreen() {
           <ScrollView
             className="flex-1"
             contentContainerClassName="px-luxury pb-20"
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#64748B" />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#000000" />}
             showsVerticalScrollIndicator={false}
           >
             {activeTab === 'overview' && (
               <AnimatedSection direction="up">
-                <View className="bg-white border border-slate-200 p-8 items-center rounded-2xl mb-6 shadow-sm">
+                <GlassCard className="p-8 items-center rounded-luxury mb-6 border-slate-200/80 shadow-sm">
                   <Text className="text-slate-900 text-lg font-extrabold mb-1">Business QR Identity</Text>
                   <Text className="text-slate-500 text-center text-xs mb-8 px-4 font-semibold">
                     Scan to instantly browse services and book appointments at your hub.
                   </Text>
 
                   {/* QR Code Container */}
-                  <View className="w-64 h-64 bg-slate-50 border border-slate-200 rounded-3xl p-4 items-center justify-center shadow-inner mb-8">
+                  <View className="w-64 h-64 bg-slate-50 border border-slate-200/80 rounded-3xl p-4 items-center justify-center shadow-inner mb-8">
                     {loadingQR ? (
                       <ActivityIndicator color="#64748B" />
                     ) : qrCode ? (
@@ -472,27 +477,27 @@ export default function ManageHubScreen() {
                   <View className="flex-row gap-x-4 w-full mt-2">
                     <Pressable
                       onPress={handleShareLink}
-                      className="flex-1 bg-slate-900 py-3.5 rounded-full items-center active:bg-slate-800"
+                      className="flex-1 bg-black py-3.5 rounded-full items-center active:bg-slate-950"
                     >
-                      <Text className="text-white font-extrabold text-sm uppercase tracking-widest">Share Link</Text>
+                      <Text className="text-white font-black text-xs uppercase tracking-widest">Share Link</Text>
                     </Pressable>
                   </View>
-                </View>
+                </GlassCard>
 
-                <View className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                  <Text className="text-slate-900 font-extrabold text-sm uppercase tracking-wider mb-4">
+                <GlassCard className="p-6 rounded-luxury border-slate-200/80 shadow-sm">
+                  <Text className="text-slate-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-4">
                     Direct Booking URL
                   </Text>
                   <Pressable
                     onPress={handleShareLink}
-                    className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex-row justify-between items-center active:bg-slate-100"
+                    className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex-row justify-between items-center active:bg-slate-100"
                   >
                     <Text className="text-slate-700 text-xs font-semibold flex-1 mr-4" numberOfLines={1}>
                       {business.booking_link || `https://cusown.com/salon/${business.id}`}
                     </Text>
                     <Ionicons name="share-outline" size={18} color="#64748B" />
                   </Pressable>
-                </View>
+                </GlassCard>
               </AnimatedSection>
             )}
 
@@ -504,18 +509,18 @@ export default function ManageHubScreen() {
 
             {activeTab === 'photos' && (
               <AnimatedSection direction="up">
-                <View className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm mb-6">
+                <GlassCard className="p-6 rounded-luxury border-slate-200/80 shadow-sm mb-6">
                   <View className="flex-row justify-between items-center mb-6 border-b border-slate-100 pb-4">
                     <Text className="text-slate-900 font-extrabold text-xl">Shop Portfolio</Text>
                     <Pressable
                       onPress={handleAddPhoto}
                       disabled={uploadingPhoto}
-                      className="bg-slate-900 px-4 py-2.5 rounded-full active:bg-slate-800"
+                      className="bg-black px-5 py-3 rounded-full active:bg-slate-950"
                     >
                       {uploadingPhoto ? (
                         <ActivityIndicator color="white" size="small" />
                       ) : (
-                        <Text className="text-white font-extrabold text-xs uppercase tracking-wider">+ Add Photo</Text>
+                        <Text className="text-white font-black text-xs uppercase tracking-wider">+ Add Photo</Text>
                       )}
                     </Pressable>
                   </View>
@@ -531,8 +536,8 @@ export default function ManageHubScreen() {
                     <View className="flex-row flex-wrap gap-4 justify-between">
                       {photos.map((item) => (
                         <View
-                          key={item.id}
-                          className="w-[47%] aspect-square bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden position-relative mb-2"
+                           key={item.id}
+                           className="w-[47%] aspect-square bg-slate-50 rounded-2xl border border-slate-200/80 overflow-hidden relative mb-2"
                         >
                           <Image source={{ uri: item.url }} className="w-full h-full" resizeMode="cover" />
                           <Pressable
@@ -545,34 +550,34 @@ export default function ManageHubScreen() {
                       ))}
                     </View>
                   )}
-                </View>
+                </GlassCard>
               </AnimatedSection>
             )}
 
             {activeTab === 'schedule' && (
               <AnimatedSection direction="up">
                 {/* 1. Holidays Management */}
-                <View className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm mb-6">
+                <GlassCard className="p-6 rounded-luxury border-slate-200/80 shadow-sm mb-6">
                   <Text className="text-slate-900 text-lg font-extrabold mb-1">Holiday Mode</Text>
                   <Text className="text-slate-500 text-xs mb-6 font-semibold">
                     Set complete holiday dates where booking is disabled.
                   </Text>
 
                   {/* Add Holiday Form */}
-                  <View className="bg-slate-50 border border-slate-200 p-4 rounded-2xl mb-6">
-                    <Text className="text-slate-800 font-extrabold text-xs uppercase tracking-wider mb-3">
+                  <View className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl mb-6">
+                    <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-3">
                       Schedule a Holiday
                     </Text>
                     <View className="space-y-3">
                       <TextInput
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-xs font-semibold mb-2"
+                        className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-2"
                         placeholder="Date (YYYY-MM-DD)"
                         placeholderTextColor="#94A3B8"
                         value={holidayDate}
                         onChangeText={setHolidayDate}
                       />
                       <TextInput
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-xs font-semibold mb-4"
+                        className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-4"
                         placeholder="Holiday Name (e.g. Diwali)"
                         placeholderTextColor="#94A3B8"
                         value={holidayName}
@@ -581,12 +586,12 @@ export default function ManageHubScreen() {
                       <Pressable
                         onPress={handleAddHoliday}
                         disabled={submittingHoliday}
-                        className="bg-slate-900 py-3.5 rounded-full items-center active:bg-slate-800"
+                        className="bg-black py-3.5 rounded-full items-center active:bg-slate-950"
                       >
                         {submittingHoliday ? (
                           <ActivityIndicator color="white" />
                         ) : (
-                          <Text className="text-white font-extrabold text-xs uppercase tracking-wider">
+                          <Text className="text-white font-black text-xs uppercase tracking-wider">
                             Add Holiday
                           </Text>
                         )}
@@ -606,7 +611,7 @@ export default function ManageHubScreen() {
                       {holidays.map((item) => (
                         <View
                           key={item.id}
-                          className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex-row items-center justify-between mb-2"
+                          className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex-row items-center justify-between mb-2"
                         >
                           <View className="flex-1 mr-4">
                             <Text className="text-slate-900 font-extrabold text-xs">{item.holiday_name}</Text>
@@ -616,7 +621,7 @@ export default function ManageHubScreen() {
                           </View>
                           <Pressable
                             onPress={() => handleDeleteHoliday(item.id)}
-                            className="bg-white border border-slate-200 p-2 rounded-full active:bg-neutral-200"
+                            className="bg-white border border-slate-200/80 p-2 rounded-full active:bg-neutral-200"
                           >
                             <Ionicons name="trash-outline" size={14} color="#000000" />
                           </Pressable>
@@ -624,37 +629,37 @@ export default function ManageHubScreen() {
                       ))}
                     </View>
                   )}
-                </View>
+                </GlassCard>
 
                 {/* 2. Specific Downtime Closures */}
-                <View className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm mb-6">
+                <GlassCard className="p-6 rounded-luxury border-slate-200/80 shadow-sm mb-6">
                   <Text className="text-slate-900 text-lg font-extrabold mb-1">Downtime Closures</Text>
                   <Text className="text-slate-500 text-xs mb-6 font-semibold">
                     Set longer closures (e.g. renovation or temporary closure).
                   </Text>
 
                   {/* Add Closure Form */}
-                  <View className="bg-slate-50 border border-slate-200 p-4 rounded-2xl mb-6">
-                    <Text className="text-slate-800 font-extrabold text-xs uppercase tracking-wider mb-3">
+                  <View className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl mb-6">
+                    <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-3">
                       Add Specific Closure
                     </Text>
                     <View className="space-y-3">
                       <TextInput
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-xs font-semibold mb-2"
+                        className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-2"
                         placeholder="Start Date (YYYY-MM-DD)"
                         placeholderTextColor="#94A3B8"
                         value={closureStart}
                         onChangeText={setClosureStart}
                       />
                       <TextInput
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-xs font-semibold mb-2"
+                        className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-2"
                         placeholder="End Date (YYYY-MM-DD)"
                         placeholderTextColor="#94A3B8"
                         value={closureEnd}
                         onChangeText={setClosureEnd}
                       />
                       <TextInput
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-xs font-semibold mb-4"
+                        className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-4"
                         placeholder="Reason (e.g. Renovation)"
                         placeholderTextColor="#94A3B8"
                         value={closureReason}
@@ -663,12 +668,12 @@ export default function ManageHubScreen() {
                       <Pressable
                         onPress={handleAddClosure}
                         disabled={submittingClosure}
-                        className="bg-slate-900 py-3.5 rounded-full items-center active:bg-slate-800"
+                        className="bg-black py-3.5 rounded-full items-center active:bg-slate-950"
                       >
                         {submittingClosure ? (
                           <ActivityIndicator color="white" />
                         ) : (
-                          <Text className="text-white font-extrabold text-xs uppercase tracking-wider">
+                          <Text className="text-white font-black text-xs uppercase tracking-wider">
                             Add Closure
                           </Text>
                         )}
@@ -688,7 +693,7 @@ export default function ManageHubScreen() {
                       {closures.map((item) => (
                         <View
                           key={item.id}
-                          className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex-row items-center justify-between mb-2"
+                          className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex-row items-center justify-between mb-2"
                         >
                           <View className="flex-1 mr-4">
                             <Text className="text-slate-900 font-extrabold text-xs">{item.reason}</Text>
@@ -698,7 +703,7 @@ export default function ManageHubScreen() {
                           </View>
                           <Pressable
                             onPress={() => handleDeleteClosure(item.id)}
-                            className="bg-white border border-slate-200 p-2 rounded-full active:bg-neutral-200"
+                            className="bg-white border border-slate-200/80 p-2 rounded-full active:bg-neutral-200"
                           >
                             <Ionicons name="trash-outline" size={14} color="#000000" />
                           </Pressable>
@@ -706,20 +711,20 @@ export default function ManageHubScreen() {
                       ))}
                     </View>
                   )}
-                </View>
+                </GlassCard>
               </AnimatedSection>
             )}
 
             {activeTab === 'reviews' && (
               <AnimatedSection direction="up">
-                <View className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                <GlassCard className="p-6 rounded-luxury border-slate-200/80 shadow-sm">
                   <View className="mb-6 border-b border-slate-100 pb-4">
                     <Text className="text-slate-900 font-extrabold text-xl">Customer Reviews</Text>
                     {loadingReviews ? (
                       <ActivityIndicator color="#64748B" className="mt-2 align-self-start" />
                     ) : (
                       <View className="flex-row items-center mt-2">
-                        <Ionicons name="star" size={16} color="#000000" />
+                        <Ionicons name="star" size={16} color="#FFB800" />
                         <Text className="text-slate-900 font-extrabold ml-1.5 text-lg">
                           {Number(reviewData.rating_avg).toFixed(1)}
                         </Text>
@@ -742,7 +747,7 @@ export default function ManageHubScreen() {
                       {reviewData.reviews.map((rev: any, idx: number) => (
                         <View
                           key={rev.id || idx}
-                          className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-3"
+                          className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mb-3"
                         >
                           <View className="flex-row justify-between items-center mb-2">
                             <Text className="text-slate-900 font-extrabold text-sm">
@@ -750,7 +755,7 @@ export default function ManageHubScreen() {
                             </Text>
                             <View className="flex-row items-center">
                               {Array.from({ length: rev.rating }).map((_, starIdx) => (
-                                <Ionicons key={starIdx} name="star" size={12} color="#000000" />
+                                <Ionicons key={starIdx} name="star" size={12} color="#FFB800" />
                               ))}
                             </View>
                           </View>
@@ -770,12 +775,12 @@ export default function ManageHubScreen() {
                       ))}
                     </View>
                   )}
-                </View>
+                </GlassCard>
               </AnimatedSection>
             )}
           </ScrollView>
         </View>
       </SafeAreaView>
-    </View>
+    </PremiumBackground>
   );
 }
