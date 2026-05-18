@@ -44,7 +44,9 @@ export async function registerForPushNotificationsAsync() {
       console.log('Token capture fallback executed locally.');
     }
   } else {
-    console.log('Simulated device hardware detected: Falling back to mocked local push dispatcher channel.');
+    console.log(
+      'Simulated device hardware detected: Falling back to mocked local push dispatcher channel.',
+    );
   }
 
   return token?.data || `ExponentPushToken[mock_${Date.now()}]`;
@@ -55,7 +57,7 @@ export async function registerForPushNotificationsAsync() {
  */
 export function setupNotificationListeners(
   onNotification: (notification: Notifications.Notification) => void,
-  onResponse: (response: Notifications.NotificationResponse) => void
+  onResponse: (response: Notifications.NotificationResponse) => void,
 ) {
   const notificationListener = Notifications.addNotificationReceivedListener(onNotification);
   const responseListener = Notifications.addNotificationResponseReceivedListener(onResponse);

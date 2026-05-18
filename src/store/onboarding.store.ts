@@ -35,11 +35,12 @@ export const useOnboardingStore = create<OnboardingState>()(
       setSplashShown: (shown) => set({ splashShown: shown }),
       setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),
       setSelectedRole: (role) => set({ selectedRole: role }),
-      resetOnboarding: () => set({ onboardingCompleted: false, selectedRole: null, splashShown: false }),
+      resetOnboarding: () =>
+        set({ onboardingCompleted: false, selectedRole: null, splashShown: false }),
     }),
     {
       name: 'cusown-onboarding-storage',
       storage: createJSONStorage(() => secureStorageAdapter),
-    }
-  )
+    },
+  ),
 );

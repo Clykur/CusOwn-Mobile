@@ -23,11 +23,7 @@ export const GlassView: React.FC<GlassViewProps> = ({
   ...props
 }) => {
   return (
-    <View
-      className={`overflow-hidden ${className}`}
-      style={[{ borderRadius }, style]}
-      {...props}
-    >
+    <View className={`overflow-hidden ${className}`} style={[{ borderRadius }, style]} {...props}>
       {/*
        * Android: BlurView internally uses a software-rendered canvas. Nesting
        * hardware-accelerated views (e.g. Animated.View with hardware texture) inside
@@ -37,19 +33,12 @@ export const GlassView: React.FC<GlassViewProps> = ({
        * iOS: BlurView uses UIVisualEffectView natively — no crash risk.
        */}
       {Platform.OS === 'ios' ? (
-        <BlurView
-          intensity={intensity}
-          tint={tint}
-          className="absolute inset-0"
-        />
+        <BlurView intensity={intensity} tint={tint} className="absolute inset-0" />
       ) : (
         <View
           className="absolute inset-0"
           style={{
-            backgroundColor:
-              tint === 'light'
-                ? 'rgba(255,255,255,0.12)'
-                : 'rgba(15,23,42,0.70)',
+            backgroundColor: tint === 'light' ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.70)',
           }}
         />
       )}

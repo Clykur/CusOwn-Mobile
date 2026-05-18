@@ -1,16 +1,8 @@
 // src/hooks/useOptimisticMutation.ts
 
-import {
-  useMutation,
-  UseMutationOptions,
-} from '@tanstack/react-query';
+import { useMutation, UseMutationOptions } from '@tanstack/react-query';
 
-type OptimisticMutationOptions<
-  TData,
-  TError,
-  TVariables,
-  TContext,
-> = UseMutationOptions<
+type OptimisticMutationOptions<TData, TError, TVariables, TContext> = UseMutationOptions<
   TData,
   TError,
   TVariables,
@@ -22,18 +14,6 @@ export function useOptimisticMutation<
   TError = unknown,
   TVariables = void,
   TContext = unknown,
->(
-  options: OptimisticMutationOptions<
-    TData,
-    TError,
-    TVariables,
-    TContext
-  >
-) {
-  return useMutation<
-    TData,
-    TError,
-    TVariables,
-    TContext
-  >(options);
+>(options: OptimisticMutationOptions<TData, TError, TVariables, TContext>) {
+  return useMutation<TData, TError, TVariables, TContext>(options);
 }

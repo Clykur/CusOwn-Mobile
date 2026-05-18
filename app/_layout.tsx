@@ -24,13 +24,14 @@ if (!isExpoGo) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     Notifications = require('expo-notifications');
     Notifications?.setNotificationHandler?.({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      } as any),
+      handleNotification: async () =>
+        ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+          shouldShowBanner: true,
+          shouldShowList: true,
+        }) as any,
     });
   } catch {
     Notifications = null;
@@ -50,7 +51,10 @@ export default function RootLayout() {
 
     // 1. Check for an existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
-      logger.info(LogTag.AUTH, session ? '✅ RootLayout: Session restored' : 'ℹ️ RootLayout: No initial session');
+      logger.info(
+        LogTag.AUTH,
+        session ? '✅ RootLayout: Session restored' : 'ℹ️ RootLayout: No initial session',
+      );
       setSession(session);
     });
 
@@ -58,7 +62,9 @@ export default function RootLayout() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      logger.info(LogTag.AUTH, `🔔 RootLayout: Auth Event: ${_event}`, { user: session?.user.email });
+      logger.info(LogTag.AUTH, `🔔 RootLayout: Auth Event: ${_event}`, {
+        user: session?.user.email,
+      });
       setSession(session);
     });
 
@@ -79,13 +85,15 @@ export default function RootLayout() {
     const isPublic = rootSegment === '(public)';
     const isAuth = rootSegment === '(auth)';
     const isSplash = isPublic && segments[0] === 'splash';
-    const isCallback = rootSegment === 'google-callback' || (isAuth && (segments as string[])[1] === 'google-callback');
+    const isCallback =
+      rootSegment === 'google-callback' ||
+      (isAuth && (segments as string[])[1] === 'google-callback');
     const isAtRoot = !rootSegment || rootSegment === 'index';
 
     logger.info(LogTag.AUTH, `🛣️ RootLayout: Navigation Update`, {
       session: !!session,
       role,
-      segment: rootSegment
+      segment: rootSegment,
     });
 
     // Let the custom splash screen control its own destiny if it is rendering
@@ -94,7 +102,10 @@ export default function RootLayout() {
     // 1. Handle Redirect after Sign-in
     if (session) {
       if (!role) {
-        logger.info(LogTag.AUTH, '⏳ RootLayout: Session exists but role is null, waiting for resolution...');
+        logger.info(
+          LogTag.AUTH,
+          '⏳ RootLayout: Session exists but role is null, waiting for resolution...',
+        );
         return;
       }
 
@@ -139,7 +150,7 @@ export default function RootLayout() {
             .from('user_profiles')
             .update({
               push_token: tokenData.data,
-              platform: Platform.OS
+              platform: Platform.OS,
             })
             .eq('id', user.id);
         }
@@ -151,7 +162,14 @@ export default function RootLayout() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#F8FAFC',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <ActivityIndicator size="large" color="#0F172A" />
       </View>
     );

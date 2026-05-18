@@ -21,10 +21,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   const cardClass = variant === 'light' ? 'glass-card' : 'glass-card-dark';
 
   return (
-    <View
-      className={`${cardClass} ${className}`}
-      {...props}
-    >
+    <View className={`${cardClass} ${className}`} {...props}>
       {/*
        * Android: BlurView uses a software-rendered canvas layer which causes
        * "Software rendering doesn't support hardware bitmaps" when hardware
@@ -43,9 +40,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
           className="absolute inset-0"
           style={{
             backgroundColor:
-              variant === 'light'
-                ? 'rgba(255,255,255,0.9)'
-                : 'rgba(248,250,252,0.95)',
+              variant === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(248,250,252,0.95)',
           }}
         />
       )}
