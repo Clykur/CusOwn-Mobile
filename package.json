@@ -6,7 +6,18 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck",
+    "build:android": "bash scripts/build-local-android.sh",
+    "build:android:production": "bash scripts/build-local-android.sh production",
+    "build:ios": "bash scripts/build-local-ios.sh",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,md,css}": "prettier --write"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -14,7 +25,6 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@supabase/supabase-js": "^2.45.0",
     "@tanstack/react-query": "^5.50.0",
-    "axios": "^1.16.1",
     "cli": "^1.0.1",
     "dayjs": "^1.11.20",
     "eslint": "^10.3.0",
@@ -23,6 +33,7 @@
     "expo-auth-session": "~7.0.11",
     "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.13",
+    "expo-crypto": "~15.0.9",
     "expo-dev-client": "~6.0.21",
     "expo-device": "~8.0.10",
     "expo-font": "~14.0.11",
@@ -47,6 +58,7 @@
     "react-native": "0.81.5",
     "react-native-calendars": "^1.1306.0",
     "react-native-css-interop": "^0.2.3",
+    "react-native-get-random-values": "~1.11.0",
     "react-native-razorpay": "^3.0.0",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
@@ -60,6 +72,9 @@
   "devDependencies": {
     "@types/react": "~19.1.10",
     "babel-preset-expo": "~54.0.10",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
     "typescript": "~5.9.2"
   },
   "private": true

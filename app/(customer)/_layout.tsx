@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { RatingPromptProvider } from '@/components/customer/RatingPromptProvider';
+import { RatingPromptProvider } from '@/features/reviews/components/RatingPromptProvider';
 
 export default function CustomerTabsLayout() {
   return (

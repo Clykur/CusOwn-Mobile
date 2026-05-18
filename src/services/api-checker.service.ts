@@ -22,18 +22,19 @@ export const apiChecker = {
       const duration = Date.now() - startTime;
 
       return {
-        id: 'backend-api',
-        name: 'Next.js Backend API',
-        status: result.status as any,
+        id: 'supabase-health',
+        name: 'Supabase connectivity',
+        status: result.status as HealthCheckResult['status'],
         message: `${result.message} (${duration}ms)`,
         details: result.details,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Connection failed';
       return {
-        id: 'backend-api',
-        name: 'Next.js Backend API',
+        id: 'supabase-health',
+        name: 'Supabase connectivity',
         status: 'error',
-        message: err.message || 'Connection failed',
+        message,
         details: err,
       };
     }
@@ -44,10 +45,13 @@ export const apiChecker = {
    */
   async checkAuthSession(): Promise<HealthCheckResult> {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
       if (error) throw error;
-      
+
       if (!session) {
         return {
           id: 'auth-session',
@@ -64,7 +68,9 @@ export const apiChecker = {
         id: 'auth-session',
         name: 'Supabase Auth Session',
         status: isExpired ? 'error' : 'success',
-        message: isExpired ? 'Session active' : `Session active (Expires: ${expiresAt.toLocaleString()})`,
+        message: isExpired
+          ? 'Session active'
+          : `Session active (Expires: ${expiresAt.toLocaleString()})`,
         details: { user: session.user.email, id: session.user.id },
       };
     } catch (err: any) {
@@ -82,11 +88,13 @@ export const apiChecker = {
    */
   async verifyZustandSync(): Promise<HealthCheckResult> {
     try {
-      const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+      const {
+        data: { session: supabaseSession },
+      } = await supabase.auth.getSession();
       const { session: zustandSession, user: zustandUser } = useAuthStore.getState();
 
-      const inSync = (!!supabaseSession === !!zustandSession) && 
-                     (supabaseSession?.user.id === zustandUser?.id);
+      const inSync =
+        !!supabaseSession === !!zustandSession && supabaseSession?.user.id === zustandUser?.id;
 
       return {
         id: 'zustand-sync',
@@ -113,13 +121,12 @@ export const apiChecker = {
    */
   async testDatabaseRead(): Promise<HealthCheckResult> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Auth required for DB read test');
 
-      const { data, error, status } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .limit(1);
+      const { data, error, status } = await supabase.from('user_profiles').select('*').limit(1);
 
       if (error) {
         if (status === 406 || error.code === '42501') {
@@ -138,7 +145,10 @@ export const apiChecker = {
         id: 'db-read',
         name: 'DB Read (User Profiles)',
         status: data && data.length > 0 ? 'success' : 'warning',
-        message: data && data.length > 0 ? 'Successfully read from DB' : 'Read successful but returned 0 rows (Check RLS)',
+        message:
+          data && data.length > 0
+            ? 'Successfully read from DB'
+            : 'Read successful but returned 0 rows (Check RLS)',
         details: data,
       };
     } catch (err: any) {
@@ -183,8 +193,10 @@ export const apiChecker = {
    * Verify persistence after app restart (simulated).
    */
   async verifyPersistence(): Promise<HealthCheckResult> {
-    const { data: { session } } = await supabase.auth.getSession();
-    
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
     return {
       id: 'persistence',
       name: 'Session Persistence',
@@ -198,7 +210,9 @@ export const apiChecker = {
    */
   async testDatabaseWrite(): Promise<HealthCheckResult> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Auth required for DB write test');
 
       const { data: profile } = await supabase
@@ -228,10 +242,7 @@ export const apiChecker = {
         throw updateError;
       }
 
-      await supabase
-        .from('profiles')
-        .update({ full_name: originalName })
-        .eq('id', user.id);
+      await supabase.from('profiles').update({ full_name: originalName }).eq('id', user.id);
 
       return {
         id: 'db-write',
@@ -247,6 +258,5 @@ export const apiChecker = {
         message: err.message || 'Failed to write to database',
       };
     }
-  }
+  },
 };
-
