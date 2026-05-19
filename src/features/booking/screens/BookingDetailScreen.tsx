@@ -21,6 +21,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { supabase } from '@/lib/supabase';
 import { BookingActions } from '@/features/booking/components/booking-status/booking-actions';
 import { apiService } from '@/services/api.service';
+import { formatBookingDate, formatBookingTime } from '@/utils/time';
+
 function getStatusStyles(status: string) {
   switch (status.toLowerCase()) {
     case 'confirmed':
@@ -308,9 +310,9 @@ export default function BookingDetailScreen() {
         >
           <TouchableOpacity
             onPress={() => router.back()}
-            className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center border border-slate-200"
+            className="w-10 h-10 rounded-full items-center justify-center"
           >
-            <Ionicons name="chevron-back" size={22} color="#0F172A" />
+            <Ionicons name="arrow-back" size={22} color="#0F172A" />
           </TouchableOpacity>
 
           <Text className="text-slate-900 text-base font-extrabold uppercase tracking-widest">
@@ -349,7 +351,7 @@ export default function BookingDetailScreen() {
           <AnimatedSection delay={100} className="mb-5">
             <View className="bg-white border border-slate-200 rounded-2xl p-5">
               <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-4">
-                Client Information
+                Your Information
               </Text>
 
               <View className="flex-row items-center gap-x-4">
@@ -381,7 +383,7 @@ export default function BookingDetailScreen() {
                 {booking.customer_phone && (
                   <TouchableOpacity
                     onPress={() => handleCall(booking.customer_phone)}
-                    className="p-3 bg-slate-50 border border-slate-100 rounded-xl"
+                    className="p-3 rounded-xl"
                   >
                     <Ionicons name="call-outline" size={18} color="#0F172A" />
                   </TouchableOpacity>
@@ -400,7 +402,7 @@ export default function BookingDetailScreen() {
 
               <View className="flex-row items-center gap-x-4">
                 <Avatar
-                  url={booking.business?.image_url || booking.business?.cover_photo_url || null}
+                  url={booking.business?.owner_image || null}
                   name={booking.business?.salon_name || 'CusOwn Salon'}
                   size={48}
                   className="border border-slate-100"
@@ -430,7 +432,7 @@ export default function BookingDetailScreen() {
                   {booking.business?.whatsapp_number && (
                     <TouchableOpacity
                       onPress={() => handleCall(booking.business.whatsapp_number)}
-                      className="p-3 bg-slate-50 border border-slate-100 rounded-xl mr-2"
+                      className="p-3 rounded-xl mr-2"
                     >
                       <Ionicons name="call-outline" size={18} color="#0F172A" />
                     </TouchableOpacity>
@@ -439,10 +441,7 @@ export default function BookingDetailScreen() {
                   {/* WHATSAPP */}
 
                   {whatsappUrl && (
-                    <TouchableOpacity
-                      onPress={handleOpenWhatsapp}
-                      className="p-3 bg-green-50 border border-green-100 rounded-xl"
-                    >
+                    <TouchableOpacity onPress={handleOpenWhatsapp} className="p-3 rounded-xl">
                       <Ionicons name="logo-whatsapp" size={18} color="#16A34A" />
                     </TouchableOpacity>
                   )}
@@ -481,7 +480,7 @@ export default function BookingDetailScreen() {
 
                 <View className="flex-row justify-between items-start">
                   <View className="flex-1 mr-4">
-                    <Text className="text-slate-900 font-extrabold text-base">
+                    <Text className="text-slate-900 font-extrabold text-[17px]">
                       {booking.services && booking.services.length > 0
                         ? booking.services.map((s: any) => s.name).join(', ')
                         : booking.service?.name || 'Service'}
@@ -493,7 +492,7 @@ export default function BookingDetailScreen() {
                     </Text>
                   </View>
 
-                  <Text className="text-slate-900 font-black text-lg">
+                  <Text className="text-slate-900 text-[24px] font-black tracking-tight">
                     ₹
                     {getBookingPrice(booking) % 1 === 0
                       ? getBookingPrice(booking).toFixed(0)
@@ -504,21 +503,27 @@ export default function BookingDetailScreen() {
 
               <View className="h-[1px] bg-slate-100 my-4" />
 
-              <View className="flex-row justify-between">
+              <View className="flex-row items-start justify-between">
+                {/* Left */}
                 <View className="flex-1">
                   <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1">
                     Scheduled Date
                   </Text>
 
-                  <Text className="text-slate-800 font-bold text-sm">{booking.date}</Text>
+                  <Text className="text-slate-800 font-bold text-sm">
+                    {formatBookingDate(booking.date)}
+                  </Text>
                 </View>
 
-                <View className="flex-1">
+                {/* Right */}
+                <View className="flex-1 items-end">
                   <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1">
                     Arrival Slot
                   </Text>
 
-                  <Text className="text-black font-bold text-sm">{booking.time}</Text>
+                  <Text className="text-black font-bold text-sm text-right">
+                    {formatBookingTime(booking.time)}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -546,10 +551,12 @@ export default function BookingDetailScreen() {
                   },
                   salon: booking.business,
                   business_id: booking.business_id,
+                  services: booking.services,
+                  service: booking.service,
                 }}
                 availableSlots={slots}
                 cancellationMinHoursMs={cancellationMinHoursMs}
-                onCancelled={handleCancelBooking}
+                onCancelled={handleCancelled}
                 onRescheduled={handleRescheduled}
               />
             </View>

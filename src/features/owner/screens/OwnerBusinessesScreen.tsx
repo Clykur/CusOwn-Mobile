@@ -115,7 +115,7 @@ export default function OwnerBusinessesScreen() {
                     </View>
                     <Pressable
                       onPress={() => onManageBusiness(b.id)}
-                      className="bg-black px-6 py-3 rounded-full active:bg-slate-950"
+                      className="bg-black px-6 py-3 rounded-full"
                     >
                       <Text className="text-white text-xs font-black uppercase tracking-wider">
                         Manage Hub

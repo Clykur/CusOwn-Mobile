@@ -8,6 +8,17 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { useOwnerBusinesses, useOwnerAnalytics } from '@/hooks/useOwner';
 import { router } from 'expo-router';
+import Svg, {
+  Path,
+  Circle,
+  Rect,
+  Line as SvgLine,
+  Defs,
+  LinearGradient,
+  Stop,
+  G,
+  Text as SvgText,
+} from 'react-native-svg';
 
 type DateFilterType = 'all' | 'today' | 'week' | 'month' | 'custom';
 type TrendTabType = 'bookings' | 'revenue';
@@ -52,6 +63,8 @@ export default function OwnerAnalyticsScreen() {
   const [showFilter, setShowFilter] = useState(false);
   const [trendTab, setTrendTab] = useState<TrendTabType>('bookings');
   const [activeBarIndex, setActiveBarIndex] = useState<number | null>(null);
+  const [activeHourIndex, setActiveHourIndex] = useState<number | null>(null);
+  const [chartWidth, setChartWidth] = useState<number>(300);
 
   const {
     data: businessesData,
@@ -268,6 +281,23 @@ export default function OwnerAnalyticsScreen() {
     return Math.max(...peakHoursData.map((p) => p.count), 1);
   }, [peakHoursData]);
 
+  const peakHoursPoints = useMemo(() => {
+    const minVal = 0;
+    const maxVal = maxPeakCount;
+    const height = 180;
+    const padding = { top: 20, right: 15, bottom: 25, left: 30 };
+    return peakHoursData.map((d, i) => {
+      const x =
+        padding.left +
+        (i / (peakHoursData.length - 1 || 1)) * (chartWidth - padding.left - padding.right);
+      const y =
+        height -
+        padding.bottom -
+        ((d.count - minVal) / (maxVal - minVal)) * (height - padding.top - padding.bottom);
+      return { x, y, val: d.count, label: d.label };
+    });
+  }, [peakHoursData, maxPeakCount, chartWidth]);
+
   // Compute Service Popularity
   const servicesData = useMemo(() => {
     const rawServices =
@@ -444,9 +474,19 @@ export default function OwnerAnalyticsScreen() {
                 <AnimatedSection direction="up" delay={450}>
                   <GlassCard className="border-slate-200/80 p-2 rounded-luxury">
                     <View className="flex-row items-center justify-between mb-6">
-                      <Text className="text-slate-900 text-base font-extrabold">
-                        Activity Trends
-                      </Text>
+                      <View>
+                        <Text className="text-slate-900 text-base font-extrabold">
+                          Activity Trends
+                        </Text>
+                        {activeBarIndex !== null && dailyPoints[activeBarIndex] && (
+                          <Text className="text-amber-600 text-xs font-bold mt-0.5">
+                            {dailyPoints[activeBarIndex].label}:{' '}
+                            {trendTab === 'bookings'
+                              ? `${dailyPoints[activeBarIndex].bookingCount} bookings`
+                              : `₹${Math.round(dailyPoints[activeBarIndex].revenue)}`}
+                          </Text>
+                        )}
+                      </View>
 
                       {/* Sub-tabs */}
                       <View className="flex-row bg-slate-100 p-1 rounded-full border border-slate-200">
@@ -483,7 +523,7 @@ export default function OwnerAnalyticsScreen() {
                     <ScrollView
                       horizontal
                       showsHorizontalScrollIndicator={false}
-                      contentContainerClassName="h-44 items-end pb-2"
+                      contentContainerClassName="h-52 items-end pb-2"
                     >
                       {dailyPoints.map((point: any, index: number) => {
                         const val = trendTab === 'bookings' ? point.bookingCount : point.revenue;
@@ -500,7 +540,7 @@ export default function OwnerAnalyticsScreen() {
                             {isActive && (
                               <View className="absolute -top-12 bg-slate-900 px-2.5 py-1 rounded-lg items-center justify-center z-10">
                                 <Text className="text-white text-[10px] font-bold">
-                                  {trendTab === 'bookings' ? `${val} book` : `₹${Math.round(val)}`}
+                                  {trendTab === 'bookings' ? `${val}` : `₹${Math.round(val)}`}
                                 </Text>
                                 <View className="w-1.5 h-1.5 bg-slate-900 rotate-45 -mb-1 mt-0.5" />
                               </View>
@@ -590,31 +630,179 @@ export default function OwnerAnalyticsScreen() {
 
                 {/* Peak Booking Hours */}
                 <AnimatedSection direction="up" delay={550}>
-                  <GlassCard className="border-slate-200/80 p-2 rounded-luxury mb-6">
-                    <Text className="text-slate-900 text-base font-extrabold mb-4">
-                      Peak Traffic Hours
-                    </Text>
+                  <GlassCard className="border border-slate-200/80 p-5 rounded-[28px] mb-6">
+                    {/* Header */}
+                    <View className="mb-5">
+                      <Text className="text-slate-900 text-lg font-black">Peak Traffic Hours</Text>
 
-                    <View className="space-y-3">
-                      {peakHoursData.map((hour, index) => {
-                        const widthPct = Math.max((hour.count / maxPeakCount) * 100, 3);
+                      <Text className="text-slate-500 text-xs mt-1">
+                        Customer activity throughout the day
+                      </Text>
+                    </View>
+
+                    {/* Graph */}
+                    <View style={{ width: '100%', height: 180 }}>
+                      {(() => {
+                        const height = 180;
+                        const padding = { top: 20, right: 15, bottom: 25, left: 30 };
+                        const pathD = peakHoursPoints
+                          .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
+                          .join(' ');
+                        const areaD =
+                          peakHoursPoints.length > 0
+                            ? `${pathD} L ${peakHoursPoints[peakHoursPoints.length - 1].x} ${height - padding.bottom} L ${peakHoursPoints[0].x} ${height - padding.bottom} Z`
+                            : '';
+
+                        const yTicks = 4;
+                        const yTicksList = Array.from({ length: yTicks }, (_, i) => {
+                          const val = Math.round((i / (yTicks - 1)) * maxPeakCount);
+                          const y =
+                            height -
+                            padding.bottom -
+                            (i / (yTicks - 1)) * (height - padding.top - padding.bottom);
+                          return { val, y };
+                        });
+
                         return (
-                          <View key={index} className="flex-row items-center">
-                            <Text className="w-20 text-slate-500 text-[10px] font-bold">
-                              {hour.label}
-                            </Text>
-                            <View className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden mr-3">
+                          <View
+                            style={{ width: '100%', height, position: 'relative' }}
+                            onLayout={(e) => setChartWidth(e.nativeEvent.layout.width || 300)}
+                          >
+                            {activeHourIndex !== null && peakHoursPoints[activeHourIndex] && (
                               <View
-                                style={{ width: `${widthPct}%` }}
-                                className="bg-slate-800 h-full rounded-full"
-                              />
-                            </View>
-                            <Text className="text-slate-900 text-xs font-extrabold w-6 text-right">
-                              {hour.count}
-                            </Text>
+                                style={{
+                                  position: 'absolute',
+                                  left: Math.max(
+                                    10,
+                                    Math.min(
+                                      chartWidth - 90,
+                                      peakHoursPoints[activeHourIndex].x - 40,
+                                    ),
+                                  ),
+                                  top: Math.max(0, peakHoursPoints[activeHourIndex].y - 35),
+                                  backgroundColor: '#0F172A',
+                                  paddingHorizontal: 8,
+                                  paddingVertical: 4,
+                                  borderRadius: 6,
+                                  zIndex: 10,
+                                  shadowColor: '#000',
+                                  shadowOffset: { width: 0, height: 2 },
+                                  shadowOpacity: 0.25,
+                                  shadowRadius: 3.84,
+                                  elevation: 5,
+                                }}
+                              >
+                                <Text style={{ color: '#FFF', fontSize: 10, fontWeight: 'bold' }}>
+                                  {peakHoursPoints[activeHourIndex].val}
+                                </Text>
+                              </View>
+                            )}
+
+                            <Svg width="100%" height="100%">
+                              <Defs>
+                                <LinearGradient id="peakGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <Stop offset="0%" stopColor="#0F172A" stopOpacity="0.15" />
+                                  <Stop offset="100%" stopColor="#0F172A" stopOpacity="0.0" />
+                                </LinearGradient>
+                              </Defs>
+
+                              {/* Horizontal grid lines and Y-axis text */}
+                              {yTicksList.map((tick, i) => (
+                                <G key={i}>
+                                  <SvgLine
+                                    x1={padding.left}
+                                    y1={tick.y}
+                                    x2={chartWidth - padding.right}
+                                    y2={tick.y}
+                                    stroke="#E2E8F0"
+                                    strokeDasharray="4 4"
+                                    strokeWidth="1"
+                                  />
+                                  {String(tick.val)
+                                    .split('')
+                                    .map((char, charIdx, arr) => {
+                                      const digitHeight = 9;
+                                      const offset = (charIdx - (arr.length - 1) / 2) * digitHeight;
+                                      return (
+                                        <SvgText
+                                          key={charIdx}
+                                          x={padding.left - 12}
+                                          y={tick.y + offset + 3}
+                                          fontSize="9"
+                                          fill="#64748B"
+                                          textAnchor="middle"
+                                          fontWeight="bold"
+                                        >
+                                          {char}
+                                        </SvgText>
+                                      );
+                                    })}
+                                </G>
+                              ))}
+
+                              {/* Area under curve */}
+                              {areaD ? <Path d={areaD} fill="url(#peakGradient)" /> : null}
+
+                              {/* Line itself */}
+                              {pathD ? (
+                                <Path
+                                  d={pathD}
+                                  fill="none"
+                                  stroke="#0F172A"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              ) : null}
+
+                              {/* Dots */}
+                              {peakHoursPoints.map((p, i) => (
+                                <Circle
+                                  key={i}
+                                  cx={p.x}
+                                  cy={p.y}
+                                  r={activeHourIndex === i ? 6 : 4}
+                                  fill={activeHourIndex === i ? '#D97706' : '#0F172A'}
+                                />
+                              ))}
+
+                              {/* X-axis labels */}
+                              {peakHoursPoints.map((p, i) => {
+                                if (peakHoursPoints.length > 6 && i % 2 !== 0) return null;
+                                return (
+                                  <SvgText
+                                    key={i}
+                                    x={p.x}
+                                    y={height - 6}
+                                    fontSize="9"
+                                    fill="#64748B"
+                                    textAnchor="middle"
+                                    fontWeight="bold"
+                                  >
+                                    {p.label.replace(':00 ', ' ')}
+                                  </SvgText>
+                                );
+                              })}
+
+                              {/* Column interaction targets */}
+                              {peakHoursPoints.map((p, i) => {
+                                const colWidth = chartWidth / (peakHoursPoints.length || 1);
+                                return (
+                                  <Rect
+                                    key={i}
+                                    x={p.x - colWidth / 2}
+                                    y={0}
+                                    width={colWidth}
+                                    height={height}
+                                    fill="transparent"
+                                    onPressIn={() => setActiveHourIndex(i)}
+                                  />
+                                );
+                              })}
+                            </Svg>
                           </View>
                         );
-                      })}
+                      })()}
                     </View>
                   </GlassCard>
                 </AnimatedSection>

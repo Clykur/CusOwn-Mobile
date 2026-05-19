@@ -36,6 +36,7 @@ import { OwnerBookingDetailModal } from '@/features/owner/components/OwnerBookin
 type StatusFilter = 'all' | 'pending' | 'confirmed' | 'rejected' | 'cancelled';
 
 export default function OwnerDashboardScreen() {
+  const [showBusinessMenu, setShowBusinessMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
@@ -68,6 +69,10 @@ export default function OwnerDashboardScreen() {
           }
           if (biz.image_url) {
             imageMap[biz.id] = biz.image_url;
+            return;
+          }
+          if (biz.cover_photo_url) {
+            imageMap[biz.id] = biz.cover_photo_url;
             return;
           }
           try {
@@ -128,6 +133,16 @@ export default function OwnerDashboardScreen() {
 
     return Array.from(new Map(merged.map((b: any) => [b.id, b])).values()) as Booking[];
   }, [dashboard]);
+
+  // Synchronize selectedBooking with fresh data from the dashboard bookings
+  React.useEffect(() => {
+    if (selectedBooking && bookings) {
+      const fresh = bookings.find((b: any) => b.id === selectedBooking.id);
+      if (fresh) {
+        setSelectedBooking(fresh);
+      }
+    }
+  }, [bookings, selectedBooking]);
 
   const filteredBookings = useMemo(() => {
     if (!bookings) return [];
@@ -210,6 +225,8 @@ export default function OwnerDashboardScreen() {
       <SafeAreaView className="flex-1" edges={['top']}>
         <ScrollView
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 120 }}
           refreshControl={
             <RefreshControl refreshing={false} onRefresh={onRefresh} tintColor="#000000" />
           }
@@ -218,131 +235,177 @@ export default function OwnerDashboardScreen() {
           {/* Dashboard Header */}
           <AnimatedSection direction="down" className="px-luxury pt-4 pb-6">
             <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
-              Welcome back
+              Welcome back to
             </Text>
             <Text className="text-slate-900 text-3xl font-black tracking-tight">Dashboard</Text>
           </AnimatedSection>
 
           {/* Search & Filters */}
-          <AnimatedSection delay={100} direction="up" className="px-luxury mb-8">
-            <View className="flex-row items-center bg-white/80 border border-slate-200/80 rounded-2xl px-4 py-3.5 mb-4 shadow-sm">
-              <Ionicons name="search-outline" size={20} color="#94A3B8" />
-              <TextInput
-                placeholder="Search clients or services..."
-                placeholderTextColor="#94A3B8"
-                value={searchTerm}
-                onChangeText={setSearchTerm}
-                className="flex-1 ml-3 text-slate-900 text-sm font-semibold"
-              />
-              {searchTerm.length > 0 && (
-                <Pressable onPress={() => setSearchTerm('')}>
-                  <Ionicons name="close-circle" size={18} color="#94A3B8" />
-                </Pressable>
-              )}
-            </View>
+          <AnimatedSection delay={50} direction="up" className="px-luxury mb-8 z-50">
+            <View className="flex-row items-center gap-x-3">
+              {/* Search Bar */}
+              <View className="flex-1 flex-row items-center bg-white/80 border border-slate-200/80 rounded-2xl px-4 py-3.5 shadow-sm">
+                <Ionicons name="search-outline" size={20} color="#94A3B8" />
 
-            {/* Business Filter */}
-            {businesses && businesses.length > 1 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerClassName="gap-x-2"
-              >
+                <TextInput
+                  placeholder="Search clients or services..."
+                  placeholderTextColor="#94A3B8"
+                  value={searchTerm}
+                  onChangeText={setSearchTerm}
+                  className="flex-1 ml-3 text-slate-900 text-sm font-semibold"
+                />
+
+                {searchTerm.length > 0 && (
+                  <Pressable onPress={() => setSearchTerm('')}>
+                    <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                  </Pressable>
+                )}
+              </View>
+
+              {/* Filter Menu Button */}
+              <View className="relative z-50">
                 <Pressable
-                  onPress={() => setSelectedBusinessId(null)}
-                  className={`px-4 py-2.5 rounded-xl border ${
-                    selectedBusinessId === null
-                      ? 'bg-black border-black'
-                      : 'bg-white/80 border-slate-200/80'
-                  }`}
+                  onPress={() => setShowBusinessMenu(!showBusinessMenu)}
+                  className="flex-1 flex-row items-center bg-white/80 border border-slate-200/80 rounded-2xl px-4 py-3.5 shadow-sm"
                 >
-                  <Text
-                    className={`text-[10px] font-black uppercase tracking-wider ${
-                      selectedBusinessId === null ? 'text-white' : 'text-slate-500'
-                    }`}
-                  >
-                    All Businesses
-                  </Text>
+                  <Ionicons name="options-outline" size={20} color="#111827" />
                 </Pressable>
 
-                {businesses.map((biz) => (
-                  <Pressable
-                    key={biz.id}
-                    onPress={() => setSelectedBusinessId(biz.id)}
-                    className={`flex-row items-center px-4 py-2.5 rounded-xl border ${
-                      selectedBusinessId === biz.id
-                        ? 'bg-black border-black'
-                        : 'bg-white/80 border-slate-200/80'
-                    }`}
+                {/* Dropdown Menu */}
+                {showBusinessMenu && (
+                  <View
+                    className="absolute top-14 right-0 w-64 border border-slate-200 rounded-3xl p-2 z-[999] elevation-5"
+                    style={{
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 8 },
+                      shadowOpacity: 0.12,
+                      shadowRadius: 20,
+                      elevation: 12,
+                    }}
                   >
-                    {businessImages[biz.id] ? (
-                      <Image
-                        source={{ uri: businessImages[biz.id] }}
-                        style={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: 10,
-                        }}
-                      />
-                    ) : (
-                      <View className="w-5 h-5 rounded-full bg-slate-900 items-center justify-center border border-slate-200 shadow-sm">
-                        <Text className="text-white font-bold text-[8px]">
-                          {biz.owner_name
-                            ? biz.owner_name.charAt(0)
-                            : biz.salon_name
-                              ? biz.salon_name.charAt(0)
-                              : 'O'}
-                        </Text>
-                      </View>
-                    )}
-
-                    <Text
-                      className={`text-[10px] font-black uppercase tracking-wider ml-2 ${
-                        selectedBusinessId === biz.id ? 'text-white' : 'text-slate-500'
+                    {/* All Businesses */}
+                    <Pressable
+                      onPress={() => {
+                        setSelectedBusinessId(null);
+                        setShowBusinessMenu(false);
+                      }}
+                      className={`flex-row items-center px-3 py-3 rounded-2xl ${
+                        selectedBusinessId === null ? 'bg-slate-100' : 'bg-white'
                       }`}
                     >
-                      {biz.salon_name}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            )}
+                      <View className="w-8 h-8 rounded-full items-center justify-center">
+                        <Ionicons name="business-outline" size={16} color="#000000" />
+                      </View>
+
+                      <Text
+                        className={`ml-3 text-[12px] font-black uppercase tracking-wider ${
+                          selectedBusinessId === null ? 'text-black' : 'text-slate-500'
+                        }`}
+                        numberOfLines={1}
+                      >
+                        All Businesses
+                      </Text>
+                    </Pressable>
+
+                    {/* Businesses */}
+                    {businesses &&
+                      businesses.length > 1 &&
+                      businesses.map((biz) => (
+                        <Pressable
+                          key={biz.id}
+                          onPress={() => {
+                            setSelectedBusinessId(biz.id);
+                            setShowBusinessMenu(false);
+                          }}
+                          className={`flex-row items-center px-3 py-3 rounded-2xl mt-1 ${
+                            selectedBusinessId === biz.id ? 'bg-slate-100' : 'bg-white'
+                          }`}
+                        >
+                          {businessImages[biz.id] ? (
+                            <Image
+                              source={{ uri: businessImages[biz.id] }}
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 16,
+                              }}
+                            />
+                          ) : (
+                            <View className="w-8 h-8 rounded-full bg-slate-900 items-center justify-center">
+                              <Text className="text-white font-bold text-[10px]">
+                                {biz.owner_name
+                                  ? biz.owner_name.charAt(0)
+                                  : biz.salon_name
+                                    ? biz.salon_name.charAt(0)
+                                    : 'O'}
+                              </Text>
+                            </View>
+                          )}
+
+                          <Text
+                            className={`ml-3 flex-1 text-[12px] font-black uppercase tracking-wider ${
+                              selectedBusinessId === biz.id ? 'text-black' : 'text-slate-500'
+                            }`}
+                            numberOfLines={1}
+                          >
+                            {biz.salon_name}
+                          </Text>
+
+                          {selectedBusinessId === biz.id && (
+                            <Ionicons name="checkmark-circle" size={18} color="#111827" />
+                          )}
+                        </Pressable>
+                      ))}
+                  </View>
+                )}
+              </View>
+            </View>
           </AnimatedSection>
 
-          {/* Stats Grid (4-Grid) */}
+          {/* Stats Grid (2 x 2 Layout) */}
           <View className="px-luxury mb-8">
-            <View className="flex-row gap-x-4 mb-4">
+            {/* First Row */}
+            <View className="flex-row gap-x-2 mb-4">
+              {/* Active Businesses */}
               <AnimatedSection delay={200} direction="left" className="flex-1">
-                <GlassCard className="p-5 border-slate-200/80 items-start rounded-luxury overflow-hidden">
-                  <View className="absolute -top-6 -right-6 w-16 h-16 bg-neutral-100 rounded-full" />
-                  <View className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center mb-4 border border-neutral-200">
-                    <Ionicons name="business" size={20} color="#000000" />
+                <GlassCard className="p-5 border border-slate-200/80 rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
+                  <View className="absolute -top-5 -right-5 w-24 h-24 bg-slate-100 rounded-full opacity-80" />
+
+                  <View className="flex-row items-center gap-1">
+                    <Ionicons name="business-outline" size={22} color="#111827" />
+
+                    <Text className="text-slate-500 text-[11px] font-extrabold uppercase tracking-[2px]">
+                      Active Businesses
+                    </Text>
                   </View>
-                  <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">
-                    Active Businesses
-                  </Text>
+
                   {bookingsLoading ? (
-                    <LoadingSkeleton height={28} width={60} />
+                    <LoadingSkeleton height={34} width={70} />
                   ) : (
-                    <Text className="text-slate-900 text-3xl font-black">
+                    <Text className="text-slate-900 text-[48px] font-black leading-none mt-6">
                       {stats?.total_businesses || '0'}
                     </Text>
                   )}
                 </GlassCard>
               </AnimatedSection>
 
+              {/* Total Bookings */}
               <AnimatedSection delay={300} direction="right" className="flex-1">
-                <GlassCard className="p-5 border-slate-200/80 items-start rounded-luxury">
-                  <View className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center mb-4 border border-neutral-200">
-                    <Ionicons name="calendar" size={20} color="#000000" />
+                <GlassCard className="p-5 border border-slate-200/80 rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
+                  <View className="absolute -top-5 -right-5 w-24 h-24 bg-slate-100 rounded-full opacity-80" />
+
+                  <View className="flex-row items-center gap-2">
+                    <Ionicons name="calendar-outline" size={22} color="#111827" />
+
+                    <Text className="text-slate-500 text-[11px] font-extrabold uppercase tracking-[2px]">
+                      Total Bookings
+                    </Text>
                   </View>
-                  <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">
-                    Total Bookings
-                  </Text>
+
                   {bookingsLoading ? (
-                    <LoadingSkeleton height={28} width={40} />
+                    <LoadingSkeleton height={34} width={70} />
                   ) : (
-                    <Text className="text-slate-900 text-3xl font-black">
+                    <Text className="text-slate-900 text-[48px] font-black leading-none mt-6">
                       {stats?.total_bookings || '0'}
                     </Text>
                   )}
@@ -350,37 +413,48 @@ export default function OwnerDashboardScreen() {
               </AnimatedSection>
             </View>
 
-            <View className="flex-row gap-x-4">
+            {/* Second Row */}
+            <View className="flex-row gap-x-2">
+              {/* Confirmed */}
               <AnimatedSection delay={400} direction="left" className="flex-1">
-                <GlassCard className="p-5 border-slate-200/80 items-start rounded-luxury">
-                  <View className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center mb-4 border border-neutral-200">
-                    <Ionicons name="checkmark-circle" size={20} color="#000000" />
+                <GlassCard className="p-5 border border-slate-200/80 rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
+                  <View className="absolute -top-5 -right-5 w-24 h-24 bg-slate-100 rounded-full opacity-80" />
+
+                  <View className="flex-row items-center gap-2">
+                    <Ionicons name="checkmark-circle-outline" size={22} color="#111827" />
+
+                    <Text className="text-slate-500 text-[11px] font-extrabold uppercase tracking-[2px]">
+                      Confirmed
+                    </Text>
                   </View>
-                  <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">
-                    Confirmed
-                  </Text>
+
                   {bookingsLoading ? (
-                    <LoadingSkeleton height={28} width={40} />
+                    <LoadingSkeleton height={34} width={70} />
                   ) : (
-                    <Text className="text-slate-900 text-3xl font-black">
+                    <Text className="text-slate-900 text-[48px] font-black leading-none mt-6">
                       {stats?.confirmed_bookings || '0'}
                     </Text>
                   )}
                 </GlassCard>
               </AnimatedSection>
 
+              {/* Pending */}
               <AnimatedSection delay={500} direction="right" className="flex-1">
-                <GlassCard className="p-5 border-slate-200/80 items-start rounded-luxury">
-                  <View className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center mb-4 border border-neutral-200">
-                    <Ionicons name="time" size={20} color="#000000" />
+                <GlassCard className="p-5 border border-slate-200/80 rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
+                  <View className="absolute -top-5 -right-5 w-24 h-24 bg-slate-100 rounded-full opacity-80" />
+
+                  <View className="flex-row items-center gap-2">
+                    <Ionicons name="time-outline" size={22} color="#111827" />
+
+                    <Text className="text-slate-500 text-[11px] font-extrabold uppercase tracking-[2px]">
+                      Pending
+                    </Text>
                   </View>
-                  <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">
-                    Pending
-                  </Text>
+
                   {bookingsLoading ? (
-                    <LoadingSkeleton height={28} width={40} />
+                    <LoadingSkeleton height={34} width={70} />
                   ) : (
-                    <Text className="text-slate-900 text-3xl font-black">
+                    <Text className="text-slate-900 text-[48px] font-black leading-none mt-6">
                       {stats?.pending_bookings || '0'}
                     </Text>
                   )}
@@ -400,7 +474,7 @@ export default function OwnerDashboardScreen() {
               </View>
               <Pressable
                 onPress={() => router.push('/(owner)/bookings')}
-                className="bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm"
+                className="px-4 py-2 rounded-full border border-slate-200"
               >
                 <Text className="text-black font-black text-[10px] uppercase tracking-widest">
                   See All

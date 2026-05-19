@@ -17,3 +17,4 @@ export * from './services';
 export * from './owner';
 export * from './owner-access';
 export * from './errors';
+export * from './business-hours';

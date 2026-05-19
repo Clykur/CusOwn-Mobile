@@ -35,6 +35,16 @@ export default function OwnerBookingsScreen() {
   const { data: bookings, isLoading, isError, refetch } = useBookings('Owner');
   const { data: businessesData } = useOwnerBusinesses();
 
+  // Synchronize selectedBooking with fresh data from the bookings list
+  React.useEffect(() => {
+    if (selectedBooking && bookings) {
+      const fresh = bookings.find((b) => b.id === selectedBooking.id);
+      if (fresh) {
+        setSelectedBooking(fresh);
+      }
+    }
+  }, [bookings, selectedBooking]);
+
   const { mutate: acceptBooking } = useAcceptBooking();
   const { mutate: rejectBooking } = useRejectBooking();
   const { mutate: undoAccept } = useUndoAccept();
@@ -243,7 +253,7 @@ export default function OwnerBookingsScreen() {
             <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
               Bookings
             </Text>
-            <Text className="text-slate-900 text-3xl font-black tracking-tight">Reservations</Text>
+            <Text className="text-slate-900 text-3xl font-black tracking-tight">Appointments</Text>
             <Text className="text-slate-500 text-xs mt-1" numberOfLines={1}>
               {filterSummary}
             </Text>

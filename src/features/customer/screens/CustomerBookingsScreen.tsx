@@ -11,6 +11,9 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
+import { formatBookingDate, formatBookingTime } from '@/utils/time';
+import { Avatar } from '@/components/ui/Avatar';
+import { isValidImageUrl } from '@/utils/image';
 
 type BookingFilterType = 'upcoming' | 'completed' | 'cancelled';
 
@@ -70,64 +73,121 @@ export default function CustomerBookingsScreen() {
 
   const renderBookingCard = ({ item, index }: { item: any; index: number }) => {
     const salonName = item.business?.salon_name || item.salon?.salon_name || 'Business Partner';
+
     const salonAddress = item.business?.address || item.salon?.address || 'Premium Suite';
-    const salonImage =
-      item.business?.image_url ||
-      item.business?.cover_photo_url ||
-      item.salon?.image_url ||
-      item.salon?.cover_photo_url ||
-      null;
+
+    const salonImage = item.business?.owner_image || item.salon?.owner_image || null;
 
     const displayPrice = getBookingPrice(item);
 
     return (
-      <AnimatedSection delay={index * 50} direction="up" className="mb-4">
+      <AnimatedSection delay={index * 30} direction="up" className="mb-3">
         <Pressable onPress={() => router.push(`/booking-detail/${item.id}`)}>
-          <GlassCard className="border-slate-200/80 bg-white/95 shadow-sm p-2 rounded-luxury">
-            <View className="flex-row justify-between items-center mb-2">
-              <View className="flex-row items-center flex-1">
-                <View className="flex-1">
-                  <Text className="text-slate-900 font-extrabold text-base" numberOfLines={1}>
-                    {salonName}
-                  </Text>
-                  <Text className="text-slate-500 text-xs mt-0.5" numberOfLines={1}>
-                    {salonAddress}
+          <GlassCard className="bg-white border border-slate-200 rounded-[22px] p-1 shadow-sm">
+            {/* Top */}
+            <View className="flex-row">
+              {/* Image */}
+              <View className="relative items-center justify-center">
+                {/* Image */}
+                {isValidImageUrl(salonImage) ? (
+                  <Image
+                    source={{ uri: salonImage }}
+                    className="w-[74px] h-[74px] rounded-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Avatar name={salonName} size={74} className="w-[74px] h-[74px] rounded-full" />
+                )}
+
+                {/* Status Badge */}
+                <View className="absolute -top-2 self-center bg-white border border-slate-200 min-w-[64px] h-[22px] px-2 rounded-full items-center justify-center">
+                  <Text
+                    numberOfLines={1}
+                    className="text-[8px] font-black uppercase text-slate-700"
+                  >
+                    {item.status}
                   </Text>
                 </View>
               </View>
-              <Badge status={item.status} />
-            </View>
 
-            <View className="h-[0.5px] bg-slate-100 mb-4" />
+              {/* Right */}
+              <View className="flex-1 ml-3 justify-between">
+                {/* Salon */}
+                <View>
+                  <Text className="text-slate-900 text-[17px] font-black" numberOfLines={1}>
+                    {salonName}
+                  </Text>
 
-            <View className="gap-y-3">
-              <View className="flex-row justify-between items-start">
-                <View className="flex-1 mr-4">
-                  <Text
-                    className="text-slate-900 text-lg font-black tracking-tight"
-                    numberOfLines={1}
-                  >
-                    {item.services && item.services.length > 0
-                      ? item.services.map((s: any) => s.name).join(', ')
-                      : item.service?.name || 'Curated Session'}
-                  </Text>
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-1">
-                    Booking ID: {item.booking_id || item.reference || '—'}
-                  </Text>
+                  <View className="flex-row items-center mt-0.5">
+                    <Ionicons name="location-outline" size={11} color="#64748B" />
+
+                    <Text className="text-slate-500 text-[11px] ml-1 flex-1" numberOfLines={1}>
+                      {salonAddress}
+                    </Text>
+                  </View>
                 </View>
-                <View className="bg-black px-3.5 py-1.5 rounded-xl">
-                  <Text className="text-white font-black text-sm">
+
+                {/* Price */}
+                <View className="mt-3">
+                  <Text className="text-slate-900 text-[24px] font-black tracking-tight">
                     ₹{displayPrice % 1 === 0 ? displayPrice.toFixed(0) : displayPrice.toFixed(2)}
                   </Text>
                 </View>
               </View>
+            </View>
 
-              <View className="flex-row items-center gap-x-2 mt-1">
-                <Ionicons name="calendar-outline" size={14} color="#64748B" />
-                <Text className="text-slate-500 text-xs font-semibold">
-                  {item.date} • {item.time}
+            {/* Bottom */}
+            <View className="flex-row items-center justify-between mt-4 pt-4 border-t border-slate-100">
+              <View className="flex-1 mr-3">
+                {/* Service */}
+                <Text className="text-[9px] uppercase tracking-[2px] text-slate-400 font-black mb-1">
+                  Service
                 </Text>
+
+                <Text className="text-slate-900 text-[17px] font-bold" numberOfLines={1}>
+                  {item.services && item.services.length > 0
+                    ? item.services.map((s: any) => s.name).join(', ')
+                    : item.service?.name || 'Curated Session'}
+                </Text>
+
+                {/* Date & Time */}
+                <View className="flex-row items-center mt-2">
+                  <Ionicons name="calendar-outline" size={12} color="#64748B" />
+
+                  <Text className="text-slate-500 text-[11px] font-semibold ml-1">
+                    {formatBookingDate(item.date)} • {formatBookingTime(item.time)}
+                  </Text>
+                </View>
               </View>
+
+              {/* Rebook */}
+              {(item.status === 'confirmed' ||
+                item.status === 'completed' ||
+                item.status === 'cancelled' ||
+                item.status === 'rejected' ||
+                item.status === 'no_show') && (
+                <Pressable
+                  onPress={(e) => {
+                    e.stopPropagation();
+
+                    const serviceIds =
+                      item.services?.map((s: any) => s.id).join(',') || item.service?.id || '';
+
+                    router.push({
+                      pathname: '/(customer)/book/[id]',
+                      params: {
+                        id: item.business_id || item.business?.id || item.salon?.id || '',
+                        serviceIds,
+                      },
+                    });
+                  }}
+                  className="border border-slate-500 px-4 py-2 rounded-full"
+                >
+                  <Text className="text-black text-[11px] font-black uppercase tracking-[1.5px]">
+                    Rebook
+                  </Text>
+                </Pressable>
+              )}
             </View>
           </GlassCard>
         </Pressable>

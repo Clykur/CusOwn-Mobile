@@ -8,10 +8,15 @@ export async function listOwnedBusinessIds(ownerUserId: string): Promise<string[
   let { data, error } = await supabase
     .from('businesses')
     .select('id')
-    .eq('owner_user_id', ownerUserId);
+    .eq('owner_user_id', ownerUserId)
+    .is('deleted_at', null);
 
   if ((!data || data.length === 0) && !error) {
-    const alt = await supabase.from('businesses').select('id').eq('owner_id', ownerUserId);
+    const alt = await supabase
+      .from('businesses')
+      .select('id')
+      .eq('owner_id', ownerUserId)
+      .is('deleted_at', null);
     if (!alt.error && alt.data?.length) {
       data = alt.data;
     }

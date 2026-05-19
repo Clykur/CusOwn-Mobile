@@ -12,6 +12,7 @@ import { useBookingStore } from '@/store/booking.store';
 import { Service } from '@/types/business.types';
 import { apiService } from '@/services/api.service';
 import { getShopStatus } from '@/utils/time';
+import { isValidImageUrl } from '@/utils/image';
 
 export default function SalonDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -54,7 +55,7 @@ export default function SalonDetailsScreen() {
               }
             }),
           );
-          setPhotos(urls.filter((u): u is string => Boolean(u)));
+          setPhotos(urls.filter((u): u is string => isValidImageUrl(u)));
         } else {
           setPhotos([]);
         }
@@ -165,7 +166,10 @@ export default function SalonDetailsScreen() {
     : [];
 
   // Ratings calculation based on API response
-  const displayRatingAvg = Number(business.rating_avg).toFixed(1);
+  const displayRatingAvg =
+    business.rating_avg && Number(business.rating_avg) > 0
+      ? Number(business.rating_avg).toFixed(1)
+      : 'New';
   const displayReviewCount = business.review_count;
 
   // Compute total selected details
@@ -187,18 +191,20 @@ export default function SalonDetailsScreen() {
       >
         {/* Hero Header */}
         <View className="h-[360px] w-full relative">
-          {business.owner_image ? (
-            <Image source={{ uri: business.owner_image }} className="w-full h-full object-cover" />
-          ) : business.image_url ? (
-            <Image source={{ uri: business.image_url }} className="w-full h-full object-cover" />
+          {isValidImageUrl(business.owner_image) ? (
+            <Image
+              source={{ uri: business.owner_image }}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
           ) : (
-            <Avatar name={business.salon_name} size={400} className="w-full h-full object-cover" />
+            <Avatar name={business.salon_name} size={400} className="w-full h-full" />
           )}
           <View className="absolute inset-0 bg-black/30" />
 
           <Pressable
             onPress={() => router.back()}
-            className="absolute top-16 left-6 w-12 h-12 rounded-full bg-black/45 border border-white/20 items-center justify-center shadow-lg"
+            className="absolute top-16 left-6 w-12 h-12 rounded-full items-center justify-center shadow-lg"
           >
             <Ionicons name="arrow-back" size={24} color="white" />
           </Pressable>
@@ -222,9 +228,15 @@ export default function SalonDetailsScreen() {
                 </View>
                 <View className="items-end bg-black px-3 py-1.5 rounded-xl flex-row items-center shadow-sm">
                   <Ionicons
-                    name={business.rating_avg > 0 ? 'star' : 'star-outline'}
+                    name={
+                      business.rating_avg && Number(business.rating_avg) > 0
+                        ? 'star'
+                        : 'star-outline'
+                    }
                     size={14}
-                    color={business.rating_avg > 0 ? '#EAB308' : '#94A3B8'}
+                    color={
+                      business.rating_avg && Number(business.rating_avg) > 0 ? '#EAB308' : '#94A3B8'
+                    }
                   />
                   <Text className="text-white font-bold ml-1 text-sm">{displayRatingAvg}</Text>
                   {displayReviewCount > 0 ? (
@@ -234,7 +246,7 @@ export default function SalonDetailsScreen() {
               </View>
 
               {/* Status & Hours */}
-              <View className="flex-row items-center mb-6 bg-slate-50 border border-slate-100 p-3 rounded-2xl">
+              <View className="flex-row items-center mb-2 border-t border-slate-100 pt-2 rounded-2xl">
                 <Ionicons name="time-outline" size={18} color="#0F172A" />
                 <Text className="text-slate-700 font-bold ml-2 text-xs">
                   Hours: {business.opening_time || '09:00 AM'} -{' '}
@@ -256,17 +268,17 @@ export default function SalonDetailsScreen() {
               </View>
 
               {/* Owner Info & Contact Row */}
-              <View className="border-t border-slate-100 pt-6 mb-6">
+              <View className="border-t border-slate-100 pt-6">
                 <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">
                   Owner Info
                 </Text>
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center">
-                    {business.owner_image ? (
+                    {isValidImageUrl(business.owner_image) ? (
                       <Image
                         source={{ uri: business.owner_image }}
                         className="w-12 h-12 rounded-full mr-3 border border-slate-200 shadow-sm"
-                        style={{ objectFit: 'cover' }}
+                        resizeMode="cover"
                       />
                     ) : (
                       <View className="w-12 h-12 rounded-full bg-slate-900 items-center justify-center border border-slate-200 shadow-sm mr-3">
@@ -286,35 +298,11 @@ export default function SalonDetailsScreen() {
                   {business.whatsapp_number ? (
                     <Pressable
                       onPress={handleContactWhatsApp}
-                      className="flex-row items-center bg-green-550 border border-green-600 px-4 py-2.5 rounded-full shadow-sm"
-                      style={{ backgroundColor: '#25D366' }}
+                      className="flex-row items-center px-4 py-2.5 rounded-full shadow-sm"
                     >
-                      <Ionicons name="logo-whatsapp" size={16} color="white" />
-                      <Text className="text-white font-bold ml-1.5 text-xs">WhatsApp</Text>
+                      <Ionicons name="logo-whatsapp" size={25} color="#25D366" />
                     </Pressable>
                   ) : null}
-                </View>
-              </View>
-
-              {/* Badges */}
-              <View className="flex-row gap-x-3 mb-4">
-                <View className="flex-1 bg-slate-50 border border-slate-100 p-3 rounded-2xl items-center">
-                  <Ionicons name="sparkles-outline" size={20} color="#000000" />
-                  <Text className="text-slate-800 font-bold mt-1.5 text-[10px] text-center">
-                    Top Quality
-                  </Text>
-                </View>
-                <View className="flex-1 bg-slate-50 border border-slate-100 p-3 rounded-2xl items-center">
-                  <Ionicons name="people-outline" size={20} color="#000000" />
-                  <Text className="text-slate-800 font-bold mt-1.5 text-[10px] text-center">
-                    Top Artists
-                  </Text>
-                </View>
-                <View className="flex-1 bg-slate-50 border border-slate-100 p-3 rounded-2xl items-center">
-                  <Ionicons name="shield-checkmark-outline" size={20} color="#000000" />
-                  <Text className="text-slate-800 font-bold mt-1.5 text-[10px] text-center">
-                    Certified
-                  </Text>
                 </View>
               </View>
             </GlassCard>
@@ -324,7 +312,7 @@ export default function SalonDetailsScreen() {
         {/* Services Section */}
         <View className="px-luxury mt-8">
           <Text className="text-slate-900 text-xl font-bold mb-4 tracking-tight uppercase">
-            Select Services
+            Services
           </Text>
           {loadingExtra ? (
             <View className="bg-white border border-slate-200 rounded-3xl p-8 items-center justify-center">
@@ -333,7 +321,7 @@ export default function SalonDetailsScreen() {
             </View>
           ) : services.length === 0 ? (
             <View className="bg-white border border-slate-200 rounded-3xl p-6 items-center">
-              <Ionicons name="cut-outline" size={32} color="#94A3B8" />
+              <Ionicons name="construct-outline" size={32} color="#94A3B8" />
               <Text className="text-slate-500 text-sm mt-2 text-center">
                 No services currently listed for this salon.
               </Text>
@@ -384,25 +372,27 @@ export default function SalonDetailsScreen() {
         </View>
 
         {/* Gallery Section */}
-        <View className="px-luxury mt-10">
-          <Text className="text-slate-900 text-xl font-bold mb-4 tracking-tight uppercase">
-            Photos & Vibe
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            className="flex-row gap-x-4"
-          >
-            {photos.map((url, i) => (
-              <View
-                key={i}
-                className="w-56 h-40 bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm mr-3"
-              >
-                <Image source={{ uri: url }} className="w-full h-full object-cover" />
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+        {photos.length > 0 && (
+          <View className="px-luxury mt-10">
+            <Text className="text-slate-900 text-xl font-bold mb-4 tracking-tight uppercase">
+              Photos & Vibe
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="flex-row gap-x-4"
+            >
+              {photos.map((url, i) => (
+                <View
+                  key={i}
+                  className="w-56 h-40 bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm mr-3"
+                >
+                  <Image source={{ uri: url }} className="w-full h-full" resizeMode="cover" />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Reviews Section */}
         <View className="px-luxury mt-10">

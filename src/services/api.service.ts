@@ -71,6 +71,7 @@ import {
 import { listSlotsForBusiness } from '@/services/supabase/slots';
 import { checkSupabaseHealth } from '@/services/supabase/health';
 import { getBookingPrice } from '@/services/supabase/mappers';
+import { businessHoursService } from '@/services/supabase/business-hours';
 
 export { getBookingPrice } from '@/services/supabase/mappers';
 
@@ -321,6 +322,7 @@ export const apiService = {
       new_slot_id?: string;
       service_id?: string[];
       date?: string;
+      time?: string;
       customer_name?: string;
       customer_phone?: string;
       reason?: string;
@@ -398,5 +400,20 @@ export const apiService = {
   checkHealth: async () => {
     assertSupabaseOnly('checkHealth');
     return checkSupabaseHealth();
+  },
+
+  getEffectiveHours: async (businessId: string, date: string) => {
+    assertSupabaseOnly('getEffectiveHours');
+    return businessHoursService.getEffectiveHours(businessId, date);
+  },
+
+  validateSlot: async (
+    businessId: string,
+    slotDate: string,
+    startTime: string,
+    endTime: string,
+  ) => {
+    assertSupabaseOnly('validateSlot');
+    return businessHoursService.validateSlot(businessId, slotDate, startTime, endTime);
   },
 };

@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Business } from '@/types/business.types';
 import { Avatar } from '@/components/ui/Avatar';
+import { isValidImageUrl } from '@/utils/image';
 
 import { getShopStatus } from '@/utils/time';
 
@@ -20,29 +21,17 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
     <AnimatedSection delay={index * 50} direction="up" className="mb-4">
       <Pressable onPress={() => router.push(`/(customer)/browse/salons/${item.id}`)}>
         <View className="flex-row bg-white border border-slate-200 rounded-[28px] p-4 shadow-sm">
-          {/* Left Image with Owner Profile Overlay */}
+          {/* Owner Profile Image */}
           <View className="relative">
-            {item.owner_image ? (
+            {isValidImageUrl(item.owner_image) ? (
               <Image
                 source={{ uri: item.owner_image }}
                 className="w-[80px] h-[80px] rounded-full"
-                style={{ objectFit: 'cover' }}
-              />
-            ) : item.image_url ? (
-              <Image
-                source={{ uri: item.image_url }}
-                className="w-[80px] h-[80px] rounded-full"
-                style={{ objectFit: 'cover' }}
+                resizeMode="cover"
               />
             ) : (
               <Avatar name={item.salon_name} size={80} className="w-[80px] h-[80px] rounded-full" />
             )}
-            {item.owner_image ? (
-              <Image
-                source={{ uri: item.owner_image }}
-                className="absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white shadow-md"
-              />
-            ) : null}
           </View>
 
           {/* Right Content */}
@@ -64,7 +53,9 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
                 />
 
                 <Text className="text-black text-xs font-bold ml-1">
-                  {Number(item.rating_avg).toFixed(1)}
+                  {item.rating_avg && Number(item.rating_avg) > 0
+                    ? Number(item.rating_avg).toFixed(1)
+                    : 'New'}
                 </Text>
               </View>
 

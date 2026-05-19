@@ -59,7 +59,7 @@ export default function CustomerCategoriesScreen() {
             <View className="flex-row items-center mb-6">
               <Pressable
                 onPress={() => router.back()}
-                className="w-10 h-10 rounded-full bg-white border border-slate-200 items-center justify-center mr-4"
+                className="w-10 h-10 rounded-full  items-center justify-center mr-4"
               >
                 <Ionicons name="arrow-back" size={20} color="#0F172A" />
               </Pressable>
@@ -79,14 +79,7 @@ export default function CustomerCategoriesScreen() {
                 <Pressable onPress={() => onSelectCategory(cat.id)}>
                   <GlassCard className="p-8 overflow-hidden border border-slate-200 bg-white shadow-sm">
                     <View className="flex-row items-center justify-between mb-6">
-                      <View
-                        className="w-16 h-16 rounded-2xl items-center justify-center"
-                        style={{
-                          backgroundColor: `${cat.color}15`,
-                          borderWidth: 1,
-                          borderColor: `${cat.color}30`,
-                        }}
-                      >
+                      <View className="w-16 h-16 rounded-2xl items-center justify-center">
                         <Ionicons name={cat.icon as any} size={32} color={cat.color} />
                       </View>
                       <Ionicons name="arrow-forward" size={20} color="#64748B" />

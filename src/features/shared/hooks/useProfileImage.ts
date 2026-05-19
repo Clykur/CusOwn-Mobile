@@ -6,6 +6,8 @@ import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert, Platform } from 'react-native';
 import { apiService } from '@/services/api.service';
+import { resolveMediaPublicUrl } from '@/services/supabase/storage';
+
 import { useAuthStore } from '@/store/auth.store';
 import { logger, LogTag } from '@/utils/logger';
 
@@ -55,11 +57,11 @@ export const useProfileImage = () => {
         throw new Error('Upload succeeded but no media ID returned');
       }
 
-      const signedResult = await apiService.getSignedUrl(mediaId);
-      const signedUrl: string | null = signedResult?.url ?? uploadResult?.url ?? null;
+      const { url: resolvedUrl } = await resolveMediaPublicUrl(mediaId);
+      const avatarUrl: string | null = resolvedUrl ?? uploadResult?.url ?? null;
 
       await refreshProfile();
-      return signedUrl;
+      return avatarUrl;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Upload failed';
       logger.error(LogTag.API, '[ProfileImage] Upload failed:', message);

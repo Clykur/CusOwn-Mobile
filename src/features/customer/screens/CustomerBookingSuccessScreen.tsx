@@ -7,6 +7,8 @@ import { PremiumButton } from '@/components/ui/PremiumButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Ionicons } from '@expo/vector-icons';
+import { Avatar } from '@/components/ui/Avatar';
+import { isValidImageUrl } from '@/utils/image';
 
 export default function BookingSuccessScreen() {
   const [isMounted, setIsMounted] = useState(false);
@@ -34,8 +36,20 @@ export default function BookingSuccessScreen() {
 }
 
 function BookingSuccessScreenInner() {
-  const { salonName, serviceName, bookingDate, bookingTime, bookingId, totalPrice, salonImage } =
-    useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const salonName = Array.isArray(params.salonName) ? params.salonName[0] : params.salonName;
+  const salonImage = Array.isArray(params.salonImage) ? params.salonImage[0] : params.salonImage;
+  const serviceName = Array.isArray(params.serviceName)
+    ? params.serviceName[0]
+    : params.serviceName;
+  const bookingDate = Array.isArray(params.bookingDate)
+    ? params.bookingDate[0]
+    : params.bookingDate;
+  const bookingTime = Array.isArray(params.bookingTime)
+    ? params.bookingTime[0]
+    : params.bookingTime;
+  const bookingId = Array.isArray(params.bookingId) ? params.bookingId[0] : params.bookingId;
+  const totalPrice = Array.isArray(params.totalPrice) ? params.totalPrice[0] : params.totalPrice;
 
   return (
     <PremiumBackground>
@@ -84,15 +98,13 @@ function BookingSuccessScreenInner() {
                 {/* Salon */}
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row items-center flex-1 mr-3">
-                    {salonImage ? (
+                    {isValidImageUrl(salonImage) ? (
                       <Image
                         source={{ uri: String(salonImage) }}
                         className="w-11 h-11 rounded-full mr-3 border border-slate-200"
                       />
                     ) : (
-                      <View className="w-11 h-11 rounded-full bg-slate-50 items-center justify-center mr-3 border border-slate-100">
-                        <Ionicons name="business" size={18} color="#0F172A" />
-                      </View>
+                      <Avatar name={String(salonName || 'Salon')} size={44} className="mr-3" />
                     )}
 
                     <View className="flex-1">

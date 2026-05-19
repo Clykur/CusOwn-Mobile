@@ -425,9 +425,9 @@ export default function ManageHubScreen() {
               </View>
               <Pressable
                 onPress={() => router.push({ pathname: '/(owner)/edit-business', params: { id } })}
-                className="w-10 h-10 rounded-full bg-white/80 items-center justify-center border border-slate-200/80 active:bg-white shadow-sm"
+                className="w-10 h-10 rounded-full items-center"
               >
-                <Ionicons name="settings-outline" size={20} color="#334155" />
+                <Ionicons name="create-outline" size={30} color="#334155" />
               </Pressable>
             </View>
           </View>
@@ -457,58 +457,70 @@ export default function ManageHubScreen() {
           >
             {activeTab === 'overview' && (
               <AnimatedSection direction="up">
-                <GlassCard className="p-8 items-center rounded-luxury mb-6 border-slate-200/80 shadow-sm">
-                  <Text className="text-slate-900 text-lg font-extrabold mb-1">
-                    Business QR Identity
-                  </Text>
-                  <Text className="text-slate-500 text-center text-xs mb-8 px-4 font-semibold">
-                    Scan to instantly browse services and book appointments at your hub.
-                  </Text>
+                {/* QR Card */}
+                <GlassCard className="p-8 rounded-luxury mb-6 border-slate-200/80 shadow-sm items-center justify-center">
+                  {/* Header */}
+                  <View className="items-center mb-8">
+                    <Text className="text-slate-900 text-lg font-extrabold text-center mb-1">
+                      Business QR Identity
+                    </Text>
 
-                  {/* QR Code Container */}
-                  <View className="w-64 h-64 bg-slate-50 border border-slate-200/80 rounded-3xl p-4 items-center justify-center shadow-inner mb-8">
-                    {loadingQR ? (
-                      <ActivityIndicator color="#64748B" />
-                    ) : qrCode ? (
-                      <Image
-                        source={{ uri: qrCode }}
-                        className="w-full h-full"
-                        resizeMode="contain"
-                      />
-                    ) : (
-                      <View className="items-center justify-center opacity-30">
-                        <Ionicons name="qr-code-outline" size={80} color="#000000" />
-                        <Text className="text-xs font-bold mt-2">No QR Code Available</Text>
-                      </View>
-                    )}
+                    <Text className="text-slate-500 text-xs text-center font-semibold leading-5 px-4">
+                      Scan to instantly browse services and book appointments at your hub.
+                    </Text>
                   </View>
 
-                  <View className="flex-row gap-x-4 w-full mt-2">
+                  {/* QR Section */}
+                  <View className="w-full flex flex-col items-center justify-center">
+                    <View className="w-64 h-64 ml-5 rounded-[32px] items-center justify-center mb-8">
+                      {loadingQR ? (
+                        <ActivityIndicator color="#64748B" />
+                      ) : qrCode ? (
+                        <Image
+                          source={{ uri: qrCode }}
+                          className="w-full h-full"
+                          resizeMode="contain"
+                        />
+                      ) : (
+                        <View className="flex-1 items-center justify-center opacity-30">
+                          <Ionicons name="qr-code-outline" size={80} color="#000000" />
+
+                          <Text className="text-xs font-bold mt-3 text-center">
+                            No QR Code Available
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Share Button */}
                     <Pressable
                       onPress={handleShareLink}
-                      className="flex-1 bg-black py-3.5 rounded-full items-center active:bg-slate-950"
+                      className="w-full bg-black py-2 rounded-full items-center active:bg-slate-950"
                     >
-                      <Text className="text-white font-black text-xs uppercase tracking-widest">
+                      <Text className="text-white font-black text-xs uppercase tracking-wider p-2">
                         Share Link
                       </Text>
                     </Pressable>
                   </View>
                 </GlassCard>
 
-                <GlassCard className="p-6 rounded-luxury border-slate-200/80 shadow-sm">
-                  <Text className="text-slate-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-4">
+                {/* URL Card */}
+                <GlassCard className="p-6 rounded-luxury border-slate-200/80 shadow-sm items-center">
+                  <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-4 text-center">
                     Direct Booking URL
                   </Text>
+
                   <Pressable
                     onPress={handleShareLink}
-                    className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex-row justify-between items-center active:bg-slate-100"
+                    className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex-row items-center justify-between active:bg-slate-100"
                   >
                     <Text
-                      className="text-slate-700 text-xs font-semibold flex-1 mr-4"
+                      className="flex-1 text-slate-700 text-xs font-semibold text-center"
                       numberOfLines={1}
                     >
-                      {business.booking_link || `https://cusown.com/salon/${business.id}`}
+                      {business.booking_link || `https://cusownapp.clykur.com/${business.id}`}
                     </Text>
+
                     <Ionicons name="share-outline" size={18} color="#64748B" />
                   </Pressable>
                 </GlassCard>
@@ -752,7 +764,7 @@ export default function ManageHubScreen() {
                       <ActivityIndicator color="#64748B" className="mt-2 align-self-start" />
                     ) : (
                       <View className="flex-row items-center mt-2">
-                        <Ionicons name="star" size={16} color="#FFB800" />
+                        <Ionicons name="star-outline" size={16} color="#FFB800" />
                         <Text className="text-slate-900 font-extrabold ml-1.5 text-lg">
                           {Number(reviewData.rating_avg).toFixed(1)}
                         </Text>

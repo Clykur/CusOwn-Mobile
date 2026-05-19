@@ -42,4 +42,5 @@ export const queryKeys = {
   businesses: businessKeys,
   slots: slotKeys,
   owner: ownerKeys,
+  businessHours: ['businessHours'] as const,
 };

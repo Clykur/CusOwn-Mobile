@@ -5,6 +5,7 @@ import { UserProfile } from '@/types/user.types';
 import { useOnboardingStore } from './onboarding.store';
 import { useActiveRoleStore } from './active-role.store';
 import { logger, LogTag } from '@/utils/logger';
+import { resolveMediaPublicUrl } from '@/services/supabase/storage';
 
 export type Role = 'Customer' | 'Owner' | null;
 
@@ -124,32 +125,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       }
 
-      // 6. Resolve signed avatar URL if profile has profile_media_id
+      // 6. Resolve avatar URL if profile has profile_media_id (Supabase-only)
       let profileImageUrl: string | null = null;
       if (profile?.profile_media_id) {
         try {
-          const { apiService } = await import('@/services/api.service');
-          const signedResult = await apiService.getSignedUrl(profile.profile_media_id);
-          profileImageUrl = signedResult?.url ?? null;
+          const { url } = await resolveMediaPublicUrl(profile.profile_media_id);
+          profileImageUrl = url;
         } catch (err: any) {
-          logger.warn(LogTag.AUTH, `[STORE] Failed to fetch signed URL: ${err.message}`);
-        }
-
-        if (!profileImageUrl) {
-          try {
-            const { data: mediaData } = await supabase
-              .from('media')
-              .select('storage_path, bucket_name')
-              .eq('id', profile.profile_media_id)
-              .single();
-            if (mediaData) {
-              profileImageUrl = supabase.storage
-                .from(mediaData.bucket_name || 'business-media')
-                .getPublicUrl(mediaData.storage_path).data.publicUrl;
-            }
-          } catch (fbErr: any) {
-            logger.warn(LogTag.AUTH, `[STORE] Direct public URL fallback failed: ${fbErr.message}`);
-          }
+          logger.warn(LogTag.AUTH, `[STORE] Failed to resolve profile media URL: ${err.message}`);
         }
       }
 
@@ -205,38 +188,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         let profileImageUrl: string | null = null;
         if (data.profile_media_id) {
           try {
-            const { apiService } = await import('@/services/api.service');
-            const signedResult = await apiService.getSignedUrl(data.profile_media_id);
-            profileImageUrl = signedResult?.url ?? null;
+            const { url } = await resolveMediaPublicUrl(data.profile_media_id);
+            profileImageUrl = url;
           } catch (err: any) {
             logger.warn(
               LogTag.AUTH,
-              `[STORE] Failed to fetch signed URL on refresh: ${err.message}`,
+              `[STORE] Failed to resolve profile media URL on refresh: ${err.message}`,
             );
-          }
-
-          if (!profileImageUrl) {
-            try {
-              const { data: mediaData } = await supabase
-                .from('media')
-                .select('storage_path, bucket_name')
-                .eq('id', data.profile_media_id)
-                .single();
-              if (mediaData) {
-                profileImageUrl = supabase.storage
-                  .from(mediaData.bucket_name || 'business-media')
-                  .getPublicUrl(mediaData.storage_path).data.publicUrl;
-              }
-            } catch (fbErr: any) {
-              logger.warn(
-                LogTag.AUTH,
-                `[STORE] Direct public URL fallback failed on refresh: ${fbErr.message}`,
-              );
-            }
           }
         }
 
-        set({ profile: data, role, profileImageUrl });
+        set({
+          profile: {
+            ...data,
+            email: user.email,
+            media: profileImageUrl ? { url: profileImageUrl, signed_url: profileImageUrl } : null,
+          },
+          role,
+          profileImageUrl,
+        });
       }
     } catch (err) {
       logger.error(LogTag.AUTH, '[STORE] Error refreshing profile:', err);
