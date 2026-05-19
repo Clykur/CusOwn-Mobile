@@ -31,7 +31,7 @@ export const Avatar: React.FC<AvatarProps> = ({ url, name = '', size = 48, style
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const showFallback = !url || hasError;
+  const showFallback = !url || url === 'undefined' || url === 'null' || hasError;
 
   return (
     <View

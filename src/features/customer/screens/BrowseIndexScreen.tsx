@@ -214,13 +214,13 @@ export default function CustomerBrowseScreen() {
                   }
                 }}
                 className={`w-10 h-10 rounded-full items-center justify-center ml-3 ${
-                  useCurrentLocation ? 'bg-accent-premium' : 'bg-black'
+                  useCurrentLocation ? '' : ''
                 }`}
               >
                 {locationLoading ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color="#94A3B8" />
                 ) : (
-                  <Ionicons name="locate-outline" size={18} color="#FFFFFF" />
+                  <Ionicons name="locate" size={18} color="#000000" />
                 )}
               </Pressable>
             </View>

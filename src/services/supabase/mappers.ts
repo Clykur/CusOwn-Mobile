@@ -95,7 +95,7 @@ export function mapBusinessRow(row: Record<string, unknown>): Business {
         : row.image_url != null
           ? String(row.image_url)
           : undefined,
-    rating_avg: Number(row.rating_avg ?? row.rating ?? 5),
+    rating_avg: Number(row.rating_avg ?? row.rating ?? 0),
     review_count: Number(row.review_count ?? row.reviews_count ?? 0),
     created_at: (row.created_at as string | number | Date) ?? new Date().toISOString(),
     services,
@@ -285,8 +285,20 @@ export function mapBooking(b: Record<string, unknown>): Booking {
     status: (b.status as Booking['status']) ?? 'pending',
     created_at: String(b.created_at ?? new Date().toISOString()),
     updated_at: String(b.updated_at ?? b.created_at ?? new Date().toISOString()),
-    date: String(b.date ?? slot?.date ?? ''),
-    time: String(b.time ?? slot?.time ?? slot?.start_time ?? ''),
+    date: (() => {
+      const raw =
+        b.date ??
+        slot?.date ??
+        b.slot_date ??
+        (b.created_at ? String(b.created_at).split('T')[0] : '');
+      const str = String(raw ?? '');
+      return str === 'undefined' || str === 'null' ? '' : str;
+    })(),
+    time: (() => {
+      const raw = b.time ?? slot?.time ?? slot?.start_time ?? b.slot_start ?? '';
+      const str = String(raw ?? '');
+      return str === 'undefined' || str === 'null' ? '' : str;
+    })(),
     price,
     total_price: price,
     totalPrice: price,

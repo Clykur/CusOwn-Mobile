@@ -78,7 +78,14 @@ export default function RootLayout() {
     // Wait for the initial session check to finish and navigation to be ready
     if (isLoading || !isNavigationReady) return;
 
-    // Hide splash screen once ready
+    // Some native configs require calling show before hide.
+    // Don't await to keep this effect non-async.
+    try {
+      // @ts-expect-error - expo-splash-screen typings vary across SDKs
+      SplashScreen.showAsync?.();
+    } catch {
+      // ignore
+    }
     SplashScreen.hideAsync();
 
     const rootSegment = segments[0];

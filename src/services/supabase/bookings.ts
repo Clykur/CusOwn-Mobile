@@ -4,25 +4,30 @@ import { Business } from '@/types/business.types';
 import { enrichBusinessesWithImages, mapBooking } from './mappers';
 import { isRlsDenial, logBookingDebug, logBookingError } from './booking-debug';
 import { BookingSupabaseError } from './booking-errors';
+import { parseTimeToMinutes } from '@/utils/time';
+import { logger, LogTag } from '@/utils/logger';
 
 export { BookingSupabaseError } from './booking-errors';
 import { BOOKING_RPC, getActorUserId, invokeBookingRpc } from './booking-rpc';
 import { resolveSlotIdForBooking } from './slots';
 import { listOwnedBusinessIds } from './owner-access';
 import { logSupabaseFailure } from './errors';
+import { businessHoursService } from './business-hours';
 
-/** List views — avoid booking_services embed (often blocked or heavy). */
+/** List views — fetch business, slot, and booking_services to map service names. */
 const BOOKING_LIST_SELECT = `
   *,
   business:businesses(*),
-  service:services(*),
-  slot:slots(*)
+  slot:slots(*),
+  booking_services(
+    price_cents,
+    service:services(*)
+  )
 `;
 
 const BOOKING_DETAIL_SELECT = `
   *,
   business:businesses(*),
-  service:services(*),
   slot:slots(*),
   booking_services(
     price_cents,
@@ -52,7 +57,7 @@ async function fetchBookingRow(bookingId: string): Promise<Record<string, unknow
 
   const fallback = await supabase
     .from('bookings')
-    .select('*, business:businesses(*), service:services(*), slot:slots(*)')
+    .select('*, business:businesses(*), slot:slots(*)')
     .eq('id', bookingId)
     .single();
 
@@ -66,10 +71,168 @@ async function fetchBookingRow(bookingId: string): Promise<Record<string, unknow
 }
 
 function resolveUuidFromRpcResult(result: unknown): string | null {
-  if (!result || typeof result !== 'object') return null;
-  const r = result as Record<string, unknown>;
-  const id = r.id ?? r.booking_uuid ?? (r.booking as Record<string, unknown> | undefined)?.id;
+  if (!result) return null;
+  const target = Array.isArray(result) ? result[0] : result;
+  if (!target || typeof target !== 'object') return null;
+  const r = target as Record<string, unknown>;
+  const id =
+    r.booking_id ??
+    r.id ??
+    r.booking_uuid ??
+    (r.booking as Record<string, unknown> | undefined)?.id;
   return typeof id === 'string' ? id : null;
+}
+
+async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
+  const emptyServiceBookings = bookings.filter((b) => !b.services || b.services.length === 0);
+  if (emptyServiceBookings.length === 0) return;
+
+  const businessIds = [...new Set(emptyServiceBookings.map((b) => b.business_id).filter(Boolean))];
+  if (businessIds.length === 0) return;
+
+  try {
+    const { data: services, error } = await supabase
+      .from('services')
+      .select('*')
+      .in('business_id', businessIds);
+
+    if (error) {
+      logBookingError('enrichBookingsWithServices failed to fetch services', error);
+      return;
+    }
+
+    const servicesByBusiness: Record<string, any[]> = {};
+    services?.forEach((s) => {
+      if (!servicesByBusiness[s.business_id]) {
+        servicesByBusiness[s.business_id] = [];
+      }
+      servicesByBusiness[s.business_id].push(s);
+    });
+
+    for (const b of emptyServiceBookings) {
+      const bizServices = servicesByBusiness[b.business_id] || [];
+      const totalPriceCents = b.total_price_cents ?? (b.price ? Math.round(b.price * 100) : null);
+      const totalDuration = b.total_duration_minutes;
+
+      let matchedService = null;
+      if (bizServices.length > 0) {
+        // 1. Match by price and duration
+        if (totalPriceCents !== null && totalDuration !== null) {
+          matchedService = bizServices.find(
+            (s) => s.price_cents === totalPriceCents && s.duration_minutes === totalDuration,
+          );
+        }
+        // 2. Match by price only
+        if (!matchedService && totalPriceCents !== null) {
+          matchedService = bizServices.find((s) => s.price_cents === totalPriceCents);
+        }
+        // 3. Fallback to first active service
+        if (!matchedService) {
+          const active = bizServices.filter((s) => s.is_active);
+          matchedService = active[0] || bizServices[0];
+        }
+      }
+
+      if (matchedService) {
+        b.services = [
+          {
+            ...matchedService,
+            price: Number(matchedService.price_cents || 0) / 100,
+          } as any,
+        ];
+        b.service = {
+          id: String(matchedService.id),
+          name: String(matchedService.name),
+          price: b.price || Number(matchedService.price_cents || 0) / 100,
+          duration: Number(totalDuration ?? matchedService.duration_minutes ?? 30),
+          business_id: String(b.business_id),
+        } as any;
+      } else {
+        const fallbackName = b.business?.salon_name
+          ? `${b.business.salon_name} Session`
+          : 'Curated Session';
+        b.services = [
+          {
+            id: '',
+            name: fallbackName,
+            price: b.price || 0,
+            duration: Number(totalDuration ?? 30),
+            business_id: String(b.business_id),
+          } as any,
+        ];
+        b.service = {
+          id: '',
+          name: fallbackName,
+          price: b.price || 0,
+          duration: Number(totalDuration ?? 30),
+          business_id: String(b.business_id),
+        } as any;
+      }
+    }
+  } catch (err) {
+    logBookingError('enrichBookingsWithServices exception', err);
+  }
+}
+
+function isBookingTimePassed(booking: any): boolean {
+  if (!booking.date || !booking.time) return false;
+
+  // Clean date YYYY-MM-DD
+  const datePart = String(booking.date).split(/[T ]/)[0];
+  if (!datePart) return false;
+
+  // Parse time minutes
+  const timeMinutes = parseTimeToMinutes(booking.time);
+  if (timeMinutes === null) return false;
+
+  const parts = datePart.split('-');
+  if (parts.length !== 3) return false;
+
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+
+  if (isNaN(year) || isNaN(month) || isNaN(day)) return false;
+
+  // Create Date at that day with 0 hours, then add minutes
+  const appointmentDate = new Date(year, month, day);
+  appointmentDate.setMinutes(appointmentDate.getMinutes() + timeMinutes);
+
+  return appointmentDate.getTime() < Date.now();
+}
+
+async function checkAndAutoCancelPendingBookings(bookings: Booking[]): Promise<Booking[]> {
+  const processedBookings = [...bookings];
+  const promises = processedBookings.map(async (booking, index) => {
+    if (booking.status === 'pending' && isBookingTimePassed(booking)) {
+      // Optimistically update status to cancelled
+      processedBookings[index] = {
+        ...booking,
+        status: 'cancelled',
+        updated_at: new Date().toISOString(),
+      };
+
+      try {
+        await invokeBookingRpc(BOOKING_RPC.cancel, {
+          p_booking_id: booking.id,
+          p_cancelled_by: 'system',
+          p_cancellation_reason: 'Auto-cancelled: appointment time passed without action.',
+        });
+        logger.info(
+          LogTag.API,
+          `[AutoCancel] Booking ${booking.id} auto-cancelled because booking time passed.`,
+        );
+      } catch (err) {
+        logger.error(LogTag.API, `[AutoCancel] Failed to auto-cancel booking ${booking.id}`, err);
+      }
+    }
+  });
+
+  if (promises.length > 0) {
+    await Promise.all(promises);
+  }
+
+  return processedBookings;
 }
 
 async function mapAndEnrichBooking(row: Record<string, unknown>): Promise<Booking> {
@@ -77,7 +240,9 @@ async function mapAndEnrichBooking(row: Record<string, unknown>): Promise<Bookin
   if (mapped.business) {
     await enrichBusinessesWithImages([mapped.business]);
   }
-  return mapped;
+  await enrichBookingsWithServices([mapped]);
+  const autoCancelled = await checkAndAutoCancelPendingBookings([mapped]);
+  return autoCancelled[0];
 }
 
 async function mapAndEnrichMany(rows: Record<string, unknown>[]): Promise<Booking[]> {
@@ -86,12 +251,14 @@ async function mapAndEnrichMany(rows: Record<string, unknown>[]): Promise<Bookin
   if (businesses.length > 0) {
     await enrichBusinessesWithImages(businesses);
   }
-  return mapped;
+  await enrichBookingsWithServices(mapped);
+  return checkAndAutoCancelPendingBookings(mapped);
 }
 
 const BOOKING_LIST_SELECT_ATTEMPTS = [
   BOOKING_LIST_SELECT,
-  '*, business:businesses(*), service:services(*), slot:slots(*)',
+  '*, business:businesses(*), slot:slots(*), booking_services(price_cents, service:services(*))',
+  '*, business:businesses(*), slot:slots(*)',
   '*',
 ];
 
@@ -265,9 +432,46 @@ async function buildCreateRpcParams(input: MobileCreateBookingInput, userId: str
   };
 }
 
+export async function runLazyExpireIfNeeded(): Promise<void> {
+  try {
+    await supabase.rpc('expire_pending_bookings_atomically', {
+      p_expiry_hours: 24,
+    });
+  } catch (err) {
+    logger.error(LogTag.API, 'Failed to run lazy expire:', err);
+  }
+}
+
 export async function createBooking(input: MobileCreateBookingInput): Promise<Booking> {
+  await runLazyExpireIfNeeded();
+
   const userId = input.customer_user_id ?? (await getActorUserId());
   const { idempotent, atomic } = await buildCreateRpcParams(input, userId);
+
+  // Validate business hours for the slot
+  const slotId = atomic.p_slot_id;
+  const businessId = atomic.p_business_id;
+  if (slotId && businessId) {
+    const { data: slotRow } = await supabase
+      .from('slots')
+      .select('date, start_time, end_time')
+      .eq('id', slotId)
+      .maybeSingle();
+
+    if (slotRow) {
+      const slotValidation = await businessHoursService.validateSlot(
+        businessId,
+        slotRow.date,
+        slotRow.start_time,
+        slotRow.end_time,
+      );
+      if (!slotValidation.valid) {
+        throw new BookingSupabaseError(
+          slotValidation.reason || 'Selected slot is outside business hours.',
+        );
+      }
+    }
+  }
 
   let rpcResult: unknown;
   try {
@@ -279,49 +483,70 @@ export async function createBooking(input: MobileCreateBookingInput): Promise<Bo
     rpcResult = await invokeBookingRpc(BOOKING_RPC.create, atomic);
   }
 
+  // Check if result returned success: false
+  if (rpcResult && typeof rpcResult === 'object') {
+    const target = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult;
+    if (target && target.success === false) {
+      throw new BookingSupabaseError(target.error || 'Booking creation failed');
+    }
+  }
+
   const uuid = resolveUuidFromRpcResult(rpcResult);
   if (uuid) {
     return getBookingById(uuid);
   }
   if (rpcResult && typeof rpcResult === 'object') {
-    return mapAndEnrichBooking(rpcResult as Record<string, unknown>);
+    const target = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult;
+    return mapAndEnrichBooking(target as Record<string, unknown>);
   }
   throw new BookingSupabaseError('create booking RPC returned no booking row');
 }
 
 export async function acceptBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  await invokeBookingRpc(BOOKING_RPC.confirm, {
+  const result = await invokeBookingRpc<any>(BOOKING_RPC.confirm, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
+  if (result && typeof result === 'object' && result.success === false) {
+    throw new BookingSupabaseError(result.error || 'Failed to accept booking');
+  }
   return getBookingById(bookingId);
 }
 
 export async function rejectBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  await invokeBookingRpc(BOOKING_RPC.reject, {
+  const result = await invokeBookingRpc<any>(BOOKING_RPC.reject, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
+  if (result && typeof result === 'object' && result.success === false) {
+    throw new BookingSupabaseError(result.error || 'Failed to reject booking');
+  }
   return getBookingById(bookingId);
 }
 
 export async function undoAcceptBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  await invokeBookingRpc(BOOKING_RPC.undoConfirm, {
+  const result = await invokeBookingRpc<any>(BOOKING_RPC.undoConfirm, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
+  if (result && typeof result === 'object' && result.success === false) {
+    throw new BookingSupabaseError(result.error || 'Failed to undo accept booking');
+  }
   return getBookingById(bookingId);
 }
 
 export async function undoRejectBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  await invokeBookingRpc(BOOKING_RPC.undoReject, {
+  const result = await invokeBookingRpc<any>(BOOKING_RPC.undoReject, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
+  if (result && typeof result === 'object' && result.success === false) {
+    throw new BookingSupabaseError(result.error || 'Failed to undo reject booking');
+  }
   return getBookingById(bookingId);
 }
 
@@ -353,11 +578,14 @@ export async function cancelBooking(
   reason?: string,
   cancelledBy: 'customer' | 'owner' = 'customer',
 ): Promise<Booking> {
-  await invokeBookingRpc(BOOKING_RPC.cancel, {
+  const result = await invokeBookingRpc<any>(BOOKING_RPC.cancel, {
     p_booking_id: bookingId,
     p_cancelled_by: cancelledBy,
     p_cancellation_reason: reason || '',
   });
+  if (result && typeof result === 'object' && result.success === false) {
+    throw new BookingSupabaseError(result.error || 'Failed to cancel booking');
+  }
   return getBookingById(bookingId);
 }
 
@@ -371,23 +599,71 @@ export async function rescheduleBooking(
     service_id?: string | string[];
     service_ids?: string[];
     date?: string;
+    time?: string;
     customer_name?: string;
     customer_phone?: string;
     reason?: string;
     rescheduled_by?: 'customer' | 'owner';
   },
 ): Promise<Booking> {
-  const slotId = payload.new_slot_id ?? payload.slot_id;
-  if (!slotId) {
-    throw new BookingSupabaseError('p_new_slot_id is required for reschedule');
+  await runLazyExpireIfNeeded();
+
+  const rawSlotId = payload.new_slot_id ?? payload.slot_id;
+
+  let slotId: string;
+  if (!rawSlotId || String(rawSlotId).startsWith('gen-slot-')) {
+    const businessId = payload.business_id || payload.salon_id;
+    if (!businessId) {
+      throw new BookingSupabaseError('business_id is required to resolve slots for reschedule');
+    }
+    if (!payload.date) {
+      throw new BookingSupabaseError('date is required to resolve slots for reschedule');
+    }
+    slotId = await resolveSlotIdForBooking({
+      businessId,
+      date: payload.date,
+      time: payload.time || '',
+      hintSlotId: rawSlotId,
+    });
+  } else {
+    slotId = String(rawSlotId);
   }
 
-  await invokeBookingRpc(BOOKING_RPC.reschedule, {
+  // Validate business hours for the reschedule target slot
+  const businessId = payload.business_id || payload.salon_id;
+  if (slotId && businessId) {
+    const { data: slotRow } = await supabase
+      .from('slots')
+      .select('date, start_time, end_time')
+      .eq('id', slotId)
+      .maybeSingle();
+
+    if (slotRow) {
+      const slotValidation = await businessHoursService.validateSlot(
+        businessId,
+        slotRow.date,
+        slotRow.start_time,
+        slotRow.end_time,
+      );
+      if (!slotValidation.valid) {
+        throw new BookingSupabaseError(
+          slotValidation.reason || 'Selected slot is outside business hours.',
+        );
+      }
+    }
+  }
+
+  const result = await invokeBookingRpc<any>(BOOKING_RPC.reschedule, {
     p_booking_id: bookingId,
     p_new_slot_id: slotId,
     p_rescheduled_by: payload.rescheduled_by ?? 'customer',
     p_reschedule_reason: payload.reason || '',
   });
+
+  if (result && typeof result === 'object' && result.success === false) {
+    throw new BookingSupabaseError(result.error || 'Failed to reschedule booking');
+  }
+
   return getBookingById(bookingId);
 }
 

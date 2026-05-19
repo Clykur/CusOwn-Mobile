@@ -59,15 +59,52 @@ export async function getReviewsForBusiness(businessId: string): Promise<Busines
     throw error;
   }
 
+  // Fetch corresponding user profiles
+  const profilesMap: Record<string, { full_name: string | null; profile_media_id: string | null }> =
+    {};
+  if (reviews && reviews.length > 0) {
+    const userIds = Array.from(
+      new Set(
+        reviews.map((r) => r.user_id).filter((uid): uid is string => typeof uid === 'string'),
+      ),
+    );
+
+    if (userIds.length > 0) {
+      try {
+        const { data: profilesData } = await supabase
+          .from('user_profiles')
+          .select('id, full_name, profile_media_id')
+          .in('id', userIds);
+
+        if (profilesData) {
+          profilesData.forEach((p) => {
+            profilesMap[p.id] = {
+              full_name: p.full_name,
+              profile_media_id: p.profile_media_id,
+            };
+          });
+        }
+      } catch (profileFetchErr) {
+        logger.warn(LogTag.API, 'Failed to fetch user profiles for reviews', profileFetchErr);
+      }
+    }
+  }
+
   return {
     rating_avg: Number(business?.rating_avg ?? 0),
     review_count: Number(business?.review_count ?? reviews?.length ?? 0),
     reviews: (reviews || []).map((row) => {
       const r = row as Record<string, unknown>;
+      const profile = r.user_id ? profilesMap[String(r.user_id)] : null;
       return {
         ...r,
         id: r.id != null ? String(r.id) : undefined,
-        customer_name: r.customer_name ?? r.author_name ?? 'Customer',
+        customer: profile
+          ? {
+              full_name: profile.full_name,
+            }
+          : null,
+        customer_name: profile?.full_name ?? r.customer_name ?? r.author_name ?? 'Customer',
       };
     }),
   };

@@ -16,15 +16,25 @@ import { Card } from '@/components/ui/Card';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import { useBusinessHours } from '@/hooks/useBusinessHours';
 
 export default function SelectSlotScreen() {
   const { selectedBusiness, selectedService, setSlot } = useBookingStore();
+
   const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
+    const today = dayjs();
+    const tomorrow = dayjs().add(1, 'day');
+    // Default to tomorrow if today is past closing time (assuming a default closing of 23:59 for this check)
+    // This initial check is a heuristic; the actual filtering happens on the backend.
+    if (today.hour() >= 23 && today.minute() >= 59) {
+      return tomorrow.format('YYYY-MM-DD');
+    }
+    return today.format('YYYY-MM-DD');
   });
 
   const { data: slots, isLoading, isError } = useSlots(selectedBusiness?.id || null, selectedDate);
+  const { data: businessHours } = useBusinessHours(selectedBusiness?.id || null, selectedDate);
 
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
@@ -32,19 +42,31 @@ export default function SelectSlotScreen() {
 
   const datesList = useMemo(() => {
     const list = [];
-    const base = new Date();
+    const base = dayjs();
+    // If selectedDate is already tomorrow, start the list from tomorrow
+    const startDay = dayjs(selectedDate).isAfter(base, 'day') ? dayjs(selectedDate) : base;
+
     for (let i = 0; i < 14; i++) {
-      const d = new Date(base);
-      d.setDate(base.getDate() + i);
+      const d = startDay.add(i, 'day');
       list.push({
-        iso: d.toISOString().split('T')[0],
-        dayOfWeek: d.toLocaleDateString('en-US', { weekday: 'short' }),
-        dayNum: d.getDate(),
-        monthStr: d.toLocaleDateString('en-US', { month: 'short' }),
+        iso: d.format('YYYY-MM-DD'),
+        dayOfWeek: d.format('ddd'),
+        dayNum: d.date(),
+        monthStr: d.format('MMM'),
       });
     }
     return list;
-  }, []);
+  }, [selectedDate]);
+
+  const isShopClosed = useMemo(() => {
+    if (!businessHours) return false;
+    const now = dayjs();
+    const selected = dayjs(selectedDate);
+    const closingTime = dayjs(`${selectedDate}T${businessHours.closing_time}`);
+
+    // If selected date is today and current time is past closing time
+    return selected.isSame(now, 'day') && now.isAfter(closingTime);
+  }, [selectedDate, businessHours]);
 
   if (!selectedBusiness || !selectedService) {
     return (
@@ -89,10 +111,7 @@ export default function SelectSlotScreen() {
   };
 
   const renderSlotItem = ({ item }: { item: Slot }) => {
-    const timeStr = new Date(item.time).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
+    const timeStr = dayjs(`${item.date}T${item.time}`).format('h:mm A');
 
     return (
       <TouchableOpacity
@@ -159,7 +178,7 @@ export default function SelectSlotScreen() {
 
       <ScrollView style={styles.slotsScroll}>
         <Text style={[styles.slotsGridHeader, { color: theme.textSecondary }]}>
-          Available Times on {new Date(selectedDate + 'T00:00:00').toLocaleDateString()}
+          Available Times on {dayjs(selectedDate).format('MMM D, YYYY')}
         </Text>
 
         {isLoading ? (
@@ -178,7 +197,7 @@ export default function SelectSlotScreen() {
           <View style={styles.emptyWrap}>
             <Ionicons name="time-outline" size={40} color={theme.textSecondary} />
             <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-              No slots configured for this date.
+              {isShopClosed ? 'Shop Closed' : 'No slots configured for this date.'}
             </Text>
           </View>
         ) : (

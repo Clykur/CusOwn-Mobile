@@ -216,7 +216,7 @@ export const apiChecker = {
       if (!user) throw new Error('Auth required for DB write test');
 
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('full_name')
         .eq('id', user.id)
         .single();
@@ -225,7 +225,7 @@ export const apiChecker = {
       const testName = `${originalName} (Verified)`;
 
       const { error: updateError, status } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .update({ full_name: testName })
         .eq('id', user.id);
 
@@ -242,7 +242,7 @@ export const apiChecker = {
         throw updateError;
       }
 
-      await supabase.from('profiles').update({ full_name: originalName }).eq('id', user.id);
+      await supabase.from('user_profiles').update({ full_name: originalName }).eq('id', user.id);
 
       return {
         id: 'db-write',

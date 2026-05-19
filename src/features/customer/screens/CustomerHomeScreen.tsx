@@ -66,6 +66,28 @@ export default function CustomerHomeScreen() {
     });
   }, [bookings]);
 
+  const favouriteSalons = useMemo(() => {
+    if (!normalizedBookings || !businesses) return [];
+
+    const completedBookings = normalizedBookings.filter(
+      (b: any) => b.normalizedStatus === 'completed',
+    );
+
+    const sortedBookings = [...completedBookings].sort((a: any, b: any) => {
+      const dateA = dayjs(`${a.date} ${a.time}`);
+      const dateB = dayjs(`${b.date} ${b.time}`);
+      return dateB.isAfter(dateA) ? 1 : -1;
+    });
+
+    const visitedBusinessIds = Array.from(
+      new Set(sortedBookings.map((b: any) => b.business_id || b.business?.id).filter(Boolean)),
+    );
+
+    return visitedBusinessIds
+      .map((id) => businesses.find((b) => b.id === id))
+      .filter(Boolean) as Business[];
+  }, [normalizedBookings, businesses]);
+
   const totalCount = normalizedBookings.length;
   const upcomingCount = normalizedBookings.filter(
     (b: any) => b.normalizedStatus === 'pending' || b.normalizedStatus === 'confirmed',
@@ -81,23 +103,47 @@ export default function CustomerHomeScreen() {
     router.push(`/(customer)/browse/salons/${business.id}`);
   };
 
-  const renderCategoryItem = ({ item, index }: { item: BusinessCategory; index: number }) => (
-    <AnimatedSection delay={index * 50} direction="up">
-      <Pressable
-        className="w-[110px] p-4 rounded-3xl bg-white border border-slate-200 shadow-sm items-center justify-center gap-y-3"
-        onPress={() =>
-          router.push({ pathname: '/(customer)/browse', params: { categoryId: item.value } })
-        }
-      >
-        <View className="w-12 h-12 rounded-full bg-accent-premium/10 items-center justify-center">
-          <Ionicons name={(item.icon as any) || 'business'} size={24} color="#000000" />
-        </View>
-        <Text className="text-slate-900 text-[11px] font-bold text-center uppercase tracking-wider">
-          {item.label}
-        </Text>
-      </Pressable>
-    </AnimatedSection>
-  );
+  const renderCategoryItem = ({ item, index }: { item: BusinessCategory; index: number }) => {
+    const iconName = typeof item.icon === 'string' && item.icon.length > 0 ? item.icon : 'business';
+
+    return (
+      <AnimatedSection delay={index * 50} direction="up">
+        <Pressable
+          className="w-[110px] rounded-[28px] border border-slate-200  items-center justify-center py-5 px-3"
+          style={{
+            shadowColor: '#000',
+            shadowOpacity: 0.05,
+            shadowRadius: 10,
+            elevation: 3,
+          }}
+          onPress={() =>
+            router.push({
+              pathname: '/(customer)/browse',
+              params: {
+                categoryId: item.value,
+              },
+            })
+          }
+        >
+          <View
+            className="w-14 h-14 rounded-full items-center justify-center mb-3"
+            style={{
+              backgroundColor: '#F1F5F9',
+            }}
+          >
+            <Ionicons name="cut-outline" size={24} color="#0F172A" />
+          </View>
+
+          <Text
+            numberOfLines={2}
+            className="text-slate-900 text-[11px] font-black text-center uppercase tracking-wide"
+          >
+            {item.label}
+          </Text>
+        </Pressable>
+      </AnimatedSection>
+    );
+  };
 
   return (
     <PremiumBackground>
@@ -199,15 +245,20 @@ export default function CustomerHomeScreen() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 24, gap: 16 }}
               >
-                {categories.map((item, index) => (
-                  <View key={item.value || `cat-${index}`}>
-                    {renderCategoryItem({ item, index })}
-                  </View>
-                ))}
+                {categories
+                  .filter(
+                    (item) =>
+                      item.label?.toLowerCase() === 'salon' ||
+                      item.value?.toLowerCase() === 'salon',
+                  )
+                  .map((item, index) => (
+                    <View key={item.value || `cat-${index}`}>
+                      {renderCategoryItem({ item, index })}
+                    </View>
+                  ))}
               </ScrollView>
             </View>
           )}
-
           {/* Featured Businesses Section */}
           <View>
             <View className="flex-row justify-between items-center px-luxury mb-6">
@@ -219,7 +270,7 @@ export default function CustomerHomeScreen() {
               </Pressable>
             </View>
 
-            {isLoading ? (
+            {isLoading || bookingsLoading ? (
               <View className="px-luxury flex-row">
                 <LoadingSkeleton width={280} height={260} borderRadius={24} className="mr-4" />
                 <LoadingSkeleton width={280} height={260} borderRadius={24} />
@@ -227,9 +278,7 @@ export default function CustomerHomeScreen() {
             ) : isError ? (
               <View className="px-luxury">
                 <GlassCard className="items-center bg-white border border-slate-200">
-                  <Text className="text-error font-medium mb-4">
-                    Failed to load featured businesses
-                  </Text>
+                  <Text className="text-error font-medium mb-4">Failed to load salons</Text>
                   <Pressable
                     onPress={() => refetch()}
                     className="bg-white px-6 py-2 rounded-full border border-slate-200"
@@ -238,14 +287,14 @@ export default function CustomerHomeScreen() {
                   </Pressable>
                 </GlassCard>
               </View>
-            ) : (
+            ) : favouriteSalons.length > 0 ? (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16, gap: 16 }}
               >
-                {businesses?.slice(0, 5).map((item, index) => (
-                  <View key={item.id || `biz-${index}`}>
+                {favouriteSalons.map((item, index) => (
+                  <View key={item.id || `fav-${index}`}>
                     <BusinessCard
                       item={item}
                       index={index}
@@ -254,6 +303,24 @@ export default function CustomerHomeScreen() {
                   </View>
                 ))}
               </ScrollView>
+            ) : (
+              <View className="px-luxury">
+                <GlassCard className="p-6 border border-slate-200/80 bg-white/90 shadow-sm items-center">
+                  <Ionicons name="calendar-outline" size={36} color="#94A3B8" className="mb-2" />
+                  <Text className="text-slate-700 font-extrabold text-sm text-center">
+                    No Salons Visited Yet
+                  </Text>
+                  <Text className="text-slate-400 text-xs text-center mt-1 mb-4 px-4">
+                    Your recently visited salons will show up here. Let's find your first salon!
+                  </Text>
+                  <Pressable
+                    onPress={() => router.push('/(customer)/browse')}
+                    className="bg-black py-2.5 px-5 rounded-2xl"
+                  >
+                    <Text className="text-white font-extrabold text-xs">Explore Salons</Text>
+                  </Pressable>
+                </GlassCard>
+              </View>
             )}
           </View>
         </ScrollView>

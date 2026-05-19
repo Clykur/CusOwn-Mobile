@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { UserProfile } from '@/types/user.types';
 import { logger, LogTag } from '@/utils/logger';
 import { invokeBookingRpc } from './booking-rpc';
+import { resolveMediaPublicUrl } from './storage';
 
 const ACCOUNT_RPC = {
   softDeleteUser: 'soft_delete_user_account',
@@ -62,12 +63,36 @@ export async function getProfilePayload(): Promise<ProfileApiPayload> {
     };
   }
 
+  if (!profile) {
+    return {
+      profile: null,
+      user: { id: user.id, email: user.email },
+    };
+  }
+
+  let profileImageUrl: string | null = null;
+  if (profile.profile_media_id) {
+    try {
+      const { url } = await resolveMediaPublicUrl(profile.profile_media_id);
+      profileImageUrl = url;
+    } catch (err: any) {
+      logger.warn(LogTag.API, `Failed to resolve media for profile: ${err.message}`);
+    }
+  }
+
+  const enrichedProfile: UserProfile = {
+    ...profile,
+    email: user.email,
+    media: profileImageUrl ? { url: profileImageUrl, signed_url: profileImageUrl } : null,
+  };
+
   return {
-    profile: profile as UserProfile | null,
+    profile: enrichedProfile,
     user: {
       id: user.id,
       email: user.email,
     },
+    profile_image_url: profileImageUrl,
   };
 }
 
@@ -75,7 +100,14 @@ export async function updateProfile(payload: {
   full_name?: string;
   phone_number?: string;
 }): Promise<UserProfile> {
-  const userId = await getActorUserId();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw authError || new Error('Not authenticated');
+  }
 
   const { data, error } = await supabase
     .from('user_profiles')
@@ -84,7 +116,7 @@ export async function updateProfile(payload: {
       ...(payload.phone_number !== undefined ? { phone_number: payload.phone_number } : {}),
       updated_at: new Date().toISOString(),
     })
-    .eq('id', userId)
+    .eq('id', user.id)
     .select('*')
     .single();
 
@@ -93,7 +125,21 @@ export async function updateProfile(payload: {
     throw error;
   }
 
-  return data as UserProfile;
+  let profileImageUrl: string | null = null;
+  if (data.profile_media_id) {
+    try {
+      const { url } = await resolveMediaPublicUrl(data.profile_media_id);
+      profileImageUrl = url;
+    } catch (err: any) {
+      logger.warn(LogTag.API, `Failed to resolve media for updated profile: ${err.message}`);
+    }
+  }
+
+  return {
+    ...data,
+    email: user.email,
+    media: profileImageUrl ? { url: profileImageUrl, signed_url: profileImageUrl } : null,
+  } as UserProfile;
 }
 
 async function getActorUserId(): Promise<string> {

@@ -3,6 +3,7 @@ import React, { memo, useState, useCallback } from 'react';
 import RescheduleButton from '@/features/booking/components/reschedule-button';
 
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { router } from 'expo-router';
 
 import { Slot } from '@/types/slot.types';
 
@@ -24,6 +25,8 @@ interface BookingActionsProps {
     };
 
     business_id: string;
+    services?: Array<{ id: string; name: string }>;
+    service?: { id: string; name: string };
   };
 
   salon_id?: string;
@@ -94,8 +97,12 @@ function BookingActionsComponent({
       onCancelled();
     },
 
-    onError: () => {
+    onError: (error: any) => {
       setOptimisticStatus(null);
+      Alert.alert(
+        'Cancellation Failed',
+        error.message || 'An error occurred while cancelling your booking.',
+      );
     },
   });
 
@@ -121,68 +128,93 @@ function BookingActionsComponent({
     return;
   }, [cancelMutation, isCancellationTooLate]);
 
+  const handleRebook = useCallback(() => {
+    const serviceIds =
+      booking.services?.map((s: any) => s.id).join(',') || booking.service?.id || '';
+    router.push({
+      pathname: '/(customer)/book/[id]',
+      params: {
+        id: booking.business_id,
+        serviceIds,
+      },
+    });
+  }, [booking.business_id, booking.services, booking.service]);
+
   const displayStatus = optimisticStatus || booking.status;
 
   const showCancelled = displayStatus === 'cancelled';
 
+  const isPastOrInactive =
+    displayStatus === 'completed' ||
+    displayStatus === 'cancelled' ||
+    displayStatus === 'no_show' ||
+    displayStatus === 'rejected';
+
   return (
-    <>
-      {showCancelled ? (
-        <View className="mb-6 p-4 bg-slate-100 rounded-xl text-center">
+    <View className="space-y-3">
+      {showCancelled && (
+        <View className="p-4 bg-slate-100 rounded-xl text-center mb-3">
           <Text className="text-slate-600 font-medium">
             {cancelMutation.isPending ? 'Cancelling your booking...' : 'Booking cancelled'}
           </Text>
         </View>
-      ) : (
-        canCancelByStatus && (
-          <View className="mb-6 space-y-3">
-            {/* CANCEL BUTTON */}
-
-            <TouchableOpacity
-              onPress={handleCancel}
-              disabled={cancelMutation.isPending || isActionDisabled}
-              activeOpacity={0.7}
-              className={`w-full rounded-xl py-3 px-6 items-center mb-3 ${isActionDisabled ? 'bg-red-300' : 'bg-red-600'}`}
-            >
-              <Text className="text-white font-semibold">
-                {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Booking'}
-              </Text>
-            </TouchableOpacity>
-
-            {/* CANCELLATION WARNING */}
-
-            {isActionDisabled && (
-              <Text className="text-sm text-slate-500 mb-4 -mt-2">
-                Actions are disabled as the appointment time has passed or is too close.
-              </Text>
-            )}
-            {/* ERROR */}
-
-            {cancelMutation.isError && (
-              <Text className="text-sm text-red-600">
-                {(cancelMutation.error as Error)?.message || 'Failed to cancel booking'}
-              </Text>
-            )}
-
-            {/* RESCHEDULE */}
-
-            {booking.slot && !booking.no_show && booking.status !== 'cancelled' && (
-              <View className="flex justify-center">
-                <RescheduleButton
-                  bookingId={booking.id}
-                  currentSlot={booking.slot}
-                  businessId={booking.business_id}
-                  availableSlots={availableSlots ?? []}
-                  onRescheduled={onRescheduled}
-                  rescheduledBy="customer"
-                  disabled={isActionDisabled}
-                />
-              </View>
-            )}
-          </View>
-        )
       )}
-    </>
+
+      {canCancelByStatus && !showCancelled && (
+        <View className="space-y-3">
+          {/* CANCEL BUTTON */}
+          <TouchableOpacity
+            onPress={handleCancel}
+            disabled={cancelMutation.isPending || isActionDisabled}
+            activeOpacity={0.7}
+            className={`w-full rounded-xl py-3 px-6 items-center mb-3 ${isActionDisabled ? 'bg-red-300' : 'bg-red-600'}`}
+          >
+            <Text className="text-white font-semibold">
+              {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Booking'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* CANCELLATION WARNING */}
+          {isActionDisabled && (
+            <Text className="text-sm text-slate-500 mb-4 -mt-2">
+              Actions are disabled as the appointment time has passed or is too close.
+            </Text>
+          )}
+
+          {/* ERROR */}
+          {cancelMutation.isError && (
+            <Text className="text-sm text-red-600">
+              {(cancelMutation.error as Error)?.message || 'Failed to cancel booking'}
+            </Text>
+          )}
+
+          {/* RESCHEDULE */}
+          {booking.slot && !booking.no_show && booking.status !== 'cancelled' && (
+            <View className="flex justify-center">
+              <RescheduleButton
+                bookingId={booking.id}
+                currentSlot={booking.slot}
+                businessId={booking.business_id}
+                availableSlots={availableSlots ?? []}
+                onRescheduled={onRescheduled}
+                rescheduledBy="customer"
+                disabled={isActionDisabled}
+              />
+            </View>
+          )}
+        </View>
+      )}
+
+      {isPastOrInactive && (
+        <TouchableOpacity
+          onPress={handleRebook}
+          activeOpacity={0.7}
+          className="w-full rounded-xl py-3 px-6 items-center bg-black"
+        >
+          <Text className="text-white font-semibold">Rebook</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 

@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { getBookingPrice } from '@/services/api.service';
 import { supabase } from '@/lib/supabase';
 import { CONFIG } from '@/constants/config';
+import { formatBookingDate, formatBookingTime } from '@/utils/time';
 
 interface BookingCardProps {
   item: Booking;
@@ -47,10 +48,10 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
     const windowMs = (CONFIG.UNDO_WINDOW_MINUTES || 15) * 60 * 1000;
 
-    const updatedAt = new Date(item.updated_at).getTime();
+    const updatedAt = new Date(item.updated_at || item.created_at || Date.now()).getTime();
 
-    return Date.now() - updatedAt < windowMs;
-  }, [item.status, item.updated_at, item.undo_used_at]);
+    return !isNaN(updatedAt) && Date.now() - updatedAt < windowMs;
+  }, [item.status, item.updated_at, item.created_at, item.undo_used_at]);
 
   /**
    * Customer profile avatar fallback
@@ -80,32 +81,30 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           {/* Header */}
           <View className="flex-row justify-between items-start mb-2">
             <View className="flex-row items-center flex-1 gap-x-3">
-              {/* Business Image / Customer Avatar */}
-              {businessImage ? (
-                <Image
-                  source={{ uri: businessImage }}
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 14,
-                  }}
-                />
-              ) : (
-                <Avatar
-                  url={avatarUrl}
-                  name={item.customer_name || 'Client Direct'}
-                  size={48}
-                  className="border border-accent-premium/20"
-                />
-              )}
+              <Avatar
+                url={avatarUrl}
+                name={item.customer_name || 'Client Direct'}
+                size={48}
+                className="border border-accent-premium/20"
+              />
 
               {/* Booking Info */}
-              <View className="flex-1">
-                <Text className="text-slate-900 text-base font-bold" numberOfLines={1}>
+              <View className="flex-1 min-w-0">
+                {/* Customer Name */}
+                <Text
+                  className="text-slate-900 text-[16px] font-bold"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {item.customer_name || 'Client Direct'}
                 </Text>
 
-                <Text className="text-slate-500 text-xs mt-1" numberOfLines={1}>
+                {/* Services */}
+                <Text
+                  className="text-slate-500 text-[12px] font-semibold mt-1"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {item.services && item.services.length > 0
                     ? item.services.map((s: any) => s.name).join(', ')
                     : item.service?.name || 'Standard Slot'}
@@ -128,7 +127,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 <Ionicons name="calendar-outline" size={14} color="#64748B" />
               </View>
               <Text className="text-slate-600 text-xs font-medium">
-                {item.date} - {item.time}
+                {formatBookingDate(item.date)} - {formatBookingTime(item.time)}
               </Text>
             </View>
 

@@ -44,7 +44,7 @@ const RoleOption = ({
         scale.value = withSpring(1);
       }}
       onPress={onPress}
-      style={{ marginBottom: 20 }}
+      style={{ marginBottom: 15 }}
     >
       <Animated.View
         style={[
@@ -63,27 +63,26 @@ const RoleOption = ({
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            marginBottom: 18,
+            marginBottom: 10,
           }}
         >
           <View
             style={{
-              width: 58,
-              height: 58,
+              width: 50,
+              height: 50,
               borderRadius: 20,
-              backgroundColor: selected ? '#000000' : '#F1F5F9',
               justifyContent: 'center',
               alignItems: 'center',
-              marginRight: 16,
+              marginRight: 12,
             }}
           >
-            <Ionicons name={icon} size={28} color={selected ? '#FFFFFF' : '#64748B'} />
+            <Ionicons name={icon} size={25} color={selected ? '#000000' : '#64748B'} />
           </View>
 
           <View style={{ flex: 1 }}>
             <Text
               style={{
-                fontSize: 28,
+                fontSize: 25,
                 fontWeight: '800',
                 color: '#0F172A',
               }}
@@ -93,7 +92,7 @@ const RoleOption = ({
 
             <Text
               style={{
-                fontSize: 15,
+                fontSize: 14,
                 color: '#64748B',
                 marginTop: 4,
                 lineHeight: 24,
@@ -114,20 +113,20 @@ const RoleOption = ({
                 alignItems: 'center',
               }}
             >
-              <Ionicons name="checkmark" size={18} color="#FFF" />
+              <Ionicons name="checkmark" size={20} color="#FFF" />
             </View>
           )}
         </View>
 
         {/* Points */}
-        <View style={{ marginTop: 8 }}>
+        <View style={{ marginTop: 5 }}>
           {points.map((point, index) => (
             <View
               key={index}
               style={{
                 flexDirection: 'row',
                 alignItems: 'flex-start',
-                marginBottom: 14,
+                marginBottom: 5,
               }}
             >
               <View
@@ -136,7 +135,7 @@ const RoleOption = ({
                   height: 8,
                   borderRadius: 999,
                   backgroundColor: '#000',
-                  marginTop: 8,
+                  marginTop: 6,
                   marginRight: 12,
                 }}
               />
@@ -146,7 +145,7 @@ const RoleOption = ({
                   flex: 1,
                   fontSize: 15,
                   color: '#475569',
-                  lineHeight: 26,
+                  lineHeight: 20,
                 }}
               >
                 {point}
@@ -179,11 +178,10 @@ export default function RoleSelectionScreen() {
 
   return (
     <PremiumBackground>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
+      <View
+        style={{
           paddingHorizontal: 28,
-          paddingTop: 90,
+          paddingTop: 80,
           paddingBottom: 40,
           flexGrow: 1,
         }}
@@ -197,7 +195,7 @@ export default function RoleSelectionScreen() {
               textTransform: 'uppercase',
               color: '#D97706',
               fontWeight: '600',
-              marginBottom: 18,
+              marginBottom: 8,
             }}
           >
             Choose Your Experience
@@ -205,11 +203,11 @@ export default function RoleSelectionScreen() {
 
           <Text
             style={{
-              fontSize: 48,
+              fontSize: 38,
               fontWeight: '900',
               color: '#0F172A',
-              lineHeight: 54,
-              marginBottom: 14,
+              lineHeight: 50,
+              marginBottom: 10,
             }}
           >
             Select Your{'\n'}Premium Access
@@ -217,10 +215,10 @@ export default function RoleSelectionScreen() {
 
           <Text
             style={{
-              fontSize: 17,
-              lineHeight: 30,
+              fontSize: 15,
+              lineHeight: 24,
               color: '#64748B',
-              marginBottom: 42,
+              marginBottom: 22,
             }}
           >
             Select the experience that best matches your journey on the platform.
@@ -228,7 +226,7 @@ export default function RoleSelectionScreen() {
         </AnimatedSection>
 
         {/* Roles */}
-        <View style={{ marginBottom: 30 }}>
+        <View style={{ marginBottom: 10 }}>
           <RoleOption
             title="Customer"
             icon="person-outline"
@@ -279,7 +277,7 @@ export default function RoleSelectionScreen() {
             Secure Authentication Powered By Google
           </Text>
         </AnimatedSection>
-      </ScrollView>
+      </View>
     </PremiumBackground>
   );
 }

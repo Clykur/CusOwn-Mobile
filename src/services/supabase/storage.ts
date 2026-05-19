@@ -7,7 +7,7 @@ import { logSupabaseFailure } from './errors';
 
 export const STORAGE_BUCKETS = {
   business: 'business-media',
-  profile: 'profile-media',
+  profile: 'business-media', // Fallback to business-media as profile-media bucket does not exist
 } as const;
 
 export type PickedImageFile = {
@@ -69,6 +69,12 @@ export async function resolveMediaPublicUrl(mediaId: string): Promise<{ url: str
 
   if (error || !data) {
     return { url: null };
+  }
+
+  // Profile media / avatars in legacy private bucket require a signed URL
+  if (data.bucket_name === 'profile-media') {
+    const signed = await createSignedStorageUrl(data.bucket_name, data.storage_path);
+    return { url: signed };
   }
 
   const publicUrl = getPublicStorageUrl(data.bucket_name, data.storage_path);
@@ -225,7 +231,7 @@ export async function uploadProfileAvatar(
 ): Promise<{ mediaId: string; url: string | null }> {
   const userId = await getActorUserId();
   const ext = (file.name?.split('.').pop() || 'jpg').toLowerCase();
-  const storagePath = `${userId}/avatar/${Date.now()}.${ext}`;
+  const storagePath = `profile/${userId}/avatar/${Date.now()}.${ext}`;
   const bucket = STORAGE_BUCKETS.profile;
 
   await uploadToStorage({ bucket, storagePath, file, upsert: true });

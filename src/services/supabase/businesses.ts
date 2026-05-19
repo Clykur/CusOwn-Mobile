@@ -84,6 +84,7 @@ export async function getBusinessById(id: string): Promise<Business> {
     .from('businesses')
     .select(BUSINESS_DETAIL_SELECT)
     .eq('id', id)
+    .is('deleted_at', null)
     .single();
 
   if (error) {
@@ -92,10 +93,16 @@ export async function getBusinessById(id: string): Promise<Business> {
       .from('businesses')
       .select(BUSINESS_LIST_SELECT)
       .eq('id', id)
+      .is('deleted_at', null)
       .single());
   }
   if (error) {
-    ({ data, error } = await supabase.from('businesses').select('*').eq('id', id).single());
+    ({ data, error } = await supabase
+      .from('businesses')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single());
   }
   if (error) {
     logSupabaseFailure('getBusinessById', error, { id });
@@ -134,11 +141,16 @@ export async function listOwnerBusinesses(ownerUserId: string): Promise<Business
   let { data, error } = await supabase
     .from('businesses')
     .select(BUSINESS_LIST_SELECT)
-    .in('id', ids);
+    .in('id', ids)
+    .is('deleted_at', null);
 
   if (error) {
     logQueryFallback('listOwnerBusinesses', 'retry select *', error);
-    ({ data, error } = await supabase.from('businesses').select('*').in('id', ids));
+    ({ data, error } = await supabase
+      .from('businesses')
+      .select('*')
+      .in('id', ids)
+      .is('deleted_at', null));
   }
   if (error) {
     logSupabaseFailure('listOwnerBusinesses', error, { ownerUserId });
@@ -284,7 +296,7 @@ export async function searchBusinesses(params: {
   categoryId?: string;
   city?: string;
 }): Promise<Business[]> {
-  let query = supabase.from('businesses').select(BUSINESS_LIST_SELECT);
+  let query = supabase.from('businesses').select(BUSINESS_LIST_SELECT).is('deleted_at', null);
 
   if (params.categoryId && isUuid(params.categoryId)) {
     query = query.eq('category_id', params.categoryId);
@@ -301,7 +313,7 @@ export async function searchBusinesses(params: {
 
   if (error && isMissingColumnError(error)) {
     logQueryFallback('searchBusinesses', 'retry without embed', error);
-    let q = supabase.from('businesses').select('*');
+    let q = supabase.from('businesses').select('*').is('deleted_at', null);
     if (params.categoryId && isUuid(params.categoryId)) q = q.eq('category_id', params.categoryId);
     if (params.city?.trim()) q = q.ilike('city', `%${params.city.trim()}%`);
     if (params.query?.trim()) {

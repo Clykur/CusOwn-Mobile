@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/Badge';
 import { getBookingPrice } from '@/services/api.service';
 import { supabase } from '@/lib/supabase';
 import { CONFIG } from '@/constants/config';
+import { formatBookingDate, formatBookingTime } from '@/utils/time';
 
 interface OwnerBookingDetailModalProps {
   visible: boolean;
@@ -179,32 +180,14 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                     </Text>
                   )}
                 </View>
+                <TouchableOpacity onPress={handleCall}>
+                  <Ionicons name="call-outline" size={25} color="#0F172A" />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={handleWhatsApp}>
+                  <Ionicons name="logo-whatsapp" size={25} color="#059669" />
+                </TouchableOpacity>
               </View>
-
-              {/* Direct Quick Actions */}
-              {(b.customer_phone || b.customer_profile?.phone) && (
-                <View className="flex-row gap-x-3 mt-5 pt-4 border-t border-slate-50">
-                  <TouchableOpacity
-                    onPress={handleCall}
-                    className="flex-1 flex-row h-11 items-center justify-center bg-slate-50 border border-slate-200/80 rounded-xl gap-x-2 active:bg-slate-100"
-                  >
-                    <Ionicons name="call-outline" size={16} color="#0F172A" />
-                    <Text className="text-slate-800 font-bold text-xs uppercase tracking-wider">
-                      Call Client
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={handleWhatsApp}
-                    className="flex-1 flex-row h-11 items-center justify-center bg-emerald-50 border border-emerald-100 rounded-xl gap-x-2 active:bg-emerald-100"
-                  >
-                    <Ionicons name="logo-whatsapp" size={16} color="#059669" />
-                    <Text className="text-emerald-800 font-bold text-xs uppercase tracking-wider">
-                      WhatsApp
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
             </View>
 
             {/* Service & Time details */}
@@ -231,14 +214,18 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                   <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1.5">
                     Date
                   </Text>
-                  <Text className="text-slate-800 font-bold text-sm">{b.date}</Text>
+                  <Text className="text-slate-800 font-bold text-sm">
+                    {formatBookingDate(b.date)}
+                  </Text>
                 </View>
 
                 <View className="flex-1">
                   <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1.5">
                     Arrival Slot
                   </Text>
-                  <Text className="text-slate-800 font-bold text-sm">{b.time}</Text>
+                  <Text className="text-slate-800 font-bold text-sm">
+                    {formatBookingTime(b.time)}
+                  </Text>
                 </View>
               </View>
 

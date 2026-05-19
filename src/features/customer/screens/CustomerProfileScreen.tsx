@@ -16,9 +16,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/auth.store';
 import { apiService } from '@/services/api.service';
+import { resolveMediaPublicUrl } from '@/services/supabase/storage';
+
 import { Avatar } from '@/components/ui/Avatar';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useProfileImage } from '@/hooks/useProfileImage';
+import { isValidImageUrl } from '@/utils/image';
 
 export default function CustomerProfileScreen() {
   const { user, profileImageUrl } = useAuthStore();
@@ -60,13 +63,13 @@ export default function CustomerProfileScreen() {
 
         if (data.profile.profile_media_id) {
           try {
-            const signed = await apiService.getSignedUrl(data.profile.profile_media_id);
-            if (signed?.url) {
-              setProfileImage(signed.url);
+            const { url } = await resolveMediaPublicUrl(data.profile.profile_media_id);
+            if (url) {
+              setProfileImage(url);
             }
           } catch (e) {
             const { logger, LogTag } = require('@/utils/logger');
-            logger.error(LogTag.API, 'Failed to fetch signed image URL for customer profile');
+            logger.error(LogTag.API, 'Failed to resolve profile media URL for customer profile');
           }
         } else {
           const media = data.profile?.media;
@@ -191,68 +194,70 @@ export default function CustomerProfileScreen() {
           </View>
 
           {/* Profile Overview */}
-          <View className="flex-row items-start justify-between mb-6">
-            <View className="flex-row flex-1">
-              <Pressable
-                disabled={!editMode || uploading}
-                onPress={async () => {
-                  const uploadedUrl = await pickAndUpload();
-                  if (uploadedUrl) {
-                    setProfileImage(uploadedUrl);
-                  }
-                }}
-              >
-                <View className="relative">
-                  {profileImage || profileImageUrl ? (
-                    <Image
-                      source={{ uri: (profileImage || profileImageUrl) as string }}
-                      style={{
-                        width: 88,
-                        height: 88,
-                        borderRadius: 44,
-                      }}
+          <View className="items-center mb-8">
+            <Pressable
+              disabled={!editMode || uploading}
+              onPress={async () => {
+                const uploadedUrl = await pickAndUpload();
+
+                if (uploadedUrl) {
+                  setProfileImage(uploadedUrl);
+                }
+              }}
+            >
+              <View className="relative">
+                {isValidImageUrl(profileImage || profileImageUrl) ? (
+                  <Image
+                    source={{ uri: (profileImage || profileImageUrl) as string }}
+                    style={{
+                      width: 170,
+                      height: 170,
+                      borderRadius: 75,
+                    }}
+                  />
+                ) : (
+                  <Avatar name={profileData?.profile?.full_name || 'User'} size={170} />
+                )}
+
+                {editMode && (
+                  <View className="absolute bottom-0 right-0 bg-[#0F172A] w-9 h-9 rounded-full items-center justify-center border-2 border-white">
+                    <Ionicons
+                      name={uploading ? 'hourglass-outline' : 'camera-outline'}
+                      size={18}
+                      color="#FFFFFF"
                     />
-                  ) : (
-                    <Avatar name={profileData?.profile?.full_name || 'User'} size={88} />
-                  )}
-
-                  {editMode && (
-                    <View className="absolute bottom-0 right-0 bg-[#0F172A] w-8 h-8 rounded-full items-center justify-center border-2 border-white">
-                      <Ionicons
-                        name={uploading ? 'hourglass-outline' : 'camera-outline'}
-                        size={16}
-                        color="#FFFFFF"
-                      />
-                    </View>
-                  )}
-                </View>
-              </Pressable>
-
-              <View className="ml-4 flex-1 justify-center">
-                <Text className="text-[24px] font-semibold text-[#0F172A]">Account Settings</Text>
-
-                <Text className="text-[15px] text-slate-500 mt-1 leading-6">
-                  Manage your profile and personal preferences
-                </Text>
+                  </View>
+                )}
               </View>
-            </View>
+            </Pressable>
 
-            {!editMode && (
-              <Pressable
-                onPress={() => setEditMode(true)}
-                className="border border-slate-300 rounded-xl px-5 py-3 bg-white active:bg-slate-50"
-              >
-                <Text className="text-[15px] font-semibold text-slate-700">Edit</Text>
-              </Pressable>
-            )}
+            <Text className="text-[28px] font-bold text-[#0F172A] mt-5">
+              {profileData?.profile?.full_name || 'User'}
+            </Text>
+
+            <Text className="text-[15px] text-slate-500 mt-1 text-center leading-6 px-6">
+              Manage your profile and personal preferences
+            </Text>
           </View>
 
           {/* Contact Card */}
           <View className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-6">
-            <View className="border-b border-slate-200 px-5 py-4">
+            <View className="border-b border-slate-200 px-5 py-4 flex-row items-center justify-between">
               <Text className="text-[13px] tracking-[1px] uppercase text-slate-500 font-semibold">
                 Contact
               </Text>
+
+              {!editMode && (
+                <Pressable
+                  onPress={() => setEditMode(true)}
+                  className="border border-slate-300 rounded-xl px-4 py-2 bg-white active:bg-slate-50 flex-row items-center"
+                >
+                  <Ionicons name="pencil-outline" size={13} color="#475569" className="mr-1" />
+                  <Text className="text-[13px] tracking-[1px] uppercase text-slate-500 font-semibold mr-1">
+                    Edit
+                  </Text>
+                </Pressable>
+              )}
             </View>
 
             {/* Full Name */}
@@ -282,18 +287,19 @@ export default function CustomerProfileScreen() {
 
             {/* Email */}
             <View className="px-5 py-5 border-b border-slate-100">
-              <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 mb-2 font-medium">
-                Email
-              </Text>
-
-              <View className="flex-row items-center flex-wrap">
-                <Text className="text-[18px] text-slate-900 mr-3">
-                  {profileData?.email || 'N/A'}
+              <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 font-medium">
+                  Email
                 </Text>
 
                 <View className="bg-neutral-100 px-3 py-1 rounded-full border border-neutral-200">
                   <Text className="text-neutral-800 text-[12px] font-semibold">Verified</Text>
                 </View>
+              </View>
+              <View className="flex-row items-center flex-wrap">
+                <Text className="text-[18px] text-slate-900 mr-3">
+                  {profileData?.user?.email || user?.email || 'N/A'}
+                </Text>
               </View>
             </View>
 
@@ -334,12 +340,14 @@ export default function CustomerProfileScreen() {
 
             {/* Account Type */}
             <View className="px-5 py-5 border-b border-slate-100">
-              <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 mb-2 font-medium">
-                Account Type
-              </Text>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-[12px] uppercase tracking-[1px] text-slate-500 font-medium">
+                  Account Type
+                </Text>
 
-              <View className="self-start bg-slate-100 px-4 py-2 rounded-full">
-                <Text className="text-slate-700 font-medium">Customer</Text>
+                <View className="bg-slate-100 px-4 py-2 rounded-full">
+                  <Text className="text-slate-700 font-medium">Customer</Text>
+                </View>
               </View>
             </View>
 
@@ -350,7 +358,9 @@ export default function CustomerProfileScreen() {
               </Text>
 
               <Text className="text-[18px] text-slate-900">
-                {formatDate(profileData?.created_at)}
+                {formatDate(
+                  profileData?.profile?.created_at || profileData?.created_at || user?.created_at,
+                )}
               </Text>
             </View>
 

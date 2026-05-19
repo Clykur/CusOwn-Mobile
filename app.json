@@ -8,7 +8,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "platforms": ["ios", "android"],
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -21,7 +21,8 @@
       "expo-notifications",
       "expo-asset",
       "expo-web-browser",
-      "expo-font"
+      "expo-font",
+      "@react-native-community/datetimepicker"
     ],
     "ios": {
       "bundleIdentifier": "com.cusown.app",

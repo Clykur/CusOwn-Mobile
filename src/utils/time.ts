@@ -105,3 +105,70 @@ export const getShopStatus = (
     reopeningTime: formatMinutesTo12Hour(start),
   };
 };
+
+/**
+ * Format a YYYY-MM-DD date string into a readable format (e.g., "Tue, May 19, 2026")
+ */
+export function formatBookingDate(dateStr: string | null | undefined): string {
+  if (
+    !dateStr ||
+    dateStr === 'undefined' ||
+    dateStr === 'null' ||
+    dateStr === 'NaN' ||
+    dateStr === '—' ||
+    dateStr.trim() === ''
+  ) {
+    return 'N/A';
+  }
+  try {
+    const trimmed = dateStr.trim().split(/[T ]/)[0];
+    const parts = trimmed.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
+    }
+    const date = new Date(trimmed);
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+  } catch (e) {
+    // Ignore error
+  }
+  return dateStr;
+}
+
+/**
+ * Format a HH:MM:SS or HH:MM time string into a 12-hour AM/PM format (e.g., "9:00 AM" or "2:30 PM")
+ */
+export function formatBookingTime(timeStr: string | null | undefined): string {
+  if (
+    !timeStr ||
+    timeStr === 'undefined' ||
+    timeStr === 'null' ||
+    timeStr === 'NaN' ||
+    timeStr === '—' ||
+    timeStr.trim() === ''
+  ) {
+    return 'N/A';
+  }
+  const minutes = parseTimeToMinutes(timeStr);
+  if (minutes !== null) {
+    return formatMinutesTo12Hour(minutes);
+  }
+  return timeStr;
+}
