@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
-
-import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
