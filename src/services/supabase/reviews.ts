@@ -60,8 +60,7 @@ export async function getReviewsForBusiness(businessId: string): Promise<Busines
   }
 
   // Fetch corresponding user profiles
-  const profilesMap: Record<string, { full_name: string | null; profile_media_id: string | null }> =
-    {};
+  const profilesMap: Record<string, { full_name: string | null }> = {};
   if (reviews && reviews.length > 0) {
     const userIds = Array.from(
       new Set(
@@ -73,14 +72,13 @@ export async function getReviewsForBusiness(businessId: string): Promise<Busines
       try {
         const { data: profilesData } = await supabase
           .from('user_profiles')
-          .select('id, full_name, profile_media_id')
+          .select('id, full_name')
           .in('id', userIds);
 
         if (profilesData) {
           profilesData.forEach((p) => {
             profilesMap[p.id] = {
               full_name: p.full_name,
-              profile_media_id: p.profile_media_id,
             };
           });
         }

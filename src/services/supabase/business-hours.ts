@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { parseTimeToMinutes } from '@/utils/time';
+import { getShopLocalDate, getShopLocalNow } from '@/utils/shopTime';
 
 export type EffectiveHours = {
   isClosed: boolean;
@@ -97,8 +98,10 @@ export class BusinessHoursService {
     startTime: string,
     endTime: string,
   ): Promise<{ valid: boolean; reason?: string }> {
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    // Use timezone-aware helpers so this stays consistent with slot screen logic.
+    const todayStr = getShopLocalDate();
+    const nowDayjs = getShopLocalNow();
+    const currentMinutes = nowDayjs.hour() * 60 + nowDayjs.minute();
 
     if (slotDate < todayStr) {
       return { valid: false, reason: 'Cannot book past date' };
@@ -138,10 +141,8 @@ export class BusinessHoursService {
       }
     }
 
-    // Today time validation
+    // Today time validation — uses TZ-aware current minutes
     if (slotDate === todayStr) {
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
       if (currentMinutes >= close) {
         return { valid: false, reason: 'Shop closed for today' };
       }

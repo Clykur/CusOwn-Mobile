@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React from 'react';
 import { View, Text, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,27 +21,24 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
   return (
     <AnimatedSection delay={index * 50} direction="up" className="mb-4">
       <Pressable onPress={() => router.push(`/(customer)/browse/salons/${item.id}`)}>
-        <View className="flex-row bg-white border border-slate-200 rounded-[28px] p-4 shadow-sm">
-          {/* Owner Profile Image */}
+        <View className="flex-row bg-card rounded-[28px] p-4 shadow-sm">
+          {/* Profile/Business Image */}
           <View className="relative">
-            {isValidImageUrl(item.owner_image) ? (
-              <Image
-                source={{ uri: item.owner_image }}
-                className="w-[80px] h-[80px] rounded-full"
-                resizeMode="cover"
-              />
-            ) : (
-              <Avatar name={item.salon_name} size={80} className="w-[80px] h-[80px] rounded-full" />
-            )}
+            <Avatar
+              userId={item.owner_user_id}
+              name={item.salon_name}
+              size={80}
+              className="w-[80px] h-[80px] rounded-full"
+            />
           </View>
 
           {/* Right Content */}
           <View className="flex-1 ml-4 justify-center">
-            <Text className="text-slate-900 text-[20px] font-bold" numberOfLines={1}>
+            <Text className="text-text text-xl font-bold" numberOfLines={1}>
               {item.salon_name}
             </Text>
 
-            <Text className="text-slate-500 text-sm mt-1 leading-5" numberOfLines={2}>
+            <Text className="text-textSecondary text-sm mt-1 leading-5" numberOfLines={2}>
               {item.address}
             </Text>
 
@@ -49,10 +47,14 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
                 <Ionicons
                   name={item.rating_avg && Number(item.rating_avg) > 0 ? 'star' : 'star-outline'}
                   size={14}
-                  color={item.rating_avg && Number(item.rating_avg) > 0 ? '#F59E0B' : '#94A3B8'}
+                  color={
+                    item.rating_avg && Number(item.rating_avg) > 0
+                      ? THEME.colors.warning
+                      : THEME.colors.textSecondary
+                  }
                 />
 
-                <Text className="text-black text-xs font-bold ml-1">
+                <Text className="text-text text-xs font-bold ml-1">
                   {item.rating_avg && Number(item.rating_avg) > 0
                     ? Number(item.rating_avg).toFixed(1)
                     : 'New'}
@@ -61,17 +63,17 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
 
               {item.review_count > 0 && (
                 <>
-                  <View className="w-1 h-1 rounded-full bg-slate-300 mx-2" />
-                  <Text className="text-slate-500 text-[11px] font-bold uppercase tracking-wide">
+                  <View className="w-1 h-1 rounded-full bg-border mx-2" />
+                  <Text className="text-textSecondary text-xs font-bold uppercase tracking-wide">
                     {item.review_count} Reviews
                   </Text>
                 </>
               )}
 
-              <View className="w-1 h-1 rounded-full bg-slate-300 mx-2" />
+              <View className="w-1 h-1 rounded-full bg-border mx-2" />
 
               <Text
-                className={`${status.isOpen ? 'text-green-600' : 'text-rose-500'} text-[11px] font-bold uppercase tracking-wide`}
+                className={`${status.isOpen ? 'text-success' : 'text-error'} text-xs font-bold uppercase tracking-wide`}
               >
                 {status.isOpen ? 'Open Now' : 'Closed'}
               </Text>

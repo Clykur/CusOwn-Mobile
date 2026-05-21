@@ -1,14 +1,6 @@
+import { THEME } from '@/theme/theme';
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import * as Location from 'expo-location';
 import { apiService } from '@/services/api.service';
 import { PremiumButton } from '@/components/ui/PremiumButton';
@@ -135,28 +127,28 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
       )}
 
       <View className="mb-5">
-        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
           Business Name
         </Text>
 
         <TextInput
           className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="Enter business name"
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={THEME.colors.textSecondary}
           value={formData.salon_name}
           onChangeText={(val) => handleChange('salon_name', val)}
         />
       </View>
 
       <View className="mb-5">
-        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
           WhatsApp Number
         </Text>
 
         <TextInput
           className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="Enter WhatsApp number"
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={THEME.colors.textSecondary}
           value={formData.whatsapp_number}
           onChangeText={(val) => handleChange('whatsapp_number', val.replace(/\D/g, ''))}
           keyboardType="phone-pad"
@@ -165,28 +157,28 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
 
       <View className="flex-row gap-4 mb-5">
         <View className="flex-1">
-          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+          <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
             Open Time
           </Text>
 
           <TextInput
             className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="09:00"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={THEME.colors.textSecondary}
             value={formData.opening_time}
             onChangeText={(val) => handleChange('opening_time', val)}
           />
         </View>
 
         <View className="flex-1">
-          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+          <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
             Close Time
           </Text>
 
           <TextInput
             className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="21:00"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={THEME.colors.textSecondary}
             value={formData.closing_time}
             onChangeText={(val) => handleChange('closing_time', val)}
           />
@@ -194,7 +186,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
       </View>
 
       <View className="mb-6">
-        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-4">
+        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-4">
           Slot Duration
         </Text>
 
@@ -223,13 +215,13 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
 
       <View className="mb-6">
         <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px]">
+          <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px]">
             Location
           </Text>
 
           <TouchableOpacity onPress={handleUseLocation}>
-            <Text className="text-black text-[9px] font-black uppercase tracking-[2px]">
-              Update From GPS
+            <Text className="text-blue-600 text-sm font-semibold underline">
+              Use Current Location
             </Text>
           </TouchableOpacity>
         </View>
@@ -237,7 +229,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
         <TextInput
           className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold mb-3"
           placeholder="Address"
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={THEME.colors.textSecondary}
           value={formData.address}
           onChangeText={(val) => handleChange('address', val)}
           multiline
@@ -247,7 +239,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
           <TextInput
             className="flex-1 bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="City"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={THEME.colors.textSecondary}
             value={formData.city}
             onChangeText={(val) => handleChange('city', val)}
           />
@@ -255,19 +247,19 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
           <TextInput
             className="flex-1 bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="Locality"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={THEME.colors.textSecondary}
             value={formData.location}
             onChangeText={(val) => handleChange('location', val)}
           />
         </View>
       </View>
 
-      <View className="gap-y-3 pt-4 pb-10">
+      <View className="gap-y-3 pt-4 pb-2">
         <PremiumButton title="Save Changes" onPress={handleSubmit} loading={loading} />
 
         {onCancel && (
           <TouchableOpacity onPress={onCancel} className="py-3 items-center">
-            <Text className="text-slate-500 font-black uppercase tracking-widest text-[10px]">
+            <Text className="text-slate-500 font-black uppercase tracking-widest text-xs">
               Cancel
             </Text>
           </TouchableOpacity>

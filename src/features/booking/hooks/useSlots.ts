@@ -1,18 +1,24 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '@/services/api.service';
 import { queryKeys } from '@/lib/queryClient';
-import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
-import type { SlotListItem } from '@/services/supabase/slots';
 
 export const useSlots = (businessId: string | null, date: string, serviceIds?: string) => {
-  const query = useQuery<SlotListItem[]>({
-    queryKey: ['slots', businessId, date, serviceIds],
-    queryFn: () => {
-      if (!businessId) throw new Error('Business ID is required');
-      return apiService.getSlots(businessId, date, serviceIds);
-    },
+  return useQuery({
+    queryKey: queryKeys.slots.list(businessId ?? '', date),
+    queryFn: () => apiService.getSlots(businessId!, date, serviceIds),
     enabled: !!businessId && !!date,
+    // Refresh every minute so booked-by-others slots appear quickly
+    refetchInterval: 60_000,
+    staleTime: 30_000,
   });
-  useQueryLogger('useSlots', query, { businessId, date });
-  return query;
+};
+
+export const useBusinessSlots = (businessId: string, date: string) => {
+  return useQuery({
+    queryKey: ['owner', 'slots', businessId, date],
+    queryFn: () => apiService.getSlots(businessId, date),
+    enabled: !!businessId && !!date,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
 };

@@ -13,7 +13,7 @@ export default function WelcomeScreen() {
         {/* Header */}
         <AnimatedSection direction="down">
           <View className="items-center">
-            <Text className="text-[10px] tracking-[6px] uppercase text-amber-500 font-semibold mb-5">
+            <Text className="text-xs tracking-[6px] uppercase text-amber-500 font-semibold mb-5">
               Premium Appointment Platform
             </Text>
 
@@ -21,7 +21,7 @@ export default function WelcomeScreen() {
               CusOwn
             </Text>
 
-            <Text className="text-slate-500 text-center mt-6 text-[17px] leading-8 px-4">
+            <Text className="text-slate-500 text-center mt-6 text-base leading-8 px-4">
               Seamlessly book appointments, manage experiences, and connect with premium service
               providers — all in one platform.
             </Text>
@@ -41,7 +41,7 @@ export default function WelcomeScreen() {
                 Your Time
               </Text>
 
-              <Text className="text-slate-600 text-[16px] leading-8">
+              <Text className="text-slate-600 text-base leading-8">
                 Discover services, schedule appointments, manage bookings, and enjoy a smooth
                 premium experience designed for modern lifestyles.
               </Text>
@@ -59,7 +59,7 @@ export default function WelcomeScreen() {
         {/* Footer */}
         <AnimatedSection delay={900} direction="up">
           <View className="items-center pt-6">
-            <Text className="text-[10px] uppercase tracking-[4px] text-slate-400">
+            <Text className="text-xs uppercase tracking-[4px] text-slate-400">
               Designed For Premium Experiences
             </Text>
           </View>

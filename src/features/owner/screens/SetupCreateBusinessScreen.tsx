@@ -19,8 +19,8 @@ export default function CreateBusinessScreen() {
       >
         <ScrollView className="flex-1 px-luxury pt-16 pb-12" showsVerticalScrollIndicator={false}>
           <AnimatedSection direction="down">
-            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-2">
-              Establishment
+            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-2">
+              Create Business
             </Text>
             <Text className="text-slate-900 text-3xl font-black tracking-tight mb-8">
               Create Your{'\n'}
@@ -29,7 +29,7 @@ export default function CreateBusinessScreen() {
           </AnimatedSection>
 
           <AnimatedSection delay={200}>
-            <GlassCard className="p-6 mb-8 border-slate-200/80 shadow-sm rounded-luxury">
+            <GlassCard className="p-2 mb-8 border-slate-200/80 shadow-sm rounded-luxury">
               <CreateBusinessForm onSuccess={handleSuccess} />
             </GlassCard>
             <View className="h-12" />

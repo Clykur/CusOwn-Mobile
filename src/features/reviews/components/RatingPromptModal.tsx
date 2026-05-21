@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, ActivityIndicator, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -93,9 +94,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
 
           <View className="flex-row justify-between items-start mb-4">
             <View className="flex-1 pr-3">
-              <Text className="text-[20px] font-black text-white tracking-tight">
-                Rate Experience
-              </Text>
+              <Text className="text-xl font-black text-white tracking-tight">Rate Experience</Text>
 
               <Text className="text-amber-400 text-xs font-bold uppercase tracking-widest mt-1">
                 {salonName}
@@ -107,12 +106,12 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               disabled={isLoading}
               className="p-1 rounded-full bg-slate-800 border border-slate-700"
             >
-              <Ionicons name="close" size={16} color="#94A3B8" />
+              <Ionicons name="close" size={16} color={THEME.colors.textSecondary} />
             </Pressable>
           </View>
 
           <View className="bg-slate-950 border border-slate-800/80 rounded-2xl p-3 mb-5">
-            <Text className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            <Text className="text-xs font-bold text-slate-500 uppercase tracking-widest">
               Booking Details
             </Text>
 
@@ -122,7 +121,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
 
             {booking.service_date && (
               <View className="flex-row items-center mt-2">
-                <Ionicons name="calendar-outline" size={12} color="#D4AF37" />
+                <Ionicons name="calendar-outline" size={12} color={THEME.colors.primary} />
 
                 <Text className="text-slate-400 text-xs font-medium ml-1">
                   {booking.service_date} • {booking.service_time || ''}
@@ -153,7 +152,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
                     <Ionicons
                       name={active ? 'star' : 'star-outline'}
                       size={32}
-                      color={active ? '#F59E0B' : '#475569'}
+                      color={active ? THEME.colors.warning : THEME.colors.border}
                     />
                   </Pressable>
                 );
@@ -185,7 +184,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               value={comment}
               onChangeText={setComment}
               placeholder="Share your experience..."
-              placeholderTextColor="#64748B"
+              placeholderTextColor={THEME.colors.textSecondary}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
@@ -209,7 +208,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               }`}
             >
               {isLoading && actionType === 'submit' ? (
-                <ActivityIndicator size="small" color="#FFF" />
+                <ActivityIndicator size="small" color={THEME.colors.text} />
               ) : (
                 <Text
                   className={`font-black text-sm tracking-wider uppercase ${
@@ -227,7 +226,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               className="h-12 w-full rounded-2xl items-center justify-center border border-slate-800 bg-transparent"
             >
               {isLoading && actionType === 'ignore' ? (
-                <ActivityIndicator size="small" color="#FFF" />
+                <ActivityIndicator size="small" color={THEME.colors.text} />
               ) : (
                 <Text className="text-slate-400 font-black text-sm tracking-wider uppercase">
                   Ignore

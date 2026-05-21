@@ -46,6 +46,10 @@ export interface Business {
   is_featured?: boolean;
   services?: Service[];
   owner_image?: string;
+  /** True when an admin has suspended this business — must not appear in customer-facing views */
+  suspended?: boolean;
+  /** ISO timestamp set when the business is soft-deleted; null/undefined means active */
+  deleted_at?: string | null;
 }
 
 export interface BusinessStats {

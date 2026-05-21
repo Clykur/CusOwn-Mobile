@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,17 +40,15 @@ const MetricCard = ({
       {/* Top */}
       <View className="flex-row items-center justify-start mb-6">
         <View className="w-8 h-8 rounded-2xl bg-slate-100 items-start justify-center">
-          <Ionicons name={icon} size={22} color="#0F172A" />
+          <Ionicons name={icon} size={22} color={THEME.colors.background} />
         </View>
 
-        <Text className="text-[11px] font-bold uppercase tracking-[2px] text-slate-400">
-          {title}
-        </Text>
+        <Text className="text-xs font-bold uppercase tracking-[2px] text-slate-400">{title}</Text>
       </View>
 
       {/* Value */}
       <View className="-mt-5">
-        <Text className="text-[24px] leading-[38px] font-black text-slate-900">{value}</Text>
+        <Text className="text-2xl leading-[38px] font-black text-slate-900">{value}</Text>
       </View>
     </GlassCard>
   </AnimatedSection>
@@ -343,7 +342,7 @@ export default function OwnerAnalyticsScreen() {
         <SafeAreaView className="flex-1" edges={['top']}>
           <View className="flex-1 justify-center items-center px-luxury">
             <GlassCard className="items-center w-full bg-white border border-slate-200 p-6">
-              <Ionicons name="alert-circle-outline" size={48} color="#000000" />
+              <Ionicons name="alert-circle-outline" size={48} color={THEME.colors.background} />
               <Text className="text-slate-900 text-lg font-bold mt-4 text-center">Sync Error</Text>
               <Text className="text-slate-500 text-center mt-2 mb-8 text-sm font-medium">
                 We couldn't fetch your analytics data. Please check your connection or try again
@@ -373,7 +372,7 @@ export default function OwnerAnalyticsScreen() {
         {/* Cinematic Header & Filter Action */}
         <View className="px-luxury pt-5 pb-2 flex-row justify-between items-center">
           <View className="flex-1 mr-4">
-            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">
               Performance
             </Text>
             <Text className="text-slate-900 text-3xl font-black tracking-tight">Analytics</Text>
@@ -385,7 +384,7 @@ export default function OwnerAnalyticsScreen() {
             onPress={() => setShowFilter(true)}
             className="bg-white/80 p-3 rounded-2xl border border-slate-200/80 active:bg-white shadow-sm"
           >
-            <Ionicons name="funnel-outline" size={20} color="#000000" />
+            <Ionicons name="funnel-outline" size={20} color={THEME.colors.background} />
           </Pressable>
         </View>
 
@@ -396,7 +395,7 @@ export default function OwnerAnalyticsScreen() {
             <RefreshControl
               refreshing={analyticsLoading}
               onRefresh={onRefresh}
-              tintColor="#000000"
+              tintColor={THEME.colors.background}
             />
           }
         >
@@ -404,7 +403,7 @@ export default function OwnerAnalyticsScreen() {
             <AnimatedSection className="px-luxury pt-12 items-center">
               <GlassCard className="border border-slate-200/80 w-full p-8 items-center rounded-luxury">
                 <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center mb-6">
-                  <Ionicons name="bar-chart-outline" size={40} color="#94A3B8" />
+                  <Ionicons name="bar-chart-outline" size={40} color={THEME.colors.textSecondary} />
                 </View>
                 <Text className="text-slate-900 text-xl font-bold mb-2">No Data Available</Text>
                 <Text className="text-slate-500 text-center px-6 text-sm font-medium leading-relaxed">
@@ -434,8 +433,8 @@ export default function OwnerAnalyticsScreen() {
                         ₹{((analytics?.overview?.totalRevenueCents || 0) / 100).toLocaleString()}
                       </Text>
                       <View className="ml-3 bg-neutral-100 px-2 py-1 rounded-md flex-row items-center border border-neutral-200">
-                        <Ionicons name="trending-up" size={12} color="#000000" />
-                        <Text className="text-neutral-800 text-[10px] font-bold ml-1">+12%</Text>
+                        <Ionicons name="trending-up" size={12} color={THEME.colors.background} />
+                        <Text className="text-neutral-800 text-xs font-bold ml-1">+12%</Text>
                       </View>
                     </View>
                   </GlassCard>
@@ -498,7 +497,7 @@ export default function OwnerAnalyticsScreen() {
                           className={`px-4 py-1.5 rounded-full ${trendTab === 'bookings' ? 'bg-white' : ''}`}
                         >
                           <Text
-                            className={`text-[10px] font-bold ${trendTab === 'bookings' ? 'text-slate-900' : 'text-slate-500'}`}
+                            className={`text-xs font-bold ${trendTab === 'bookings' ? 'text-slate-900' : 'text-slate-500'}`}
                           >
                             Bookings
                           </Text>
@@ -511,7 +510,7 @@ export default function OwnerAnalyticsScreen() {
                           className={`px-4 py-1.5 rounded-full ${trendTab === 'revenue' ? 'bg-white' : ''}`}
                         >
                           <Text
-                            className={`text-[10px] font-bold ${trendTab === 'revenue' ? 'text-slate-900' : 'text-slate-500'}`}
+                            className={`text-xs font-bold ${trendTab === 'revenue' ? 'text-slate-900' : 'text-slate-500'}`}
                           >
                             Revenue
                           </Text>
@@ -539,7 +538,7 @@ export default function OwnerAnalyticsScreen() {
                             {/* Hover info badge */}
                             {isActive && (
                               <View className="absolute -top-12 bg-slate-900 px-2.5 py-1 rounded-lg items-center justify-center z-10">
-                                <Text className="text-white text-[10px] font-bold">
+                                <Text className="text-white text-xs font-bold">
                                   {trendTab === 'bookings' ? `${val}` : `₹${Math.round(val)}`}
                                 </Text>
                                 <View className="w-1.5 h-1.5 bg-slate-900 rotate-45 -mb-1 mt-0.5" />
@@ -552,7 +551,7 @@ export default function OwnerAnalyticsScreen() {
                                 isActive ? 'bg-black' : 'bg-neutral-300'
                               }`}
                             />
-                            <Text className="text-slate-400 text-[8px] font-bold mt-2">
+                            <Text className="text-slate-400 text-xs font-bold mt-2">
                               {point.label}
                             </Text>
                           </Pressable>
@@ -630,7 +629,7 @@ export default function OwnerAnalyticsScreen() {
 
                 {/* Peak Booking Hours */}
                 <AnimatedSection direction="up" delay={550}>
-                  <GlassCard className="border border-slate-200/80 p-5 rounded-[28px] mb-6">
+                  <GlassCard className="border border-slate-200/80 p-2 rounded-[28px] mb-6">
                     {/* Header */}
                     <View className="mb-5">
                       <Text className="text-slate-900 text-lg font-black">Peak Traffic Hours</Text>
@@ -680,19 +679,25 @@ export default function OwnerAnalyticsScreen() {
                                     ),
                                   ),
                                   top: Math.max(0, peakHoursPoints[activeHourIndex].y - 35),
-                                  backgroundColor: '#0F172A',
+                                  backgroundColor: THEME.colors.background,
                                   paddingHorizontal: 8,
                                   paddingVertical: 4,
                                   borderRadius: 6,
                                   zIndex: 10,
-                                  shadowColor: '#000',
+                                  shadowColor: THEME.colors.background,
                                   shadowOffset: { width: 0, height: 2 },
                                   shadowOpacity: 0.25,
                                   shadowRadius: 3.84,
                                   elevation: 5,
                                 }}
                               >
-                                <Text style={{ color: '#FFF', fontSize: 10, fontWeight: 'bold' }}>
+                                <Text
+                                  style={{
+                                    color: THEME.colors.text,
+                                    fontSize: 10,
+                                    fontWeight: 'bold',
+                                  }}
+                                >
                                   {peakHoursPoints[activeHourIndex].val}
                                 </Text>
                               </View>
@@ -701,8 +706,16 @@ export default function OwnerAnalyticsScreen() {
                             <Svg width="100%" height="100%">
                               <Defs>
                                 <LinearGradient id="peakGradient" x1="0" y1="0" x2="0" y2="1">
-                                  <Stop offset="0%" stopColor="#0F172A" stopOpacity="0.15" />
-                                  <Stop offset="100%" stopColor="#0F172A" stopOpacity="0.0" />
+                                  <Stop
+                                    offset="0%"
+                                    stopColor={THEME.colors.background}
+                                    stopOpacity="0.15"
+                                  />
+                                  <Stop
+                                    offset="100%"
+                                    stopColor={THEME.colors.background}
+                                    stopOpacity="0.0"
+                                  />
                                 </LinearGradient>
                               </Defs>
 
@@ -729,7 +742,7 @@ export default function OwnerAnalyticsScreen() {
                                           x={padding.left - 12}
                                           y={tick.y + offset + 3}
                                           fontSize="9"
-                                          fill="#64748B"
+                                          fill={THEME.colors.textSecondary}
                                           textAnchor="middle"
                                           fontWeight="bold"
                                         >
@@ -748,7 +761,7 @@ export default function OwnerAnalyticsScreen() {
                                 <Path
                                   d={pathD}
                                   fill="none"
-                                  stroke="#0F172A"
+                                  stroke={THEME.colors.background}
                                   strokeWidth="3"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
@@ -762,7 +775,7 @@ export default function OwnerAnalyticsScreen() {
                                   cx={p.x}
                                   cy={p.y}
                                   r={activeHourIndex === i ? 6 : 4}
-                                  fill={activeHourIndex === i ? '#D97706' : '#0F172A'}
+                                  fill={activeHourIndex === i ? '#D97706' : THEME.colors.background}
                                 />
                               ))}
 
@@ -775,7 +788,7 @@ export default function OwnerAnalyticsScreen() {
                                     x={p.x}
                                     y={height - 6}
                                     fontSize="9"
-                                    fill="#64748B"
+                                    fill={THEME.colors.textSecondary}
                                     textAnchor="middle"
                                     fontWeight="bold"
                                   >
@@ -866,7 +879,7 @@ export default function OwnerAnalyticsScreen() {
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
                 {/* 1. Hub Selection */}
-                <Text className="text-[10px] text-slate-400 font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-slate-400 font-black uppercase tracking-[2px] mb-3">
                   Select Hub
                 </Text>
 
@@ -878,7 +891,11 @@ export default function OwnerAnalyticsScreen() {
                     <Ionicons
                       name="grid-outline"
                       size={18}
-                      color={selectedBusinessId === 'all' ? '#000000' : '#64748B'}
+                      color={
+                        selectedBusinessId === 'all'
+                          ? THEME.colors.background
+                          : THEME.colors.textSecondary
+                      }
                     />
                     <Text
                       className={`text-sm ml-3 ${selectedBusinessId === 'all' ? 'text-slate-900 font-extrabold' : 'text-slate-600 font-medium'}`}
@@ -887,7 +904,7 @@ export default function OwnerAnalyticsScreen() {
                     </Text>
                   </View>
                   {selectedBusinessId === 'all' && (
-                    <Ionicons name="checkmark" size={20} color="#000000" />
+                    <Ionicons name="checkmark" size={20} color={THEME.colors.background} />
                   )}
                 </Pressable>
 
@@ -901,7 +918,11 @@ export default function OwnerAnalyticsScreen() {
                       <Ionicons
                         name="business-outline"
                         size={18}
-                        color={selectedBusinessId === biz.id ? '#000000' : '#64748B'}
+                        color={
+                          selectedBusinessId === biz.id
+                            ? THEME.colors.background
+                            : THEME.colors.textSecondary
+                        }
                       />
                       <Text
                         className={`text-sm ml-3 ${selectedBusinessId === biz.id ? 'text-slate-900 font-extrabold' : 'text-slate-600 font-medium'}`}
@@ -910,7 +931,7 @@ export default function OwnerAnalyticsScreen() {
                       </Text>
                     </View>
                     {selectedBusinessId === biz.id && (
-                      <Ionicons name="checkmark" size={20} color="#000000" />
+                      <Ionicons name="checkmark" size={20} color={THEME.colors.background} />
                     )}
                   </Pressable>
                 ))}
@@ -918,7 +939,7 @@ export default function OwnerAnalyticsScreen() {
                 <View className="h-[0.5px] bg-slate-100 my-5" />
 
                 {/* 2. Date Selection */}
-                <Text className="text-[10px] text-slate-400 font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-slate-400 font-black uppercase tracking-[2px] mb-3">
                   Select Period
                 </Text>
 
@@ -960,7 +981,11 @@ export default function OwnerAnalyticsScreen() {
                       <Ionicons
                         name={period.icon as any}
                         size={18}
-                        color={dateFilter === period.key ? '#000000' : '#64748B'}
+                        color={
+                          dateFilter === period.key
+                            ? THEME.colors.background
+                            : THEME.colors.textSecondary
+                        }
                       />
                       <View className="ml-3 flex-1">
                         <Text
@@ -969,14 +994,14 @@ export default function OwnerAnalyticsScreen() {
                           {period.label}
                         </Text>
                         {period.desc ? (
-                          <Text className="text-slate-400 text-[10px] mt-0.5 font-semibold">
+                          <Text className="text-slate-400 text-xs mt-0.5 font-semibold">
                             {period.desc}
                           </Text>
                         ) : null}
                       </View>
                     </View>
                     {dateFilter === period.key && (
-                      <Ionicons name="checkmark" size={20} color="#000000" />
+                      <Ionicons name="checkmark" size={20} color={THEME.colors.background} />
                     )}
                   </Pressable>
                 ))}
@@ -985,26 +1010,26 @@ export default function OwnerAnalyticsScreen() {
                 {dateFilter === 'custom' && (
                   <View className="flex-row gap-x-2 mt-4 px-2">
                     <View className="flex-1">
-                      <Text className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">
+                      <Text className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1.5">
                         Start Date
                       </Text>
                       <TextInput
                         value={startDate}
                         onChangeText={setStartDate}
                         placeholder="YYYY-MM-DD"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={THEME.colors.textSecondary}
                         className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800"
                       />
                     </View>
                     <View className="flex-1">
-                      <Text className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">
+                      <Text className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1.5">
                         End Date
                       </Text>
                       <TextInput
                         value={endDate}
                         onChangeText={setEndDate}
                         placeholder="YYYY-MM-DD"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={THEME.colors.textSecondary}
                         className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800"
                       />
                     </View>

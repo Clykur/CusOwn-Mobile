@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React from 'react';
 import { View, Text, Pressable, Alert, Image } from 'react-native';
 
@@ -17,6 +18,7 @@ interface BookingCardProps {
   item: Booking;
   index: number;
   businessImage?: string;
+  businessId?: string; // added to avoid type error from previous patch
   onPress?: (item: Booking) => void;
 
   onAccept?: (id: string) => void;
@@ -53,19 +55,6 @@ export const BookingCard: React.FC<BookingCardProps> = ({
     return !isNaN(updatedAt) && Date.now() - updatedAt < windowMs;
   }, [item.status, item.updated_at, item.created_at, item.undo_used_at]);
 
-  /**
-   * Customer profile avatar fallback
-   */
-  const avatarUrl = React.useMemo(() => {
-    const media = item.customer_profile?.profile_media;
-
-    if (!media?.bucket_name || !media?.storage_path) {
-      return null;
-    }
-
-    return supabase.storage.from(media.bucket_name).getPublicUrl(media.storage_path).data.publicUrl;
-  }, [item.customer_profile?.profile_media]);
-
   return (
     <AnimatedSection delay={index * 50} direction="up" className="mb-4">
       <Pressable
@@ -77,12 +66,12 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           }
         }}
       >
-        <GlassCard className="p-2 border-slate-200/80 rounded-luxury">
+        <GlassCard className="p-1 border-slate-200/80 rounded-luxury">
           {/* Header */}
           <View className="flex-row justify-between items-start mb-2">
             <View className="flex-row items-center flex-1 gap-x-3">
               <Avatar
-                url={avatarUrl}
+                userId={item.customer_user_id}
                 name={item.customer_name || 'Client Direct'}
                 size={48}
                 className="border border-accent-premium/20"
@@ -92,7 +81,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
               <View className="flex-1 min-w-0">
                 {/* Customer Name */}
                 <Text
-                  className="text-slate-900 text-[16px] font-bold"
+                  className="text-slate-900 text-xl font-bold"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
@@ -101,7 +90,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
                 {/* Services */}
                 <Text
-                  className="text-slate-500 text-[12px] font-semibold mt-1"
+                  className="text-slate-500 text-sm font-semibold"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
@@ -124,7 +113,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
             {/* Date */}
             <View className="flex-row items-center gap-x-2">
               <View className="gap-x-4">
-                <Ionicons name="calendar-outline" size={14} color="#64748B" />
+                <Ionicons name="calendar-outline" size={14} color={THEME.colors.textSecondary} />
               </View>
               <Text className="text-slate-600 text-xs font-medium">
                 {formatBookingDate(item.date)} - {formatBookingTime(item.time)}
@@ -140,14 +129,14 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                     onPress={() => onReject(item.id)}
                     className="w-8 h-8 rounded-full bg-neutral-100 items-center justify-center border border-neutral-300"
                   >
-                    <Ionicons name="close" size={16} color="#000000" />
+                    <Ionicons name="close" size={16} color={THEME.colors.background} />
                   </Pressable>
 
                   <Pressable
                     onPress={() => onAccept(item.id)}
                     className="w-8 h-8 rounded-full bg-black items-center justify-center border border-black"
                   >
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                    <Ionicons name="checkmark" size={16} color={THEME.colors.text} />
                   </Pressable>
                 </>
               )}
@@ -158,11 +147,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                   {onNoShow && !item.no_show && (
                     <Pressable
                       onPress={() => onNoShow(item.id)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-500/10 border border-slate-500/20"
+                      className="w-8 h-8 rounded-full bg-orange-100 items-center justify-center border border-orange-300"
                     >
-                      <Text className="text-slate-500 text-[10px] font-bold uppercase">
-                        No Show
-                      </Text>
+                      <Ionicons name="person-remove-outline" size={16} color="#EA580C" />
                     </Pressable>
                   )}
 
@@ -170,7 +157,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                     onPress={() => onUndoAccept(item.id)}
                     className="w-8 h-8 rounded-full bg-neutral-100 items-center justify-center border border-neutral-300"
                   >
-                    <Ionicons name="refresh-outline" size={16} color="#000000" />
+                    <Ionicons name="refresh-outline" size={16} color={THEME.colors.background} />
                   </Pressable>
                 </View>
               )}
@@ -181,7 +168,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                   onPress={() => onUndoReject(item.id)}
                   className="w-8 h-8 rounded-full bg-neutral-100 items-center justify-center border border-neutral-300"
                 >
-                  <Ionicons name="refresh-outline" size={16} color="#000000" />
+                  <Ionicons name="refresh-outline" size={16} color={THEME.colors.background} />
                 </Pressable>
               )}
 

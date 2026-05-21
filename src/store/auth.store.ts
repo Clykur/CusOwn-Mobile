@@ -81,7 +81,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           // If no active role was set, determine it from the API profile.
           // This handles the case of subsequent app opens where we don't go through role selection.
           if (!role) {
-            role = userType === 'owner' || userType === 'both' ? 'Owner' : 'Customer';
+            role =
+              userType === 'owner' || userType === 'both' || userType === 'admin'
+                ? 'Owner'
+                : 'Customer';
             logger.info(LogTag.AUTH, `[STORE] Verified role from API: ${role}`);
           }
 
@@ -175,35 +178,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      // Dynamic import to avoid circular dependency with api.service
+      const { apiService } = await import('@/services/api.service');
+      const data = await apiService.getProfile();
 
-      if (data) {
+      if (data?.profile) {
+        const profile = data.profile;
+        const userType = profile.user_type;
+        // 'both' and 'admin' default to Owner role unless an active role is set
         const role: Role =
-          data.user_type === 'owner' || data.user_type === 'both' ? 'Owner' : 'Customer';
+          userType === 'owner' || userType === 'both' || userType === 'admin'
+            ? 'Owner'
+            : 'Customer';
 
-        let profileImageUrl: string | null = null;
-        if (data.profile_media_id) {
-          try {
-            const { url } = await resolveMediaPublicUrl(data.profile_media_id);
-            profileImageUrl = url;
-          } catch (err: any) {
-            logger.warn(
-              LogTag.AUTH,
-              `[STORE] Failed to resolve profile media URL on refresh: ${err.message}`,
-            );
-          }
-        }
+        const profileImageUrl = data.profile_image_url ?? null;
 
         set({
-          profile: {
-            ...data,
-            email: user.email,
-            media: profileImageUrl ? { url: profileImageUrl, signed_url: profileImageUrl } : null,
-          },
+          profile,
           role,
           profileImageUrl,
         });

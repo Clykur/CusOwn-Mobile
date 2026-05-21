@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -22,10 +23,8 @@ const DetailField = ({
 }) => (
   <View className="mb-4">
     <View className="flex-row items-center mb-1">
-      <Ionicons name={icon} size={14} color="#64748B" className="mr-2" />
-      <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px]">
-        {label}
-      </Text>
+      <Ionicons name={icon} size={14} color={THEME.colors.textSecondary} className="mr-2" />
+      <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px]">{label}</Text>
     </View>
     <Text className="text-slate-900 text-base font-semibold ml-6">{value}</Text>
   </View>

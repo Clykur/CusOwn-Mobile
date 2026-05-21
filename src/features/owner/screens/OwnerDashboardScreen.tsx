@@ -12,12 +12,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useAuthStore } from '@/store/auth.store';
+import { Avatar } from '@/components/ui/Avatar';
 import { useOwnerBusinesses, useOwnerDashboard } from '@/hooks/useOwner';
 import { apiService } from '@/services/api.service';
 import {
-  useAcceptBooking,
+  useConfirmBooking,
   useRejectBooking,
-  useUndoAccept,
+  useUndoConfirm,
   useUndoReject,
   useMarkNoShow,
 } from '@/hooks/useBookings';
@@ -36,13 +38,14 @@ import { OwnerBookingDetailModal } from '@/features/owner/components/OwnerBookin
 type StatusFilter = 'all' | 'pending' | 'confirmed' | 'rejected' | 'cancelled';
 
 export default function OwnerDashboardScreen() {
+  const { profile, user, profileImageUrl } = useAuthStore();
   const [showBusinessMenu, setShowBusinessMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
   const [fromDate, setFromDate] = useState<string | null>(null);
   const [toDate, setToDate] = useState<string | null>(null);
-  const [businessImages, setBusinessImages] = useState<Record<string, string>>({});
+
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const {
@@ -55,62 +58,10 @@ export default function OwnerDashboardScreen() {
     toDate: toDate || undefined,
   });
   const { data: businesses } = useOwnerBusinesses();
-  useEffect(() => {
-    const loadBusinessImages = async () => {
-      if (!businesses?.length) return;
 
-      const imageMap: Record<string, string> = {};
-
-      await Promise.all(
-        businesses.map(async (biz) => {
-          if (biz.owner_image) {
-            imageMap[biz.id] = biz.owner_image;
-            return;
-          }
-          if (biz.image_url) {
-            imageMap[biz.id] = biz.image_url;
-            return;
-          }
-          if (biz.cover_photo_url) {
-            imageMap[biz.id] = biz.cover_photo_url;
-            return;
-          }
-          try {
-            const businessAny = biz as any;
-
-            if (businessAny?.media?.signed_url) {
-              imageMap[biz.id] = businessAny.media.signed_url;
-              return;
-            }
-
-            if (businessAny?.media?.url) {
-              imageMap[biz.id] = businessAny.media.url;
-              return;
-            }
-
-            if (businessAny?.cover_media_id) {
-              const signed = await apiService.getSignedUrl(businessAny.cover_media_id);
-
-              if (signed?.url) {
-                imageMap[biz.id] = signed.url;
-              }
-            }
-          } catch (e) {
-            const { logger, LogTag } = require('@/utils/logger');
-            logger.error(LogTag.API, 'Failed loading business image');
-          }
-        }),
-      );
-
-      setBusinessImages(imageMap);
-    };
-
-    loadBusinessImages();
-  }, [businesses]);
-
-  const { mutate: acceptBooking } = useAcceptBooking();
+  const { mutate: confirmBooking } = useConfirmBooking();
   const { mutate: rejectBooking } = useRejectBooking();
-  const { mutate: undoAccept } = useUndoAccept();
+  const { mutate: undoConfirm } = useUndoConfirm();
   const { mutate: undoReject } = useUndoReject();
   const { mutate: markNoShow } = useMarkNoShow();
 
@@ -167,7 +118,7 @@ export default function OwnerDashboardScreen() {
   const handleAccept = (id: string) => {
     Alert.alert('Approve Booking', 'Are you sure you want to confirm this reservation?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Confirm', onPress: () => acceptBooking(id) },
+      { text: 'Confirm', onPress: () => confirmBooking(id) },
     ]);
   };
 
@@ -178,15 +129,15 @@ export default function OwnerDashboardScreen() {
     ]);
   };
 
-  const handleUndoAccept = (id: string) => {
-    Alert.alert('Undo Approval', 'Revert this booking back to pending status?', [
+  const handleUndoConfirm = (id: string) => {
+    Alert.alert('Undo Confirm', 'Are you sure you want to revert this to pending?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Undo', onPress: () => undoAccept(id) },
+      { text: 'Undo', onPress: () => undoConfirm(id) },
     ]);
   };
 
   const handleUndoReject = (id: string) => {
-    Alert.alert('Undo Rejection', 'Revert this booking back to pending status?', [
+    Alert.alert('Undo Reject', 'Are you sure you want to revert this to pending?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Undo', onPress: () => undoReject(id) },
     ]);
@@ -204,14 +155,14 @@ export default function OwnerDashboardScreen() {
       <BookingCard
         item={item}
         index={index}
-        businessImage={businessImages[item.business?.id || item.business_id]}
+        businessId={item.business?.id || item.business_id}
         onPress={(booking) => {
           setSelectedBooking(booking);
           setShowDetailModal(true);
         }}
         onAccept={handleAccept}
         onReject={handleReject}
-        onUndoAccept={handleUndoAccept}
+        onUndoAccept={handleUndoConfirm}
         onUndoReject={handleUndoReject}
         onNoShow={handleNoShow}
       />
@@ -233,31 +184,44 @@ export default function OwnerDashboardScreen() {
           contentContainerClassName="pb-12"
         >
           {/* Dashboard Header */}
-          <AnimatedSection direction="down" className="px-luxury pt-4 pb-6">
-            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
-              Welcome back to
-            </Text>
-            <Text className="text-slate-900 text-3xl font-black tracking-tight">Dashboard</Text>
+          <AnimatedSection
+            direction="down"
+            className="px-luxury pt-4 pb-6 flex-row justify-between items-center"
+          >
+            <View>
+              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+                Welcome back to
+              </Text>
+              <Text className="text-slate-900 text-3xl font-black tracking-tight">Dashboard</Text>
+            </View>
+            <Pressable onPress={() => router.push('/(owner)/settings')}>
+              <Avatar
+                userId={user?.id}
+                name={profile?.full_name || user?.user_metadata?.full_name || 'Owner'}
+                size={50}
+                className="border-2 border-accent-premium/30"
+              />
+            </Pressable>
           </AnimatedSection>
 
           {/* Search & Filters */}
           <AnimatedSection delay={50} direction="up" className="px-luxury mb-8 z-50">
             <View className="flex-row items-center gap-x-3">
               {/* Search Bar */}
-              <View className="flex-1 flex-row items-center bg-white/80 border border-slate-200/80 rounded-2xl px-4 py-3.5 shadow-sm">
-                <Ionicons name="search-outline" size={20} color="#94A3B8" />
+              <View className="flex-1 flex-row items-center bg-[#fff] border border-slate-200/80 rounded-2xl px-4 py-3.5">
+                <Ionicons name="search-outline" size={20} color="#9CA3AF" />
 
                 <TextInput
                   placeholder="Search clients or services..."
-                  placeholderTextColor="#94A3B8"
+                  placeholderTextColor="#6B7280"
                   value={searchTerm}
                   onChangeText={setSearchTerm}
-                  className="flex-1 ml-3 text-slate-900 text-sm font-semibold"
+                  className="flex-1 ml-3 text-white text-sm font-semibold"
                 />
 
                 {searchTerm.length > 0 && (
                   <Pressable onPress={() => setSearchTerm('')}>
-                    <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                    <Ionicons name="close-circle" size={18} color="#9CA3AF" />
                   </Pressable>
                 )}
               </View>
@@ -266,19 +230,19 @@ export default function OwnerDashboardScreen() {
               <View className="relative z-50">
                 <Pressable
                   onPress={() => setShowBusinessMenu(!showBusinessMenu)}
-                  className="flex-1 flex-row items-center bg-white/80 border border-slate-200/80 rounded-2xl px-4 py-3.5 shadow-sm"
+                  className="flex-row items-center bg-[#fff] border border-slate-200/80 rounded-2xl px-4 py-3.5"
                 >
-                  <Ionicons name="options-outline" size={20} color="#111827" />
+                  <Ionicons name="options-outline" size={20} color="#6B7280" />
                 </Pressable>
 
                 {/* Dropdown Menu */}
                 {showBusinessMenu && (
                   <View
-                    className="absolute top-14 right-0 w-64 border border-slate-200 rounded-3xl p-2 z-[999] elevation-5"
+                    className="absolute top-14 right-0 w-64 bg-[#fff] border border-slate-200/80 rounded-3xl p-2 z-[999]"
                     style={{
                       shadowColor: '#000',
                       shadowOffset: { width: 0, height: 8 },
-                      shadowOpacity: 0.12,
+                      shadowOpacity: 0.2,
                       shadowRadius: 20,
                       elevation: 12,
                     }}
@@ -289,72 +253,65 @@ export default function OwnerDashboardScreen() {
                         setSelectedBusinessId(null);
                         setShowBusinessMenu(false);
                       }}
-                      className={`flex-row items-center px-3 py-3 rounded-2xl ${
-                        selectedBusinessId === null ? 'bg-slate-100' : 'bg-white'
-                      }`}
+                      className="flex-row items-center px-4 py-4"
                     >
-                      <View className="w-8 h-8 rounded-full items-center justify-center">
-                        <Ionicons name="business-outline" size={16} color="#000000" />
-                      </View>
+                      <Ionicons
+                        name="business-outline"
+                        size={18}
+                        color={selectedBusinessId === null ? '#111827' : '#6B7280'}
+                      />
 
                       <Text
-                        className={`ml-3 text-[12px] font-black uppercase tracking-wider ${
-                          selectedBusinessId === null ? 'text-black' : 'text-slate-500'
+                        className={`ml-3 flex-1 text-[12px] font-black uppercase tracking-wider ${
+                          selectedBusinessId === null ? 'text-slate-900' : 'text-slate-500'
                         }`}
                         numberOfLines={1}
                       >
                         All Businesses
                       </Text>
+
+                      {selectedBusinessId === null && (
+                        <Ionicons name="checkmark" size={18} color="#111827" />
+                      )}
                     </Pressable>
+                    <View className="h-px bg-slate-200 mx-4" />
 
                     {/* Businesses */}
                     {businesses &&
                       businesses.length > 1 &&
-                      businesses.map((biz) => (
-                        <Pressable
-                          key={biz.id}
-                          onPress={() => {
-                            setSelectedBusinessId(biz.id);
-                            setShowBusinessMenu(false);
-                          }}
-                          className={`flex-row items-center px-3 py-3 rounded-2xl mt-1 ${
-                            selectedBusinessId === biz.id ? 'bg-slate-100' : 'bg-white'
-                          }`}
-                        >
-                          {businessImages[biz.id] ? (
-                            <Image
-                              source={{ uri: businessImages[biz.id] }}
-                              style={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: 16,
-                              }}
-                            />
-                          ) : (
-                            <View className="w-8 h-8 rounded-full bg-slate-900 items-center justify-center">
-                              <Text className="text-white font-bold text-[10px]">
-                                {biz.owner_name
-                                  ? biz.owner_name.charAt(0)
-                                  : biz.salon_name
-                                    ? biz.salon_name.charAt(0)
-                                    : 'O'}
-                              </Text>
-                            </View>
-                          )}
-
-                          <Text
-                            className={`ml-3 flex-1 text-[12px] font-black uppercase tracking-wider ${
-                              selectedBusinessId === biz.id ? 'text-black' : 'text-slate-500'
-                            }`}
-                            numberOfLines={1}
+                      businesses.map((biz, index) => (
+                        <View key={biz.id}>
+                          <Pressable
+                            onPress={() => {
+                              setSelectedBusinessId(biz.id);
+                              setShowBusinessMenu(false);
+                            }}
+                            className="flex-row items-center px-4 py-4"
                           >
-                            {biz.salon_name}
-                          </Text>
+                            <Avatar
+                              userId={biz.owner_user_id}
+                              name={biz.owner_name || biz.salon_name || 'Owner'}
+                              size={32}
+                            />
 
-                          {selectedBusinessId === biz.id && (
-                            <Ionicons name="checkmark-circle" size={18} color="#111827" />
+                            <Text
+                              className={`ml-3 flex-1 text-[12px] font-black uppercase tracking-wider ${
+                                selectedBusinessId === biz.id ? 'text-slate-900' : 'text-slate-500'
+                              }`}
+                              numberOfLines={1}
+                            >
+                              {biz.salon_name}
+                            </Text>
+
+                            {selectedBusinessId === biz.id && (
+                              <Ionicons name="checkmark" size={18} color="#111827" />
+                            )}
+                          </Pressable>
+
+                          {index !== businesses.length - 1 && (
+                            <View className="h-px bg-slate-200 mx-4" />
                           )}
-                        </Pressable>
+                        </View>
                       ))}
                   </View>
                 )}
@@ -474,7 +431,7 @@ export default function OwnerDashboardScreen() {
               </View>
               <Pressable
                 onPress={() => router.push('/(owner)/bookings')}
-                className="px-4 py-2 rounded-full border border-slate-200"
+                className="px-4 py-2 rounded-full"
               >
                 <Text className="text-black font-black text-[10px] uppercase tracking-widest">
                   See All
@@ -530,7 +487,7 @@ export default function OwnerDashboardScreen() {
           }}
           onAccept={handleAccept}
           onReject={handleReject}
-          onUndoAccept={handleUndoAccept}
+          onUndoAccept={handleUndoConfirm}
           onUndoReject={handleUndoReject}
           onNoShow={handleNoShow}
         />

@@ -43,17 +43,16 @@ import {
   listBusinessHolidays,
 } from '@/services/supabase/hub';
 import {
-  acceptBooking as acceptBookingSupabase,
+  confirmBooking as confirmBookingSupabase,
   cancelBooking as cancelBookingSupabase,
   createBooking as createBookingSupabase,
   getBookingById as getBookingByIdSupabase,
   listBookings as listBookingsSupabase,
   markBookingNoShow,
-  patchBookingStatus as patchBookingStatusSupabase,
   rejectBooking as rejectBookingSupabase,
   rescheduleBooking as rescheduleBookingSupabase,
-  undoAcceptBooking,
-  undoRejectBooking,
+  undoConfirm,
+  undoReject,
 } from '@/services/supabase/bookings';
 import {
   createService as createServiceSupabase,
@@ -172,9 +171,9 @@ export const apiService = {
     return deleteUserAccount(reason);
   },
 
-  acceptBooking: async (id: string) => {
-    assertSupabaseOnly('acceptBooking');
-    return acceptBookingSupabase(id);
+  confirmBooking: async (id: string) => {
+    assertSupabaseOnly('confirmBooking');
+    return confirmBookingSupabase(id);
   },
 
   rejectBooking: async (id: string) => {
@@ -182,14 +181,14 @@ export const apiService = {
     return rejectBookingSupabase(id);
   },
 
-  undoAccept: async (id: string) => {
-    assertSupabaseOnly('undoAccept');
-    return undoAcceptBooking(id);
+  undoConfirm: async (id: string) => {
+    assertSupabaseOnly('undoConfirm');
+    return undoConfirm(id);
   },
 
   undoReject: async (id: string) => {
     assertSupabaseOnly('undoReject');
-    return undoRejectBooking(id);
+    return undoReject(id);
   },
 
   markNoShow: async (id: string) => {
@@ -296,7 +295,7 @@ export const apiService = {
     logger.info(LogTag.API, `updateBookingStatus ${id} → ${status}`);
     switch (status) {
       case 'confirmed':
-        return apiService.acceptBooking(id);
+        return apiService.confirmBooking(id);
       case 'rejected':
         return apiService.rejectBooking(id);
       case 'cancelled':
@@ -304,8 +303,7 @@ export const apiService = {
       case 'no_show':
         return apiService.markNoShow(id);
       default:
-        assertSupabaseOnly('updateBookingStatus');
-        return patchBookingStatusSupabase(id, status);
+        throw new Error(`Unsupported explicit status update: ${status}`);
     }
   },
 
@@ -363,7 +361,10 @@ export const apiService = {
 
   getSlots: async (businessId: string, date: string, _serviceIds?: string) => {
     assertSupabaseOnly('getSlots');
-    const result = await listSlotsForBusiness(businessId, date, { availableOnly: true });
+    // availableOnly: false → return both 'available' and 'booked' slots so the
+    // UI can show booked slots as disabled. Past slots and after-closing slots
+    // are still filtered out inside listSlotsForBusiness.
+    const result = await listSlotsForBusiness(businessId, date, { availableOnly: false });
     return result.slots;
   },
 

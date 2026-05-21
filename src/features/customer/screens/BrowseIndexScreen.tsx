@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, Pressable, FlatList, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -85,6 +86,24 @@ export default function CustomerBrowseScreen() {
     }
   };
 
+  const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371;
+
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  };
+
   const filteredBusinesses = useMemo(() => {
     if (!businesses) return [];
 
@@ -93,13 +112,29 @@ export default function CustomerBrowseScreen() {
         (business.salon_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (business.address || '').toLowerCase().includes(searchQuery.toLowerCase());
 
-      const activeLocation = useCurrentLocation ? userLocation?.city || '' : manualLocation;
+      // Manual location search
+      if (!useCurrentLocation) {
+        const matchesManualLocation =
+          !manualLocation ||
+          (business.address || '').toLowerCase().includes(manualLocation.toLowerCase());
 
-      const matchesLocation =
-        !activeLocation ||
-        (business.address || '').toLowerCase().includes(activeLocation.toLowerCase());
+        return matchesSearch && matchesManualLocation;
+      }
 
-      return matchesSearch && matchesLocation;
+      // Current GPS location radius filtering
+      if (useCurrentLocation && userLocation && business.latitude && business.longitude) {
+        const distance = calculateDistanceKm(
+          userLocation.latitude,
+          userLocation.longitude,
+          business.latitude,
+          business.longitude,
+        );
+
+        // 10 KM radius
+        return matchesSearch && distance <= 10;
+      }
+
+      return false;
     });
   }, [businesses, searchQuery, userLocation, manualLocation, useCurrentLocation]);
 
@@ -113,13 +148,13 @@ export default function CustomerBrowseScreen() {
     return (
       <Pressable
         className={`px-6 py-2.5 rounded-full border mr-3 ${
-          isActive
-            ? 'bg-accent-premium border-accent-premium'
-            : 'bg-white border-slate-200 shadow-sm'
+          isActive ? 'bg-primary border-primary' : 'bg-card border-border shadow-sm'
         }`}
         onPress={() => setSelectedCategoryId(item.value)}
       >
-        <Text className={`font-bold text-sm ${isActive ? 'text-white' : 'text-slate-600'}`}>
+        <Text
+          className={`font-bold text-sm ${isActive ? 'text-background' : 'text-textSecondary'}`}
+        >
           {item.label}
         </Text>
       </Pressable>
@@ -142,46 +177,46 @@ export default function CustomerBrowseScreen() {
     <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['top']}>
         <View className="px-luxury pt-5 pb-2">
-          <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
             Explore Salons
           </Text>
-          <Text className="text-slate-900 text-3xl font-black tracking-tight">
+          <Text className="text-text text-3xl font-black tracking-tight">
             Discover Your Next Experience
           </Text>
         </View>
         {/* Search + Location */}
         <View className="px-luxury pt-4 pb-3">
           {/* Search Bar */}
-          <View className="bg-white border border-slate-200 rounded-2xl px-4 py-3 shadow-sm">
+          <View className="bg-card  rounded-2xl px-4 py-3 shadow-sm">
             {/* Top Row */}
             <View className="flex-row items-center">
-              <Ionicons name="search" size={20} color="#94A3B8" />
+              <Ionicons name="search" size={20} color={THEME.colors.textSecondary} />
 
               <TextInput
-                className="flex-1 text-slate-900 text-base ml-3"
+                className="flex-1 text-text text-base ml-3"
                 placeholder="Search businesses, salons..."
-                placeholderTextColor="#64748B"
+                placeholderTextColor={THEME.colors.textSecondary}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
 
               {searchQuery ? (
                 <Pressable onPress={() => setSearchQuery('')}>
-                  <Ionicons name="close-circle" size={20} color="#64748B" />
+                  <Ionicons name="close-circle" size={20} color={THEME.colors.textSecondary} />
                 </Pressable>
               ) : null}
             </View>
 
             {/* Divider */}
-            <View className="h-[1px] bg-slate-100 my-3" />
+            <View className="h-[1px] bg-border my-3" />
 
             {/* Location Row */}
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
-                <Ionicons name="location-outline" size={18} color="#0F172A" />
+                <Ionicons name="location-outline" size={18} color={THEME.colors.primary} />
 
                 <View className="ml-2 flex-1">
-                  <Text className="text-slate-400 text-xs font-semibold mb-1">LOCATION</Text>
+                  <Text className="text-textSecondary text-xs font-semibold mb-1">LOCATION</Text>
 
                   <TextInput
                     value={
@@ -196,8 +231,8 @@ export default function CustomerBrowseScreen() {
                       setManualLocation(val);
                     }}
                     placeholder="All Locations (tap target for current)"
-                    placeholderTextColor="#64748B"
-                    className="text-slate-900 font-semibold text-sm py-0"
+                    placeholderTextColor={THEME.colors.textSecondary}
+                    className="text-text font-semibold text-sm py-0"
                   />
                 </View>
               </View>
@@ -218,9 +253,9 @@ export default function CustomerBrowseScreen() {
                 }`}
               >
                 {locationLoading ? (
-                  <ActivityIndicator size="small" color="#94A3B8" />
+                  <ActivityIndicator size="small" color={THEME.colors.textSecondary} />
                 ) : (
-                  <Ionicons name="locate" size={18} color="#000000" />
+                  <Ionicons name="locate" size={18} color={THEME.colors.primary} />
                 )}
               </Pressable>
             </View>
@@ -238,18 +273,18 @@ export default function CustomerBrowseScreen() {
           </View>
         ) : isError ? (
           <View className="flex-1 justify-center items-center px-luxury">
-            <GlassCard className="items-center w-full bg-white border border-slate-200 shadow-sm">
-              <Ionicons name="cloud-offline-outline" size={48} color="#000000" />
+            <GlassCard className="items-center w-full bg-card  shadow-sm">
+              <Ionicons name="cloud-offline-outline" size={48} color={THEME.colors.error} />
 
-              <Text className="text-slate-900 text-lg font-bold mt-4 text-center">
+              <Text className="text-text text-lg font-bold mt-4 text-center">
                 Failed to query live businesses
               </Text>
 
               <Pressable
                 onPress={() => refetch()}
-                className="mt-6 bg-accent-premium/10 border border-accent-premium/30 px-8 py-3 rounded-full"
+                className="mt-6 bg-error/10 border border-error/30 px-8 py-3 rounded-full"
               >
-                <Text className="text-accent-premium font-bold">Retry Discovery</Text>
+                <Text className="text-error font-bold">Retry Discovery</Text>
               </Pressable>
             </GlassCard>
           </View>
@@ -262,13 +297,11 @@ export default function CustomerBrowseScreen() {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <AnimatedSection direction="up" className="items-center justify-center pt-24">
-                <Ionicons name="search-outline" size={64} color="#64748B" />
+                <Ionicons name="search-outline" size={64} color={THEME.colors.textSecondary} />
 
-                <Text className="text-slate-900 text-2xl font-bold mt-6 mb-2">
-                  No Results Found
-                </Text>
+                <Text className="text-text text-2xl font-bold mt-6 mb-2">No Results Found</Text>
 
-                <Text className="text-slate-500 text-center px-12 text-base">
+                <Text className="text-textSecondary text-center px-12 text-base">
                   Try adjusting your search filters or queries to find your next curated experience.
                 </Text>
               </AnimatedSection>

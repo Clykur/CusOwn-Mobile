@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -126,7 +127,7 @@ export default function GoogleCallbackScreen() {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#FFFFFF" />
+      <ActivityIndicator size="large" color={THEME.colors.text} />
       <Text style={styles.text}>Completing sign-in…</Text>
     </View>
   );
@@ -144,6 +145,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 15,
     fontWeight: '600',
-    color: '#94A3B8',
+    color: THEME.colors.textSecondary,
   },
 });

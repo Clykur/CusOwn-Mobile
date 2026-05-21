@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -8,11 +9,9 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { apiService } from '@/services/api.service';
 import { useAuthStore } from '@/store/auth.store';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { ServiceRow } from './ServiceRow';
 import { BusinessCategory } from '@/types/business.types';
@@ -70,19 +69,14 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
     setFetchingCategories(true);
     try {
       const cats = await apiService.getCategories();
-      setCategories(cats);
+      setCategories(cats.filter((cat) => cat.value === 'salon'));
       if (cats.length > 0 && !formData.category) {
         setFormData((prev) => ({ ...prev, category: cats[0].value }));
       }
     } catch (err) {
       console.error('Failed to load categories:', err);
       // Fallback categories if API fails
-      setCategories([
-        { value: 'salon', label: 'Salon' },
-        { value: 'spa', label: 'Spa' },
-        { value: 'barbershop', label: 'Barber' },
-        { value: 'clinic', label: 'Clinic' },
-      ]);
+      setCategories([{ value: 'salon', label: 'Salon' }]);
     } finally {
       setFetchingCategories(false);
     }
@@ -204,50 +198,56 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
   };
 
   const combinedLoading = loading || externalLoading;
+  const setSelectedCategory = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      category: value,
+    }));
+  };
 
   return (
     <View className="space-y-6">
       {error && (
-        <View className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
+        <View className="bg-red-50 border border-red-200 rounded-2xl p-2 mb-4">
           <Text className="text-red-700 text-sm font-medium">{error}</Text>
         </View>
       )}
 
       {/* Core Details */}
       <View className="mb-4">
-        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
           Business Name *
         </Text>
         <TextInput
           className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="The Signature Salon"
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={THEME.colors.textSecondary}
           value={formData.salon_name}
           onChangeText={(val) => handleChange('salon_name', val)}
         />
       </View>
 
       <View className="mb-4">
-        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
           Owner Name *
         </Text>
         <TextInput
           className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="John Doe"
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={THEME.colors.textSecondary}
           value={formData.owner_name}
           onChangeText={(val) => handleChange('owner_name', val)}
         />
       </View>
 
       <View className="mb-4">
-        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
           WhatsApp Number *
         </Text>
         <TextInput
           className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
           placeholder="10-digit number"
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={THEME.colors.textSecondary}
           value={formData.whatsapp_number}
           onChangeText={(val) =>
             handleChange('whatsapp_number', val.replace(/\D/g, '').slice(0, 10))
@@ -259,27 +259,35 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
 
       {/* Category Selection */}
       <View className="mb-5">
-        <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-3">
+        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-3">
           Business Type *
         </Text>
         {fetchingCategories ? (
-          <ActivityIndicator color="#000000" />
+          <ActivityIndicator color={THEME.colors.background} />
         ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat.value}
-                onPress={() => handleChange('category', cat.value)}
-                className={`px-5 py-3 rounded-full mr-3 border ${formData.category === cat.value ? 'bg-black border-black' : 'bg-white border-slate-200/80'}`}
-              >
-                <Text
-                  className={`font-black text-xs uppercase tracking-wider ${formData.category === cat.value ? 'text-white' : 'text-slate-700'}`}
+          <View className="flex-row">
+            {categories.map((cat) => {
+              const isSelected = formData.category === cat.value;
+
+              return (
+                <TouchableOpacity
+                  key={cat.value}
+                  onPress={() => setSelectedCategory(cat.value)}
+                  className={`px-5 py-3 rounded-full mr-3 border ${
+                    isSelected ? 'bg-black border-black' : 'bg-white border-slate-200/80'
+                  }`}
                 >
-                  {cat.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+                  <Text
+                    className={`font-black text-xs uppercase tracking-wider ${
+                      isSelected ? 'text-white' : 'text-slate-700'
+                    }`}
+                  >
+                    {cat.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         )}
       </View>
 
@@ -290,7 +298,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
         </Text>
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
-            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
               Open Time
             </Text>
             <TextInput
@@ -298,11 +306,11 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
               value={formData.opening_time}
               onChangeText={(val) => handleChange('opening_time', val)}
               placeholder="10:00"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={THEME.colors.textSecondary}
             />
           </View>
           <View className="flex-1">
-            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
               Close Time
             </Text>
             <TextInput
@@ -310,16 +318,16 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
               value={formData.closing_time}
               onChangeText={(val) => handleChange('closing_time', val)}
               placeholder="21:00"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={THEME.colors.textSecondary}
             />
           </View>
         </View>
 
         <View className="mb-5 mt-2">
-          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-3">
+          <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-3">
             Slot Duration *
           </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+          <View className="flex-row">
             {SLOT_DURATIONS.map((dur) => (
               <TouchableOpacity
                 key={dur}
@@ -333,17 +341,17 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
                 </Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
         </View>
 
         <View className="mb-4">
-          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+          <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
             Concurrent Bookings
           </Text>
           <TextInput
             className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="1"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={THEME.colors.textSecondary}
             value={formData.concurrent_booking_capacity}
             onChangeText={(val) => handleChange('concurrent_booking_capacity', val)}
             keyboardType="number-pad"
@@ -358,7 +366,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
             Services
           </Text>
           <TouchableOpacity onPress={handleAddService}>
-            <Text className="text-black text-[10px] font-black uppercase tracking-[2px]">
+            <Text className="text-black text-xs font-black uppercase tracking-[2px] border rounded-full px-2 py-1 bg-black text-white">
               + Add Service
             </Text>
           </TouchableOpacity>
@@ -389,20 +397,18 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
             Location Details
           </Text>
           <TouchableOpacity onPress={handleUseLocation} disabled={loading}>
-            <Text className="text-black text-[10px] font-black uppercase tracking-[2px]">
-              Use My Location
-            </Text>
+            <Text className="text-blue-600 text-sm font-semibold underline">Use My Location</Text>
           </TouchableOpacity>
         </View>
 
         <View className="mb-4">
-          <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+          <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
             Address *
           </Text>
           <TextInput
             className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
             placeholder="Street address, building"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={THEME.colors.textSecondary}
             value={formData.address}
             onChangeText={(val) => handleChange('address', val)}
             multiline
@@ -411,25 +417,25 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
 
         <View className="flex-row gap-4 mb-4">
           <View className="flex-1">
-            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
               City *
             </Text>
             <TextInput
               className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               placeholder="City"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={THEME.colors.textSecondary}
               value={formData.city}
               onChangeText={(val) => handleChange('city', val)}
             />
           </View>
           <View className="flex-1">
-            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
               Locality *
             </Text>
             <TextInput
               className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               placeholder="Locality"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={THEME.colors.textSecondary}
               value={formData.location}
               onChangeText={(val) => handleChange('location', val)}
             />
@@ -438,25 +444,25 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
 
         <View className="flex-row gap-4">
           <View className="flex-1">
-            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
               Sub-Area
             </Text>
             <TextInput
               className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               placeholder="Optional"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={THEME.colors.textSecondary}
               value={formData.area}
               onChangeText={(val) => handleChange('area', val)}
             />
           </View>
           <View className="flex-1">
-            <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
               Pincode
             </Text>
             <TextInput
               className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
               placeholder="Optional"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={THEME.colors.textSecondary}
               value={formData.pincode}
               onChangeText={(val) => handleChange('pincode', val)}
               keyboardType="number-pad"
@@ -466,7 +472,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       </View>
 
       <PremiumButton
-        title="Establish Business"
+        title="Create Business"
         onPress={handleSubmit}
         loading={combinedLoading}
         disabled={combinedLoading}

@@ -27,6 +27,7 @@
     "ios": {
       "bundleIdentifier": "com.cusown.app",
       "supportsTablet": false,
+      "associatedDomains": ["applinks:cusownapp.clykur.com"],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -49,6 +50,11 @@
             {
               "scheme": "cusown",
               "pathPrefix": "/google-callback"
+            },
+            {
+              "scheme": "https",
+              "host": "cusownapp.clykur.com",
+              "pathPrefix": "/book"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]

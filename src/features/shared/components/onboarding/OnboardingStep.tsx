@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
@@ -22,11 +23,11 @@ export const OnboardingStep: React.FC<OnboardingStepProps> = ({
   const getVariantColor = () => {
     switch (variant) {
       case 'customer':
-        return '#FFFFFF';
+        return THEME.colors.text;
       case 'owner':
-        return '#FFFFFF';
+        return THEME.colors.text;
       default:
-        return '#3B82F6';
+        return THEME.colors.primary;
     }
   };
 

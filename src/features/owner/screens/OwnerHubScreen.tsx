@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -11,6 +12,7 @@ import {
   Share,
   TextInput,
 } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
@@ -112,17 +114,8 @@ export default function ManageHubScreen() {
   // 1. Fetch QR Identity
   const fetchQR = async () => {
     if (!business) return;
-    setLoadingQR(true);
-    try {
-      const res = await apiService.getBusinessQr(business.id, true);
-      if (res?.qr_code) {
-        setQrCode(res.qr_code);
-      }
-    } catch (err) {
-      console.error('Failed to fetch QR code:', err);
-    } finally {
-      setLoadingQR(false);
-    }
+    // We now generate QR Code locally based on the production booking URL.
+    setLoadingQR(false);
   };
 
   // 2. Fetch Photos
@@ -341,7 +334,7 @@ export default function ManageHubScreen() {
   // Sharing Actions
   const handleShareLink = () => {
     if (!business) return;
-    const link = business.booking_link || `https://cusown.com/salon/${business.id}`;
+    const link = `https://cusownapp.clykur.com/book/${business.id}`;
     Share.share({
       message: `Book your appointment at ${business.salon_name} online here: ${link}`,
     });
@@ -351,7 +344,7 @@ export default function ManageHubScreen() {
     return (
       <PremiumBackground>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator color="#000000" size="large" />
+          <ActivityIndicator color={THEME.colors.background} size="large" />
         </View>
       </PremiumBackground>
     );
@@ -361,7 +354,7 @@ export default function ManageHubScreen() {
     return (
       <PremiumBackground>
         <View className="flex-1 justify-center items-center p-10">
-          <Ionicons name="alert-circle-outline" size={48} color="#64748B" />
+          <Ionicons name="alert-circle-outline" size={48} color={THEME.colors.textSecondary} />
           <Text className="text-slate-900 text-xl font-black mt-4 mb-6">Hub Not Found</Text>
           <Pressable
             onPress={() => router.back()}
@@ -388,7 +381,7 @@ export default function ManageHubScreen() {
       <Ionicons
         name={icon}
         size={15}
-        color={activeTab === tab ? '#FFFFFF' : '#475569'}
+        color={activeTab === tab ? THEME.colors.text : THEME.colors.border}
         className="mr-2"
       />
       <Text
@@ -407,7 +400,7 @@ export default function ManageHubScreen() {
           <View className="px-luxury pt-6 pb-4 mb-4">
             <View className="flex-row justify-between items-start">
               <View className="flex-1 mr-4">
-                <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+                <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">
                   Management Suite
                 </Text>
                 <Text
@@ -417,7 +410,7 @@ export default function ManageHubScreen() {
                   {business.salon_name}
                 </Text>
                 <View className="flex-row items-center mt-2">
-                  <Ionicons name="location-outline" size={14} color="#64748B" />
+                  <Ionicons name="location-outline" size={14} color={THEME.colors.textSecondary} />
                   <Text className="text-slate-500 text-xs ml-1 font-semibold" numberOfLines={1}>
                     {business.address || business.location || business.city}
                   </Text>
@@ -451,7 +444,11 @@ export default function ManageHubScreen() {
             className="flex-1"
             contentContainerClassName="px-luxury pb-20"
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#000000" />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={THEME.colors.background}
+              />
             }
             showsVerticalScrollIndicator={false}
           >
@@ -472,32 +469,23 @@ export default function ManageHubScreen() {
 
                   {/* QR Section */}
                   <View className="w-full flex flex-col items-center justify-center">
-                    <View className="w-64 h-64 ml-5 rounded-[32px] items-center justify-center mb-8">
-                      {loadingQR ? (
-                        <ActivityIndicator color="#64748B" />
-                      ) : qrCode ? (
-                        <Image
-                          source={{ uri: qrCode }}
-                          className="w-full h-full"
-                          resizeMode="contain"
-                        />
-                      ) : (
-                        <View className="flex-1 items-center justify-center opacity-30">
-                          <Ionicons name="qr-code-outline" size={80} color="#000000" />
-
-                          <Text className="text-xs font-bold mt-3 text-center">
-                            No QR Code Available
-                          </Text>
-                        </View>
-                      )}
+                    <View className="w-64 h-64 ml-5 rounded-[32px] items-center justify-center mb-8 bg-white p-4">
+                      <QRCode
+                        value={`https://cusownapp.clykur.com/book/${business.id}`}
+                        size={200}
+                        color="black"
+                        backgroundColor="white"
+                      />
                     </View>
 
                     {/* Share Button */}
                     <Pressable
                       onPress={handleShareLink}
-                      className="w-full bg-black py-2 rounded-full items-center active:bg-slate-950"
+                      className="flex-row items-center justify-center"
                     >
-                      <Text className="text-white font-black text-xs uppercase tracking-wider p-2">
+                      <Ionicons name="share-social-outline" size={14} color="#000" />
+
+                      <Text className="ml-2 text-black font-black text-xs uppercase tracking-wider">
                         Share Link
                       </Text>
                     </Pressable>
@@ -506,7 +494,7 @@ export default function ManageHubScreen() {
 
                 {/* URL Card */}
                 <GlassCard className="p-6 rounded-luxury border-slate-200/80 shadow-sm items-center">
-                  <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-4 text-center">
+                  <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-4 text-center">
                     Direct Booking URL
                   </Text>
 
@@ -518,10 +506,10 @@ export default function ManageHubScreen() {
                       className="flex-1 text-slate-700 text-xs font-semibold text-center"
                       numberOfLines={1}
                     >
-                      {business.booking_link || `https://cusownapp.clykur.com/${business.id}`}
+                      {`https://cusownapp.clykur.com/book/${business.id}`}
                     </Text>
 
-                    <Ionicons name="share-outline" size={18} color="#64748B" />
+                    <Ionicons name="share-outline" size={18} color={THEME.colors.textSecondary} />
                   </Pressable>
                 </GlassCard>
               </AnimatedSection>
@@ -554,10 +542,10 @@ export default function ManageHubScreen() {
                   </View>
 
                   {loadingPhotos ? (
-                    <ActivityIndicator color="#64748B" className="my-8" />
+                    <ActivityIndicator color={THEME.colors.textSecondary} className="my-8" />
                   ) : photos.length === 0 ? (
                     <View className="py-12 items-center justify-center">
-                      <Ionicons name="images-outline" size={48} color="#CBD5E1" />
+                      <Ionicons name="images-outline" size={48} color={THEME.colors.border} />
                       <Text className="text-slate-500 font-semibold mt-4 text-center">
                         No shop photos added yet.
                       </Text>
@@ -578,7 +566,7 @@ export default function ManageHubScreen() {
                             onPress={() => handleDeletePhoto(item.id)}
                             className="absolute top-2 right-2 bg-black w-8 h-8 rounded-full items-center justify-center shadow active:bg-neutral-800"
                           >
-                            <Ionicons name="trash-outline" size={14} color="#FFFFFF" />
+                            <Ionicons name="trash-outline" size={14} color={THEME.colors.text} />
                           </Pressable>
                         </View>
                       ))}
@@ -599,21 +587,21 @@ export default function ManageHubScreen() {
 
                   {/* Add Holiday Form */}
                   <View className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl mb-6">
-                    <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-3">
+                    <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-3">
                       Schedule a Holiday
                     </Text>
                     <View className="space-y-3">
                       <TextInput
                         className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-2"
                         placeholder="Date (YYYY-MM-DD)"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={THEME.colors.textSecondary}
                         value={holidayDate}
                         onChangeText={setHolidayDate}
                       />
                       <TextInput
                         className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-4"
                         placeholder="Holiday Name (e.g. Diwali)"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={THEME.colors.textSecondary}
                         value={holidayName}
                         onChangeText={setHolidayName}
                       />
@@ -635,7 +623,7 @@ export default function ManageHubScreen() {
 
                   {/* Holiday List */}
                   {loadingDowntime ? (
-                    <ActivityIndicator color="#64748B" />
+                    <ActivityIndicator color={THEME.colors.textSecondary} />
                   ) : holidays.length === 0 ? (
                     <Text className="text-slate-400 text-xs text-center font-semibold py-4">
                       No upcoming holidays scheduled.
@@ -651,7 +639,7 @@ export default function ManageHubScreen() {
                             <Text className="text-slate-900 font-extrabold text-xs">
                               {item.holiday_name}
                             </Text>
-                            <Text className="text-slate-500 text-[10px] font-semibold mt-0.5">
+                            <Text className="text-slate-500 text-xs font-semibold mt-0.5">
                               {item.holiday_date}
                             </Text>
                           </View>
@@ -659,7 +647,11 @@ export default function ManageHubScreen() {
                             onPress={() => handleDeleteHoliday(item.id)}
                             className="bg-white border border-slate-200/80 p-2 rounded-full active:bg-neutral-200"
                           >
-                            <Ionicons name="trash-outline" size={14} color="#000000" />
+                            <Ionicons
+                              name="trash-outline"
+                              size={14}
+                              color={THEME.colors.background}
+                            />
                           </Pressable>
                         </View>
                       ))}
@@ -678,28 +670,28 @@ export default function ManageHubScreen() {
 
                   {/* Add Closure Form */}
                   <View className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl mb-6">
-                    <Text className="text-[10px] text-slate-500 font-black uppercase tracking-[2px] mb-3">
+                    <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-3">
                       Add Specific Closure
                     </Text>
                     <View className="space-y-3">
                       <TextInput
                         className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-2"
                         placeholder="Start Date (YYYY-MM-DD)"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={THEME.colors.textSecondary}
                         value={closureStart}
                         onChangeText={setClosureStart}
                       />
                       <TextInput
                         className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-2"
                         placeholder="End Date (YYYY-MM-DD)"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={THEME.colors.textSecondary}
                         value={closureEnd}
                         onChangeText={setClosureEnd}
                       />
                       <TextInput
                         className="bg-white border border-slate-200/80 rounded-xl px-4 py-3.5 text-slate-800 text-xs font-semibold mb-4"
                         placeholder="Reason (e.g. Renovation)"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={THEME.colors.textSecondary}
                         value={closureReason}
                         onChangeText={setClosureReason}
                       />
@@ -721,7 +713,7 @@ export default function ManageHubScreen() {
 
                   {/* Closures List */}
                   {loadingDowntime ? (
-                    <ActivityIndicator color="#64748B" />
+                    <ActivityIndicator color={THEME.colors.textSecondary} />
                   ) : closures.length === 0 ? (
                     <Text className="text-slate-400 text-xs text-center font-semibold py-4">
                       No custom closures scheduled.
@@ -737,7 +729,7 @@ export default function ManageHubScreen() {
                             <Text className="text-slate-900 font-extrabold text-xs">
                               {item.reason}
                             </Text>
-                            <Text className="text-slate-500 text-[10px] font-semibold mt-0.5">
+                            <Text className="text-slate-500 text-xs font-semibold mt-0.5">
                               {item.start_date} to {item.end_date}
                             </Text>
                           </View>
@@ -745,7 +737,11 @@ export default function ManageHubScreen() {
                             onPress={() => handleDeleteClosure(item.id)}
                             className="bg-white border border-slate-200/80 p-2 rounded-full active:bg-neutral-200"
                           >
-                            <Ionicons name="trash-outline" size={14} color="#000000" />
+                            <Ionicons
+                              name="trash-outline"
+                              size={14}
+                              color={THEME.colors.background}
+                            />
                           </Pressable>
                         </View>
                       ))}
@@ -761,7 +757,10 @@ export default function ManageHubScreen() {
                   <View className="mb-6 border-b border-slate-100 pb-4">
                     <Text className="text-slate-900 font-extrabold text-xl">Customer Reviews</Text>
                     {loadingReviews ? (
-                      <ActivityIndicator color="#64748B" className="mt-2 align-self-start" />
+                      <ActivityIndicator
+                        color={THEME.colors.textSecondary}
+                        className="mt-2 align-self-start"
+                      />
                     ) : (
                       <View className="flex-row items-center mt-2">
                         <Ionicons name="star-outline" size={16} color="#FFB800" />
@@ -776,10 +775,10 @@ export default function ManageHubScreen() {
                   </View>
 
                   {loadingReviews ? (
-                    <ActivityIndicator color="#64748B" className="my-8" />
+                    <ActivityIndicator color={THEME.colors.textSecondary} className="my-8" />
                   ) : reviewData.reviews.length === 0 ? (
                     <View className="items-center py-12">
-                      <Ionicons name="chatbubbles-outline" size={48} color="#CBD5E1" />
+                      <Ionicons name="chatbubbles-outline" size={48} color={THEME.colors.border} />
                       <Text className="text-slate-500 font-semibold mt-4">
                         No reviews yet for this hub
                       </Text>
@@ -810,7 +809,7 @@ export default function ManageHubScreen() {
                               No comment provided
                             </Text>
                           )}
-                          <Text className="text-slate-400 text-[9px] font-semibold mt-2.5">
+                          <Text className="text-slate-400 text-xs font-semibold mt-2.5">
                             {rev.created_at ? new Date(rev.created_at).toLocaleDateString() : ''}
                           </Text>
                         </View>

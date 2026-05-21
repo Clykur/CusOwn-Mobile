@@ -1,11 +1,12 @@
+import { THEME } from '@/theme/theme';
 import React, { useState } from 'react';
 import { View, Text, Pressable, FlatList, Alert, TextInput, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   useBookings,
-  useAcceptBooking,
+  useConfirmBooking,
   useRejectBooking,
-  useUndoAccept,
+  useUndoConfirm,
   useUndoReject,
   useMarkNoShow,
 } from '@/hooks/useBookings';
@@ -45,16 +46,16 @@ export default function OwnerBookingsScreen() {
     }
   }, [bookings, selectedBooking]);
 
-  const { mutate: acceptBooking } = useAcceptBooking();
+  const { mutate: confirmBooking } = useConfirmBooking();
   const { mutate: rejectBooking } = useRejectBooking();
-  const { mutate: undoAccept } = useUndoAccept();
+  const { mutate: undoConfirm } = useUndoConfirm();
   const { mutate: undoReject } = useUndoReject();
   const { mutate: markNoShow } = useMarkNoShow();
 
   const handleAccept = (id: string) => {
     Alert.alert('Approve Booking', 'Are you sure you want to confirm this reservation?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Confirm', onPress: () => acceptBooking(id) },
+      { text: 'Confirm', onPress: () => confirmBooking(id) },
     ]);
   };
 
@@ -68,7 +69,7 @@ export default function OwnerBookingsScreen() {
   const handleUndoAccept = (id: string) => {
     Alert.alert('Undo Approval', 'Revert this booking back to pending status?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Undo', onPress: () => undoAccept(id) },
+      { text: 'Undo', onPress: () => undoConfirm(id) },
     ]);
   };
 
@@ -250,7 +251,7 @@ export default function OwnerBookingsScreen() {
         {/* Cinematic Header & Filter Action */}
         <View className="px-luxury pt-5 pb-2 flex-row justify-between items-center">
           <View className="flex-1 mr-4">
-            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">
               Bookings
             </Text>
             <Text className="text-slate-900 text-3xl font-black tracking-tight">Appointments</Text>
@@ -262,7 +263,7 @@ export default function OwnerBookingsScreen() {
             onPress={() => setShowFilter(true)}
             className="bg-white/80 p-3 rounded-2xl border border-slate-200/80 active:bg-white shadow-sm"
           >
-            <Ionicons name="funnel-outline" size={20} color="#000000" />
+            <Ionicons name="funnel-outline" size={20} color={THEME.colors.background} />
           </Pressable>
         </View>
 
@@ -296,7 +297,7 @@ export default function OwnerBookingsScreen() {
         ) : isError ? (
           <View className="flex-1 justify-center items-center px-luxury">
             <GlassCard className="items-center w-full bg-white border border-slate-200 p-6">
-              <Ionicons name="alert-circle-outline" size={48} color="#000000" />
+              <Ionicons name="alert-circle-outline" size={48} color={THEME.colors.background} />
               <Text className="text-slate-900 text-lg font-bold mt-4 text-center">
                 Failed to load your reservations
               </Text>
@@ -320,7 +321,11 @@ export default function OwnerBookingsScreen() {
             ListEmptyComponent={
               <AnimatedSection direction="up" className="items-center justify-center pt-24">
                 <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center mb-6 border border-slate-200">
-                  <Ionicons name="calendar-clear-outline" size={36} color="#64748B" />
+                  <Ionicons
+                    name="calendar-clear-outline"
+                    size={36}
+                    color={THEME.colors.textSecondary}
+                  />
                 </View>
                 <Text className="text-slate-900 text-xl font-black uppercase tracking-tight mb-2">
                   No Bookings Found
@@ -355,7 +360,7 @@ export default function OwnerBookingsScreen() {
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
                 {/* 1. Hub Selection */}
-                <Text className="text-[10px] text-slate-400 font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-slate-400 font-black uppercase tracking-[2px] mb-3">
                   Select Hub
                 </Text>
 
@@ -367,7 +372,11 @@ export default function OwnerBookingsScreen() {
                     <Ionicons
                       name="grid-outline"
                       size={18}
-                      color={selectedBusinessId === 'all' ? '#000000' : '#64748B'}
+                      color={
+                        selectedBusinessId === 'all'
+                          ? THEME.colors.background
+                          : THEME.colors.textSecondary
+                      }
                     />
                     <Text
                       className={`text-sm ml-3 ${selectedBusinessId === 'all' ? 'text-slate-900 font-extrabold' : 'text-slate-600 font-medium'}`}
@@ -376,7 +385,7 @@ export default function OwnerBookingsScreen() {
                     </Text>
                   </View>
                   {selectedBusinessId === 'all' && (
-                    <Ionicons name="checkmark" size={20} color="#000000" />
+                    <Ionicons name="checkmark" size={20} color={THEME.colors.background} />
                   )}
                 </Pressable>
 
@@ -390,7 +399,11 @@ export default function OwnerBookingsScreen() {
                       <Ionicons
                         name="business-outline"
                         size={18}
-                        color={selectedBusinessId === biz.id ? '#000000' : '#64748B'}
+                        color={
+                          selectedBusinessId === biz.id
+                            ? THEME.colors.background
+                            : THEME.colors.textSecondary
+                        }
                       />
                       <Text
                         className={`text-sm ml-3 ${selectedBusinessId === biz.id ? 'text-slate-900 font-extrabold' : 'text-slate-600 font-medium'}`}
@@ -399,7 +412,7 @@ export default function OwnerBookingsScreen() {
                       </Text>
                     </View>
                     {selectedBusinessId === biz.id && (
-                      <Ionicons name="checkmark" size={20} color="#000000" />
+                      <Ionicons name="checkmark" size={20} color={THEME.colors.background} />
                     )}
                   </Pressable>
                 ))}
@@ -407,7 +420,7 @@ export default function OwnerBookingsScreen() {
                 <View className="h-[0.5px] bg-slate-100 my-5" />
 
                 {/* 2. Date Selection */}
-                <Text className="text-[10px] text-slate-400 font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-slate-400 font-black uppercase tracking-[2px] mb-3">
                   Select Period
                 </Text>
 
@@ -449,7 +462,11 @@ export default function OwnerBookingsScreen() {
                       <Ionicons
                         name={period.icon as any}
                         size={18}
-                        color={dateFilter === period.key ? '#000000' : '#64748B'}
+                        color={
+                          dateFilter === period.key
+                            ? THEME.colors.background
+                            : THEME.colors.textSecondary
+                        }
                       />
                       <View className="ml-3 flex-1">
                         <Text
@@ -458,14 +475,14 @@ export default function OwnerBookingsScreen() {
                           {period.label}
                         </Text>
                         {period.desc ? (
-                          <Text className="text-slate-400 text-[10px] mt-0.5 font-semibold">
+                          <Text className="text-slate-400 text-xs mt-0.5 font-semibold">
                             {period.desc}
                           </Text>
                         ) : null}
                       </View>
                     </View>
                     {dateFilter === period.key && (
-                      <Ionicons name="checkmark" size={20} color="#000000" />
+                      <Ionicons name="checkmark" size={20} color={THEME.colors.background} />
                     )}
                   </Pressable>
                 ))}
@@ -474,26 +491,26 @@ export default function OwnerBookingsScreen() {
                 {dateFilter === 'custom' && (
                   <View className="flex-row gap-x-2 mt-4 px-2">
                     <View className="flex-1">
-                      <Text className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">
+                      <Text className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1.5">
                         Start Date
                       </Text>
                       <TextInput
                         value={startDate}
                         onChangeText={setStartDate}
                         placeholder="YYYY-MM-DD"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={THEME.colors.textSecondary}
                         className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800"
                       />
                     </View>
                     <View className="flex-1">
-                      <Text className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">
+                      <Text className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1.5">
                         End Date
                       </Text>
                       <TextInput
                         value={endDate}
                         onChangeText={setEndDate}
                         placeholder="YYYY-MM-DD"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={THEME.colors.textSecondary}
                         className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800"
                       />
                     </View>

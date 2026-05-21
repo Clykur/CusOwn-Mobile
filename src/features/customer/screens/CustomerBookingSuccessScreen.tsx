@@ -1,3 +1,4 @@
+import { BASE_COLORS, THEME } from '@/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, ActivityIndicator, ScrollView, Image } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -22,12 +23,12 @@ export default function BookingSuccessScreen() {
       <View
         style={{
           flex: 1,
-          backgroundColor: '#000',
+          backgroundColor: THEME.colors.background,
           justifyContent: 'center',
           alignItems: 'center',
         }}
       >
-        <ActivityIndicator size="large" color="#D4AF37" />
+        <ActivityIndicator size="large" color={THEME.colors.primary} />
       </View>
     );
   }
@@ -50,6 +51,9 @@ function BookingSuccessScreenInner() {
     : params.bookingTime;
   const bookingId = Array.isArray(params.bookingId) ? params.bookingId[0] : params.bookingId;
   const totalPrice = Array.isArray(params.totalPrice) ? params.totalPrice[0] : params.totalPrice;
+  const ownerUserId = Array.isArray(params.ownerUserId)
+    ? params.ownerUserId[0]
+    : params.ownerUserId;
 
   return (
     <PremiumBackground>
@@ -65,15 +69,15 @@ function BookingSuccessScreenInner() {
         >
           {/* Success Section */}
           <AnimatedSection direction="up" className="items-center mb-5">
-            <View className="w-20 h-20 rounded-full bg-black items-center justify-center border border-slate-200 mb-5">
-              <Ionicons name="checkmark" size={42} color="#EAB308" />
+            <View className="w-20 h-20 rounded-full bg-border items-center justify-center  mb-5">
+              <Ionicons name="checkmark" size={42} color={THEME.colors.primary} />
             </View>
 
-            <Text className="text-slate-900 text-[34px] font-black tracking-tight text-center uppercase">
+            <Text className="text-text text-4xl font-black tracking-tight text-center uppercase">
               Booking Confirmed!
             </Text>
 
-            <Text className="text-slate-500 text-base text-center leading-7 mt-3 px-4">
+            <Text className="text-textSecondary text-base text-center leading-7 mt-3 px-4">
               Your appointment has been successfully scheduled. The service provider has been
               notified.
             </Text>
@@ -81,16 +85,14 @@ function BookingSuccessScreenInner() {
 
           {/* Booking Summary */}
           <AnimatedSection direction="up" delay={120} className="mb-6">
-            <GlassCard className="bg-white border border-slate-200 rounded-[30px] p-6 shadow-sm">
+            <GlassCard className="bg-card  rounded-[30px] p-2 shadow-sm">
               {/* Booking ID */}
-              <View className="items-center pb-5 border-b border-slate-100">
-                <Text className="text-slate-400 text-[11px] font-black uppercase tracking-[2px] mb-2">
+              <View className="items-center pb-5 border-b border-border">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
                   Appointment ID
                 </Text>
 
-                <Text className="text-slate-950 text-[30px] font-black">
-                  {bookingId || 'BK-54923'}
-                </Text>
+                <Text className="text-base text-[15px] font-black">{bookingId || 'BK-54923'}</Text>
               </View>
 
               {/* Service Details */}
@@ -98,21 +100,19 @@ function BookingSuccessScreenInner() {
                 {/* Salon */}
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row items-center flex-1 mr-3">
-                    {isValidImageUrl(salonImage) ? (
-                      <Image
-                        source={{ uri: String(salonImage) }}
-                        className="w-11 h-11 rounded-full mr-3 border border-slate-200"
-                      />
-                    ) : (
-                      <Avatar name={String(salonName || 'Salon')} size={44} className="mr-3" />
-                    )}
+                    <Avatar
+                      userId={ownerUserId}
+                      name={String(salonName || 'Salon')}
+                      size={44}
+                      className="mr-3"
+                    />
 
                     <View className="flex-1">
-                      <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-wider">
                         Salon / Studio
                       </Text>
 
-                      <Text className="text-slate-900 font-black text-sm mt-1" numberOfLines={1}>
+                      <Text className="text-text font-black text-sm mt-1" numberOfLines={1}>
                         {salonName || 'Signature Styling'}
                       </Text>
                     </View>
@@ -122,16 +122,16 @@ function BookingSuccessScreenInner() {
                 {/* Service */}
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row items-center flex-1 mr-3">
-                    <View className="w-11 h-11 rounded-full bg-slate-50 items-center justify-center mr-3 border border-slate-100">
-                      <Ionicons name="cut" size={18} color="#0F172A" />
+                    <View className="w-11 h-11 rounded-full bg-border items-center justify-center mr-3 ">
+                      <Ionicons name="cut-outline" size={18} color={BASE_COLORS.black} />
                     </View>
 
                     <View className="flex-1">
-                      <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-wider">
                         Curated Service
                       </Text>
 
-                      <Text className="text-slate-900 font-black text-sm mt-1" numberOfLines={1}>
+                      <Text className="text-text font-black text-sm mt-1" numberOfLines={1}>
                         {serviceName || 'Haircut & Styling'}
                       </Text>
                     </View>
@@ -141,16 +141,16 @@ function BookingSuccessScreenInner() {
                 {/* Date */}
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row items-center flex-1 mr-3">
-                    <View className="w-11 h-11 rounded-full bg-slate-50 items-center justify-center mr-3 border border-slate-100">
-                      <Ionicons name="calendar" size={18} color="#0F172A" />
+                    <View className="w-11 h-11 rounded-full bg-border items-center justify-center mr-3 ">
+                      <Ionicons name="calendar-outline" size={18} color={BASE_COLORS.black} />
                     </View>
 
                     <View className="flex-1">
-                      <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-wider">
                         Selected Date
                       </Text>
 
-                      <Text className="text-slate-900 font-black text-sm mt-1" numberOfLines={1}>
+                      <Text className="text-text font-black text-sm mt-1" numberOfLines={1}>
                         {bookingDate || 'Monday, May 18, 2026'}
                       </Text>
                     </View>
@@ -160,16 +160,16 @@ function BookingSuccessScreenInner() {
                 {/* Time */}
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row items-center flex-1 mr-3">
-                    <View className="w-11 h-11 rounded-full bg-slate-50 items-center justify-center mr-3 border border-slate-100">
-                      <Ionicons name="time" size={18} color="#0F172A" />
+                    <View className="w-11 h-11 rounded-full bg-border items-center justify-center mr-3 ">
+                      <Ionicons name="time-outline" size={18} color={BASE_COLORS.black} />
                     </View>
 
                     <View className="flex-1">
-                      <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-wider">
                         Appointment Time
                       </Text>
 
-                      <Text className="text-slate-900 font-black text-sm mt-1" numberOfLines={1}>
+                      <Text className="text-text font-black text-sm mt-1" numberOfLines={1}>
                         {bookingTime || '10:30 AM'}
                       </Text>
                     </View>
@@ -179,16 +179,16 @@ function BookingSuccessScreenInner() {
                 {/* Price */}
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row items-center flex-1 mr-3">
-                    <View className="w-11 h-11 rounded-full bg-emerald-50 items-center justify-center mr-3 border border-emerald-100">
-                      <Ionicons name="cash-outline" size={18} color="#059669" />
+                    <View className="w-11 h-11 rounded-full bg-primary/20 items-center justify-center mr-3 border border-primary/30">
+                      <Ionicons name="cash-outline" size={18} color={THEME.colors.primary} />
                     </View>
 
                     <View className="flex-1">
-                      <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-wider">
                         Total Amount
                       </Text>
 
-                      <Text className="text-emerald-600 font-black text-lg mt-1">
+                      <Text className="text-primary font-black text-lg mt-1">
                         ₹
                         {(() => {
                           const rawVal = Array.isArray(totalPrice) ? totalPrice[0] : totalPrice;
@@ -203,15 +203,15 @@ function BookingSuccessScreenInner() {
               </View>
 
               {/* Info Note */}
-              <View className="mt-6 bg-slate-50 border border-slate-100 rounded-2xl p-3 flex-row items-start">
+              <View className="mt-6 bg-border/30  rounded-2xl p-3 flex-row items-start">
                 <Ionicons
                   name="information-circle-outline"
                   size={18}
-                  color="#64748B"
+                  color={THEME.colors.textSecondary}
                   style={{ marginTop: 1, marginRight: 8 }}
                 />
 
-                <Text className="text-slate-500 text-xs leading-6 flex-1">
+                <Text className="text-textSecondary text-xs leading-6 flex-1">
                   Please arrive 5–10 minutes before your scheduled appointment. You can manage this
                   booking anytime from the My Bookings section.
                 </Text>
@@ -224,14 +224,14 @@ function BookingSuccessScreenInner() {
             <PremiumButton
               title="View My Bookings"
               onPress={() => router.replace('/(customer)/bookings')}
-              className="w-full h-14 bg-black rounded-2xl"
+              className="w-full h-14 bg-primary rounded-2xl"
             />
 
             <Pressable
               onPress={() => router.replace('/(customer)')}
-              className="w-full h-14 rounded-2xl border border-slate-200 bg-white items-center justify-center"
+              className="w-full h-14 rounded-2xl  bg-card items-center justify-center"
             >
-              <Text className="text-slate-900 font-bold text-base">Back to Dashboard</Text>
+              <Text className="text-text font-bold text-base">Back to Dashboard</Text>
             </Pressable>
           </AnimatedSection>
         </ScrollView>

@@ -1,13 +1,6 @@
+import { THEME } from '@/theme/theme';
 import React, { useEffect, useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  Linking,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useBookingDetail, useUpdateBookingStatus } from '@/hooks/useBookings';
 import { getBookingPrice } from '@/services/api.service';
@@ -31,7 +24,7 @@ function getStatusStyles(status: string) {
         bg: 'bg-black border-black',
         text: 'text-white',
         icon: 'checkmark-circle-outline' as const,
-        iconColor: '#FFFFFF',
+        iconColor: THEME.colors.text,
         label: 'Confirmed',
       };
 
@@ -67,7 +60,7 @@ function getStatusStyles(status: string) {
         bg: 'bg-slate-50 border-slate-300',
         text: 'text-slate-600',
         icon: 'eye-off-outline' as const,
-        iconColor: '#64748B',
+        iconColor: THEME.colors.textSecondary,
         label: 'No-Show',
       };
 
@@ -76,7 +69,7 @@ function getStatusStyles(status: string) {
         bg: 'bg-slate-50 border-slate-200',
         text: 'text-slate-700',
         icon: 'information-circle-outline' as const,
-        iconColor: '#64748B',
+        iconColor: THEME.colors.textSecondary,
         label: status.charAt(0).toUpperCase() + status.slice(1),
       };
   }
@@ -120,16 +113,6 @@ export default function BookingDetailScreen() {
       { cancelable: true },
     );
   };
-
-  const avatarUrl = useMemo(() => {
-    const media = booking?.customer_profile?.profile_media;
-
-    if (!media?.bucket_name || !media?.storage_path) {
-      return null;
-    }
-
-    return supabase.storage.from(media.bucket_name).getPublicUrl(media.storage_path).data.publicUrl;
-  }, [booking?.customer_profile?.profile_media]);
 
   /* ---------------- WHATSAPP ---------------- */
 
@@ -277,7 +260,7 @@ export default function BookingDetailScreen() {
       <View className="flex-1 bg-slate-50">
         <SafeAreaView className="flex-1 items-center justify-center px-luxury">
           <View className="p-6 items-center w-full bg-white border border-slate-200 rounded-2xl">
-            <Ionicons name="alert-circle-outline" size={48} color="#000000" />
+            <Ionicons name="alert-circle-outline" size={48} color={THEME.colors.background} />
 
             <Text className="text-slate-900 text-lg font-bold mt-4 mb-2">Booking Not Found</Text>
 
@@ -312,7 +295,7 @@ export default function BookingDetailScreen() {
             onPress={() => router.back()}
             className="w-10 h-10 rounded-full items-center justify-center"
           >
-            <Ionicons name="arrow-back" size={22} color="#0F172A" />
+            <Ionicons name="arrow-back" size={22} color={THEME.colors.background} />
           </TouchableOpacity>
 
           <Text className="text-slate-900 text-base font-extrabold uppercase tracking-widest">
@@ -350,13 +333,13 @@ export default function BookingDetailScreen() {
 
           <AnimatedSection delay={100} className="mb-5">
             <View className="bg-white border border-slate-200 rounded-2xl p-5">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-4">
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
                 Your Information
               </Text>
 
               <View className="flex-row items-center gap-x-4">
                 <Avatar
-                  url={avatarUrl}
+                  userId={booking.customer_user_id}
                   name={booking.customer_name || 'Client'}
                   size={48}
                   className="border border-slate-100"
@@ -385,7 +368,7 @@ export default function BookingDetailScreen() {
                     onPress={() => handleCall(booking.customer_phone)}
                     className="p-3 rounded-xl"
                   >
-                    <Ionicons name="call-outline" size={18} color="#0F172A" />
+                    <Ionicons name="call-outline" size={18} color={THEME.colors.background} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -396,13 +379,13 @@ export default function BookingDetailScreen() {
 
           <AnimatedSection delay={150} className="mb-5">
             <View className="bg-white border border-slate-200 rounded-2xl p-5">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-4">
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
                 Salon Partner Information
               </Text>
 
               <View className="flex-row items-center gap-x-4">
                 <Avatar
-                  url={booking.business?.owner_image || null}
+                  userId={booking.business?.owner_user_id}
                   name={booking.business?.salon_name || 'CusOwn Salon'}
                   size={48}
                   className="border border-slate-100"
@@ -434,7 +417,7 @@ export default function BookingDetailScreen() {
                       onPress={() => handleCall(booking.business.whatsapp_number)}
                       className="p-3 rounded-xl mr-2"
                     >
-                      <Ionicons name="call-outline" size={18} color="#0F172A" />
+                      <Ionicons name="call-outline" size={18} color={THEME.colors.background} />
                     </TouchableOpacity>
                   )}
 
@@ -442,7 +425,7 @@ export default function BookingDetailScreen() {
 
                   {whatsappUrl && (
                     <TouchableOpacity onPress={handleOpenWhatsapp} className="p-3 rounded-xl">
-                      <Ionicons name="logo-whatsapp" size={18} color="#16A34A" />
+                      <Ionicons name="logo-whatsapp" size={19} color="#16A34A" />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -453,7 +436,7 @@ export default function BookingDetailScreen() {
                   <Ionicons
                     name="location-outline"
                     size={16}
-                    color="#64748B"
+                    color={THEME.colors.textSecondary}
                     style={{ marginTop: 2 }}
                   />
 
@@ -469,18 +452,18 @@ export default function BookingDetailScreen() {
 
           <AnimatedSection delay={200} className="mb-5">
             <View className="bg-white border border-slate-200 rounded-2xl p-5">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-4">
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
                 Appointment details
               </Text>
 
               <View className="mb-4">
-                <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1">
+                <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
                   Service Selection
                 </Text>
 
                 <View className="flex-row justify-between items-start">
                   <View className="flex-1 mr-4">
-                    <Text className="text-slate-900 font-extrabold text-[17px]">
+                    <Text className="text-slate-900 font-extrabold text-base">
                       {booking.services && booking.services.length > 0
                         ? booking.services.map((s: any) => s.name).join(', ')
                         : booking.service?.name || 'Service'}
@@ -492,7 +475,7 @@ export default function BookingDetailScreen() {
                     </Text>
                   </View>
 
-                  <Text className="text-slate-900 text-[24px] font-black tracking-tight">
+                  <Text className="text-slate-900 text-2xl font-black tracking-tight">
                     ₹
                     {getBookingPrice(booking) % 1 === 0
                       ? getBookingPrice(booking).toFixed(0)
@@ -506,7 +489,7 @@ export default function BookingDetailScreen() {
               <View className="flex-row items-start justify-between">
                 {/* Left */}
                 <View className="flex-1">
-                  <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1">
+                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
                     Scheduled Date
                   </Text>
 
@@ -517,7 +500,7 @@ export default function BookingDetailScreen() {
 
                 {/* Right */}
                 <View className="flex-1 items-end">
-                  <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1">
+                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
                     Arrival Slot
                   </Text>
 
@@ -533,7 +516,7 @@ export default function BookingDetailScreen() {
 
           <AnimatedSection delay={250} className="mb-10">
             <View className="bg-white border border-slate-200 rounded-2xl p-5">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-4">
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
                 Booking Actions
               </Text>
 

@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React from 'react';
 import {
   Modal,
@@ -43,15 +44,6 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
 
   // Cast to any for accessing dynamically populated backend fields safely
   const b = booking as any;
-
-  // Resolve customer avatar URL
-  const avatarUrl = React.useMemo(() => {
-    const media = b.customer_profile?.profile_media;
-    if (!media?.bucket_name || !media?.storage_path) {
-      return null;
-    }
-    return supabase.storage.from(media.bucket_name).getPublicUrl(media.storage_path).data.publicUrl;
-  }, [b.customer_profile?.profile_media]);
 
   const price = getBookingPrice(b);
 
@@ -106,7 +98,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
 
   return (
     <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
-      <View className="flex-1 justify-end bg-black/60">
+      <View className="flex-1 justify-end">
         <Pressable className="flex-1" onPress={onClose} />
 
         <View className="bg-white rounded-t-[32px] max-h-[90%] w-full shadow-2xl relative overflow-hidden">
@@ -118,7 +110,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
           {/* Header */}
           <View className="flex-row justify-between items-center px-luxury pb-4 border-b border-slate-100">
             <View className="flex-row items-center gap-x-2">
-              <Ionicons name="receipt-outline" size={20} color="#0F172A" />
+              <Ionicons name="receipt-outline" size={20} color={THEME.colors.background} />
               <Text className="text-slate-900 text-lg font-black tracking-tight">
                 Reservation Details
               </Text>
@@ -128,7 +120,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
               onPress={onClose}
               className="p-1.5 rounded-full bg-slate-100 border border-slate-200/50"
             >
-              <Ionicons name="close" size={18} color="#475569" />
+              <Ionicons name="close" size={18} color={THEME.colors.border} />
             </TouchableOpacity>
           </View>
 
@@ -139,7 +131,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
             {/* Reference & Status Badges */}
             <View className="flex-row justify-between items-center bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-6">
               <View>
-                <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                <Text className="text-slate-400 text-xs font-black uppercase tracking-wider">
                   Booking Reference
                 </Text>
                 <Text className="text-slate-800 font-extrabold text-sm mt-0.5">
@@ -151,13 +143,13 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
 
             {/* Customer Information section */}
             <View className="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-sm">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-4">
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
                 Client Profile
               </Text>
 
               <View className="flex-row items-center gap-x-4">
                 <Avatar
-                  url={avatarUrl}
+                  userId={b.customer_user_id}
                   name={b.customer_name || 'Client Direct'}
                   size={52}
                   className="border border-slate-100"
@@ -181,18 +173,18 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                   )}
                 </View>
                 <TouchableOpacity onPress={handleCall}>
-                  <Ionicons name="call-outline" size={25} color="#0F172A" />
+                  <Ionicons name="call-outline" size={25} color={THEME.colors.background} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleWhatsApp}>
-                  <Ionicons name="logo-whatsapp" size={25} color="#059669" />
+                  <Ionicons name="logo-whatsapp" size={25} color={THEME.colors.success} />
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Service & Time details */}
             <View className="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-sm">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-4">
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
                 Service & Appointment Details
               </Text>
 
@@ -211,7 +203,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
               {/* Schedule Info */}
               <View className="flex-row justify-between mb-4">
                 <View className="flex-1">
-                  <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1.5">
+                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1.5">
                     Date
                   </Text>
                   <Text className="text-slate-800 font-bold text-sm">
@@ -220,7 +212,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1.5">
+                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1.5">
                     Arrival Slot
                   </Text>
                   <Text className="text-slate-800 font-bold text-sm">
@@ -232,7 +224,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
               {/* Duration & Assigned Specialist */}
               <View className="flex-row justify-between mb-2">
                 <View className="flex-1">
-                  <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1.5">
+                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1.5">
                     Duration
                   </Text>
                   <Text className="text-slate-800 font-bold text-sm">
@@ -241,7 +233,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1.5">
+                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1.5">
                     Assigned specialist
                   </Text>
                   <Text className="text-slate-800 font-bold text-sm">
@@ -253,7 +245,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
 
             {/* Financial Details Card */}
             <View className="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-sm">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-4">
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
                 Financial Details
               </Text>
 
@@ -267,7 +259,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
               <View className="flex-row justify-between items-center mt-1">
                 <View>
                   <Text className="text-slate-900 font-extrabold text-base">Total Amount</Text>
-                  <Text className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mt-0.5">
+                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">
                     {b.payment_status === 'paid' ? 'Paid via App' : 'Pay at Venue'}
                   </Text>
                 </View>
@@ -277,7 +269,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
 
             {/* Client Notes Section */}
             <View className="bg-white border border-slate-200/80 rounded-2xl p-5 mb-6 shadow-sm">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-2">
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-2">
                 Special Instructions & Notes
               </Text>
               <Text className="text-slate-600 text-xs leading-relaxed font-medium">
@@ -341,7 +333,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                       }}
                       className="w-full h-12 rounded-xl border border-slate-200 bg-white items-center justify-center active:bg-slate-50 flex-row gap-x-2"
                     >
-                      <Ionicons name="refresh-outline" size={16} color="#0F172A" />
+                      <Ionicons name="refresh-outline" size={16} color={THEME.colors.background} />
                       <Text className="text-slate-800 font-black text-xs uppercase tracking-widest">
                         Undo Confirmation
                       </Text>
@@ -359,7 +351,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                   }}
                   className="w-full h-12 rounded-xl border border-slate-200 bg-white items-center justify-center active:bg-slate-50 flex-row gap-x-2"
                 >
-                  <Ionicons name="refresh-outline" size={16} color="#0F172A" />
+                  <Ionicons name="refresh-outline" size={16} color={THEME.colors.background} />
                   <Text className="text-slate-800 font-black text-xs uppercase tracking-widest">
                     Undo Rejection
                   </Text>

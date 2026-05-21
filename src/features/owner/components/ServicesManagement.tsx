@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, Modal } from 'react-native';
 
@@ -139,11 +140,11 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
         {/* Loading */}
         {loading ? (
-          <ActivityIndicator color="#64748B" className="my-8" />
+          <ActivityIndicator color={THEME.colors.textSecondary} className="my-8" />
         ) : services.length === 0 ? (
           /* Empty State */
           <View className="py-10 items-center justify-center">
-            <Ionicons name="cut-outline" size={52} color="#CBD5E1" />
+            <Ionicons name="cut-outline" size={52} color={THEME.colors.border} />
 
             <Text className="text-slate-500 text-center mt-4 font-semibold">
               No services listed yet.
@@ -170,7 +171,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
                 <View className="flex-row gap-x-1">
                   {/* Edit */}
                   <Pressable onPress={() => openEdit(s)} className="p-3 active:bg-slate-100">
-                    <Ionicons name="create-outline" size={16} color="#64748B" />
+                    <Ionicons name="create-outline" size={16} color={THEME.colors.textSecondary} />
                   </Pressable>
 
                   {/* Delete */}
@@ -194,9 +195,12 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
         animationType="slide"
         onRequestClose={() => setShowForm(false)}
       >
-        <View className="flex-1 justify-end bg-black/40">
+        <Pressable className="flex-1 justify-end" onPress={() => setShowForm(false)}>
           {/* Bottom Sheet */}
-          <View className="bg-white rounded-t-[36px] p-6 pb-10">
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="bg-white rounded-t-[36px] p-6 pb-10"
+          >
             {/* Handle */}
             <View className="w-14 h-1.5 bg-slate-300 rounded-full self-center mb-6" />
 
@@ -207,20 +211,20 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
               </Text>
 
               <Pressable onPress={() => setShowForm(false)}>
-                <Ionicons name="close-outline" size={28} color="#111827" />
+                <Ionicons name="close-outline" size={28} color={THEME.colors.background} />
               </Pressable>
             </View>
 
             {/* Service Name */}
             <View className="mb-4">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px] mb-2">
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px] mb-2">
                 Service Name
               </Text>
 
               <TextInput
                 className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 font-semibold"
                 placeholder="e.g. Haircut"
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={THEME.colors.textSecondary}
                 value={form.name}
                 onChangeText={(val) => setForm({ ...form, name: val })}
               />
@@ -230,14 +234,14 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             <View className="flex-row gap-x-3 mb-6">
               {/* Duration */}
               <View className="flex-1">
-                <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px] mb-2">
                   Duration
                 </Text>
 
                 <TextInput
                   className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 font-semibold"
                   placeholder="30"
-                  placeholderTextColor="#94A3B8"
+                  placeholderTextColor={THEME.colors.textSecondary}
                   value={form.duration}
                   onChangeText={(val) => setForm({ ...form, duration: val })}
                   keyboardType="number-pad"
@@ -246,14 +250,14 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
               {/* Price */}
               <View className="flex-1">
-                <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px] mb-2">
                   Price (₹)
                 </Text>
 
                 <TextInput
                   className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 font-semibold"
                   placeholder="500"
-                  placeholderTextColor="#94A3B8"
+                  placeholderTextColor={THEME.colors.textSecondary}
                   value={form.price}
                   onChangeText={(val) => setForm({ ...form, price: val })}
                   keyboardType="decimal-pad"
@@ -275,8 +279,8 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
                 </Text>
               )}
             </Pressable>
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
     </>
   );

@@ -8,6 +8,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import { THEME } from '@/constants/theme';
+import { horizontalScale, verticalScale, responsiveFontSize } from '@/utils/responsive';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
@@ -27,7 +28,7 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
-  const activeTheme = isDark ? THEME.dark : THEME.light;
+  const activeTheme = isDark ? THEME.colors : THEME.colors;
 
   const theme = {
     primary: activeTheme.primary,
@@ -74,7 +75,10 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'ghost' ? theme.primary : '#FFFFFF'} size="small" />
+        <ActivityIndicator
+          color={variant === 'ghost' ? theme.primary : THEME.colors.text}
+          size="small"
+        />
       ) : typeof children === 'string' ? (
         <Text style={[styles.baseText, getTextStyle()]} numberOfLines={1}>
           {children}
@@ -88,13 +92,13 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   baseContainer: {
-    paddingVertical: 14,
-    paddingHorizontal: 24,
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: horizontalScale(24),
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 52,
+    minHeight: verticalScale(52),
   },
   containerPrimary: {},
   containerSecondary: {},
@@ -107,12 +111,12 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   baseText: {
-    fontSize: 16,
+    fontSize: responsiveFontSize(16),
     fontWeight: '600',
     textAlign: 'center',
   },
   textLight: {
-    color: '#FFFFFF',
+    color: THEME.colors.text,
   },
   textGhost: {},
 });

@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -22,7 +23,7 @@ export const Header = ({ title, showBack = false, rightElement, onBackPress }: H
             onPress={onBackPress || (() => navigation.goBack())}
             className="p-2 mr-2"
           >
-            <Ionicons name="chevron-back" size={24} color="#000000" />
+            <Ionicons name="chevron-back" size={24} color={THEME.colors.background} />
           </TouchableOpacity>
         )}
         {title && (

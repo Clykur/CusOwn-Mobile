@@ -12,7 +12,7 @@ interface BottomSheetProps {
 export const BottomSheet: React.FC<BottomSheetProps> = ({ visible, onClose, children }) => {
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  const theme = isDark ? THEME.colors : THEME.colors;
 
   return (
     <Modal
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     minHeight: 200,
     maxHeight: '85%',
     paddingTop: 12,
-    shadowColor: '#000',
+    shadowColor: THEME.colors.background,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#CBD5E1',
+    backgroundColor: THEME.colors.border,
     alignSelf: 'center',
     marginBottom: 12,
   },

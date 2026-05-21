@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React from 'react';
 import {
   View,
@@ -29,7 +30,7 @@ export default function EditBusinessScreen() {
     return (
       <PremiumBackground>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator color="#000000" size="large" />
+          <ActivityIndicator color={THEME.colors.background} size="large" />
         </View>
       </PremiumBackground>
     );
@@ -64,16 +65,16 @@ export default function EditBusinessScreen() {
             showsVerticalScrollIndicator={false}
           >
             <AnimatedSection direction="down" className="mb-8">
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
-                Refinement
+              <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">
+                Manage Business
               </Text>
               <Text className="text-slate-900 text-3xl font-black tracking-tight">
-                Edit Hub Profile
+                Edit Business Profile
               </Text>
             </AnimatedSection>
 
             <AnimatedSection delay={200}>
-              <GlassCard className="p-6 border-slate-200/80 shadow-sm rounded-luxury">
+              <GlassCard className="p-2 border-slate-200/80 shadow-sm rounded-luxury">
                 <EditBusinessForm
                   business={business}
                   onSuccess={handleSuccess}

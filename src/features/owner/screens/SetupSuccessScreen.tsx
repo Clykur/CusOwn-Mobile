@@ -5,6 +5,7 @@ import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '@/theme/theme';
 
 export default function SuccessScreen() {
   return (
@@ -12,7 +13,7 @@ export default function SuccessScreen() {
       <View className="flex-1 items-center justify-center px-luxury">
         <AnimatedSection direction="down" className="items-center">
           <View className="w-24 h-24 rounded-full bg-slate-100 items-center justify-center mb-8 border border-slate-200">
-            <Ionicons name="checkmark-done" size={48} color="#000000" />
+            <Ionicons name="checkmark-done" size={48} color={THEME.colors.background} />
           </View>
           <Text className="text-slate-900 text-3xl font-black tracking-tight text-center mb-6">
             Identity{'\n'}

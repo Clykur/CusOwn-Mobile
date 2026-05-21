@@ -205,7 +205,7 @@ export async function uploadBusinessGalleryImage(
   await assertBusinessOwner(businessId, ownerId);
 
   const ext = (file.name?.split('.').pop() || 'jpg').toLowerCase();
-  const storagePath = `${businessId}/gallery/${Date.now()}.${ext}`;
+  const storagePath = `business/${businessId}/gallery/${Date.now()}.${ext}`;
   const bucket = STORAGE_BUCKETS.business;
 
   await uploadToStorage({ bucket, storagePath, file, upsert: false });

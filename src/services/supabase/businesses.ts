@@ -8,11 +8,14 @@ import { assertBusinessOwnedByUser, listOwnedBusinessIds } from './owner-access'
 import { isMissingColumnError, logQueryFallback } from './select-fallback';
 import { logSupabaseFailure } from './errors';
 
-/** List/browse: avoid nested `services` embed — often blocked by RLS and fails the whole row. */
-const BUSINESS_LIST_SELECT = '*, category:business_categories(id, name, slug, icon_name)';
+/** List/browse: avoid nested embeds that rely on unregistered FK relationships. */
+// NOTE: business_categories join is intentionally excluded — PostgREST cannot find the
+// relationship in its schema cache (no FK from businesses.category_id → business_categories.id
+// is registered). The raw `category` text column is read directly and mapped by mapCategoryFields.
+const BUSINESS_LIST_SELECT = '*';
 
 const BUSINESS_DETAIL_SELECT =
-  '*, category:business_categories(id, name, slug, icon_name), services(id, business_id, name, description, price_cents, duration_minutes, duration, price)';
+  '*, services(id, business_id, name, description, price_cents, duration_minutes, duration, price)';
 
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -24,7 +27,7 @@ async function queryBusinessList(categoryFilter?: string): Promise<Record<string
     if (categoryFilter && isUuid(categoryFilter)) {
       q = q.eq('category_id', categoryFilter);
     }
-    return q.is('deleted_at', null);
+    return q.is('deleted_at', null).or('suspended.is.null,suspended.eq.false');
   })();
 
   if (result.error && isMissingColumnError(result.error)) {
@@ -33,7 +36,7 @@ async function queryBusinessList(categoryFilter?: string): Promise<Record<string
     if (categoryFilter && isUuid(categoryFilter)) {
       q = q.eq('category_id', categoryFilter);
     }
-    result = await q;
+    result = await q.or('suspended.is.null,suspended.eq.false');
   }
 
   if (result.error) {
@@ -42,7 +45,7 @@ async function queryBusinessList(categoryFilter?: string): Promise<Record<string
     if (categoryFilter && isUuid(categoryFilter)) {
       q = q.eq('category_id', categoryFilter);
     }
-    result = await q;
+    result = await q.or('suspended.is.null,suspended.eq.false');
   }
 
   if (result.error) {
@@ -85,6 +88,7 @@ export async function getBusinessById(id: string): Promise<Business> {
     .select(BUSINESS_DETAIL_SELECT)
     .eq('id', id)
     .is('deleted_at', null)
+    .or('suspended.is.null,suspended.eq.false')
     .single();
 
   if (error) {
@@ -94,15 +98,12 @@ export async function getBusinessById(id: string): Promise<Business> {
       .select(BUSINESS_LIST_SELECT)
       .eq('id', id)
       .is('deleted_at', null)
+      .or('suspended.is.null,suspended.eq.false')
       .single());
   }
   if (error) {
-    ({ data, error } = await supabase
-      .from('businesses')
-      .select('*')
-      .eq('id', id)
-      .is('deleted_at', null)
-      .single());
+    // Last resort: bare select with no filters that might fail on missing columns.
+    ({ data, error } = await supabase.from('businesses').select('*').eq('id', id).single());
   }
   if (error) {
     logSupabaseFailure('getBusinessById', error, { id });
@@ -296,7 +297,11 @@ export async function searchBusinesses(params: {
   categoryId?: string;
   city?: string;
 }): Promise<Business[]> {
-  let query = supabase.from('businesses').select(BUSINESS_LIST_SELECT).is('deleted_at', null);
+  let query = supabase
+    .from('businesses')
+    .select(BUSINESS_LIST_SELECT)
+    .is('deleted_at', null)
+    .or('suspended.is.null,suspended.eq.false');
 
   if (params.categoryId && isUuid(params.categoryId)) {
     query = query.eq('category_id', params.categoryId);
@@ -313,7 +318,11 @@ export async function searchBusinesses(params: {
 
   if (error && isMissingColumnError(error)) {
     logQueryFallback('searchBusinesses', 'retry without embed', error);
-    let q = supabase.from('businesses').select('*').is('deleted_at', null);
+    let q = supabase
+      .from('businesses')
+      .select('*')
+      .is('deleted_at', null)
+      .or('suspended.is.null,suspended.eq.false');
     if (params.categoryId && isUuid(params.categoryId)) q = q.eq('category_id', params.categoryId);
     if (params.city?.trim()) q = q.ilike('city', `%${params.city.trim()}%`);
     if (params.query?.trim()) {

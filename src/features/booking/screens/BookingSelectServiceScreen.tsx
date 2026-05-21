@@ -27,7 +27,7 @@ export default function SelectServiceScreen() {
 
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  const theme = isDark ? THEME.colors : THEME.colors;
 
   if (!selectedBusiness) {
     return (
@@ -68,7 +68,12 @@ export default function SelectServiceScreen() {
         </View>
         <View style={styles.priceCol}>
           <Text style={[styles.priceText, { color: theme.primary }]}>${item.price.toFixed(2)}</Text>
-          <View style={[styles.selectBtn, { backgroundColor: isDark ? '#1A1A1A' : '#EFF6FF' }]}>
+          <View
+            style={[
+              styles.selectBtn,
+              { backgroundColor: isDark ? THEME.colors.border : '#EFF6FF' },
+            ]}
+          >
             <Text style={[styles.selectBtnText, { color: theme.primary }]}>Select</Text>
           </View>
         </View>

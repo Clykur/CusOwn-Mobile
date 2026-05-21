@@ -4,8 +4,11 @@ import { Platform } from 'react-native';
 import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { RatingPromptProvider } from '@/features/reviews/components/RatingPromptProvider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { responsiveFontSize, verticalScale } from '@/utils/responsive';
 
 export default function CustomerTabsLayout() {
+  const insets = useSafeAreaInsets();
   return (
     <>
       <Tabs
@@ -16,7 +19,7 @@ export default function CustomerTabsLayout() {
           },
           headerTitleStyle: {
             fontWeight: '800',
-            fontSize: 18,
+            fontSize: responsiveFontSize(18),
             letterSpacing: 0.5,
             color: '#F8FAFC',
           },
@@ -25,9 +28,9 @@ export default function CustomerTabsLayout() {
           tabBarStyle: {
             backgroundColor: '#000000', // pure black
             borderTopColor: 'rgba(255,255,255,0.05)',
-            height: Platform.OS === 'ios' ? 94 : 70,
-            paddingBottom: Platform.OS === 'ios' ? 32 : 12,
-            paddingTop: 12,
+            height: verticalScale(60) + insets.bottom,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12),
+            paddingTop: verticalScale(12),
             elevation: 0,
             shadowOpacity: 0,
           },
@@ -35,7 +38,7 @@ export default function CustomerTabsLayout() {
           tabBarInactiveTintColor: '#64748B',
           tabBarLabelStyle: {
             fontWeight: '700',
-            fontSize: 10,
+            fontSize: responsiveFontSize(10),
             textTransform: 'uppercase',
             letterSpacing: 1,
             marginTop: 4,

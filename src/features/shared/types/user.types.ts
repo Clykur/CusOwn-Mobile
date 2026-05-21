@@ -1,5 +1,5 @@
 export type UserRole = 'Customer' | 'Owner';
-export type DBUserType = 'customer' | 'owner';
+export type DBUserType = 'customer' | 'owner' | 'both' | 'admin';
 
 export interface UserProfile {
   id: string;
@@ -15,4 +15,8 @@ export interface UserProfile {
     | null;
   created_at?: string;
   updated_at?: string;
+  /** Read-only admin fields — mobile never writes these */
+  admin_note?: string | null;
+  legal_hold?: boolean;
+  data_classification?: 'public' | 'internal' | 'confidential' | 'regulated' | null;
 }

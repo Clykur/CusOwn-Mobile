@@ -1,16 +1,26 @@
+import { THEME } from '@/theme/theme';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Image } from 'expo-image';
+import { useProfileMedia } from '@/hooks/useProfileMedia';
 
 interface AvatarProps {
   url?: string | null;
+  userId?: string | null;
   name?: string;
   size?: number;
   style?: any;
   className?: string;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ url, name = '', size = 48, style, className }) => {
+export const Avatar: React.FC<AvatarProps> = ({
+  url,
+  userId,
+  name = '',
+  size = 48,
+  style,
+  className,
+}) => {
   const [hasError, setHasError] = useState(false);
 
   const getInitials = (str: string) => {
@@ -27,11 +37,22 @@ export const Avatar: React.FC<AvatarProps> = ({ url, name = '', size = 48, style
     for (let i = 0; i < str.length; i++) {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const colors = ['#000000', '#1A1A1A', '#333333', '#4D4D4D', '#666666', '#808080'];
+    const colors = [
+      THEME.colors.background,
+      THEME.colors.border,
+      THEME.colors.card,
+      THEME.colors.border,
+      THEME.colors.textSecondary,
+      THEME.colors.textSecondary,
+    ];
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const showFallback = !url || url === 'undefined' || url === 'null' || hasError;
+  const { data: mediaUrl } = useProfileMedia(userId);
+  const resolvedUrl = mediaUrl || url;
+
+  const showFallback =
+    !resolvedUrl || resolvedUrl === 'undefined' || resolvedUrl === 'null' || hasError;
 
   return (
     <View
@@ -51,7 +72,7 @@ export const Avatar: React.FC<AvatarProps> = ({ url, name = '', size = 48, style
         <Text style={[styles.initials, { fontSize: size * 0.4 }]}>{getInitials(name)}</Text>
       ) : (
         <Image
-          source={{ uri: url }}
+          source={{ uri: resolvedUrl! }}
           style={{ width: size, height: size, borderRadius: radius }}
           contentFit="cover"
           // On Android, cross-fade transition uses a hardware bitmap which crashes
@@ -71,7 +92,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   initials: {
-    color: '#FFFFFF',
+    color: THEME.colors.text,
     fontWeight: '700',
   },
 });

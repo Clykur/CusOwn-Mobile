@@ -1,5 +1,16 @@
+import { THEME } from '@/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, Linking, ActivityIndicator, Image } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Linking,
+  ActivityIndicator,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
@@ -73,8 +84,8 @@ export default function SalonDetailsScreen() {
     return (
       <PremiumBackground>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#000000" />
-          <Text className="text-slate-500 font-medium mt-4 font-semibold">
+          <ActivityIndicator size="large" color={THEME.colors.primary} />
+          <Text className="text-textSecondary font-medium mt-4 font-semibold">
             Loading salon details...
           </Text>
         </View>
@@ -86,12 +97,32 @@ export default function SalonDetailsScreen() {
     return (
       <PremiumBackground>
         <View className="flex-1 items-center justify-center px-6">
-          <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
-          <Text className="text-slate-900 text-xl font-bold mt-4 text-center">Salon Not Found</Text>
-          <Text className="text-slate-500 text-center mt-2 mb-6">
+          <Ionicons name="alert-circle-outline" size={64} color={THEME.colors.error} />
+          <Text className="text-text text-xl font-bold mt-4 text-center">Salon Not Found</Text>
+          <Text className="text-textSecondary text-center mt-2 mb-6">
             We couldn't retrieve the details for this business.
           </Text>
           <PremiumButton title="Go Back" onPress={() => router.back()} className="w-48 h-12" />
+        </View>
+      </PremiumBackground>
+    );
+  }
+
+  // Guard: suspended or soft-deleted businesses must not be accessible
+  if (business.suspended === true || business.deleted_at != null) {
+    return (
+      <PremiumBackground>
+        <View className="flex-1 items-center justify-center px-6">
+          <Ionicons name="ban-outline" size={64} color={THEME.colors.textSecondary} />
+          <Text className="text-text text-xl font-bold mt-4 text-center">Business Unavailable</Text>
+          <Text className="text-textSecondary text-center mt-2 mb-6">
+            This business is no longer available for bookings.
+          </Text>
+          <PremiumButton
+            title="Browse Salons"
+            onPress={() => router.replace('/(customer)/browse')}
+            className="w-48 h-12"
+          />
         </View>
       </PremiumBackground>
     );
@@ -119,6 +150,13 @@ export default function SalonDetailsScreen() {
     }
 
     router.push(`/(customer)/book/${business.id}`);
+  };
+  const handleCall = (phoneNumber?: string) => {
+    if (!phoneNumber) return;
+
+    Linking.openURL(`tel:${phoneNumber}`).catch(() => {
+      Alert.alert('Error', 'Unable to open phone dialer.');
+    });
   };
 
   const handleContactWhatsApp = () => {
@@ -161,6 +199,8 @@ export default function SalonDetailsScreen() {
           rating,
           comment,
           date,
+          user_id: r.user_id,
+          avatar_url: r.customer?.avatar_url,
         };
       })
     : [];
@@ -191,15 +231,12 @@ export default function SalonDetailsScreen() {
       >
         {/* Hero Header */}
         <View className="h-[360px] w-full relative">
-          {isValidImageUrl(business.owner_image) ? (
-            <Image
-              source={{ uri: business.owner_image }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <Avatar name={business.salon_name} size={400} className="w-full h-full" />
-          )}
+          <Avatar
+            userId={business.owner_user_id}
+            name={business.salon_name}
+            size={400}
+            className="w-full h-full"
+          />
           <View className="absolute inset-0 bg-black/30" />
 
           <Pressable
@@ -212,21 +249,25 @@ export default function SalonDetailsScreen() {
 
         <View className="px-luxury -mt-10">
           <AnimatedSection direction="up">
-            <GlassCard className="p-6 border border-slate-200 bg-white/95 shadow-sm rounded-3xl">
+            <GlassCard className="p-6  bg-card shadow-sm rounded-3xl">
               {/* Name and Rating */}
               <View className="flex-row justify-between items-start mb-4">
                 <View className="flex-1 mr-4">
-                  <Text className="text-slate-900 text-3xl font-extrabold tracking-tight mb-1">
+                  <Text className="text-text text-3xl font-extrabold tracking-tight mb-1">
                     {business.salon_name}
                   </Text>
                   <View className="flex-row items-center">
-                    <Ionicons name="location-outline" size={16} color="#64748B" />
-                    <Text className="text-slate-500 ml-1.5 text-sm" numberOfLines={1}>
+                    <Ionicons
+                      name="location-outline"
+                      size={16}
+                      color={THEME.colors.textSecondary}
+                    />
+                    <Text className="text-textSecondary ml-1.5 text-sm" numberOfLines={1}>
                       {business.address || 'Address not listed'}
                     </Text>
                   </View>
                 </View>
-                <View className="items-end bg-black px-3 py-1.5 rounded-xl flex-row items-center shadow-sm">
+                <View className="items-end bg-border px-3 py-1.5 rounded-xl flex-row items-center shadow-sm">
                   <Ionicons
                     name={
                       business.rating_avg && Number(business.rating_avg) > 0
@@ -235,26 +276,30 @@ export default function SalonDetailsScreen() {
                     }
                     size={14}
                     color={
-                      business.rating_avg && Number(business.rating_avg) > 0 ? '#EAB308' : '#94A3B8'
+                      business.rating_avg && Number(business.rating_avg) > 0
+                        ? THEME.colors.warning
+                        : THEME.colors.textSecondary
                     }
                   />
-                  <Text className="text-white font-bold ml-1 text-sm">{displayRatingAvg}</Text>
+                  <Text className="text-text font-bold ml-1 text-sm">{displayRatingAvg}</Text>
                   {displayReviewCount > 0 ? (
-                    <Text className="text-slate-400 text-xs ml-1">({displayReviewCount})</Text>
+                    <Text className="text-textSecondary text-xs ml-1">({displayReviewCount})</Text>
                   ) : null}
                 </View>
               </View>
 
               {/* Status & Hours */}
-              <View className="flex-row items-center mb-2 border-t border-slate-100 pt-2 rounded-2xl">
-                <Ionicons name="time-outline" size={18} color="#0F172A" />
-                <Text className="text-slate-700 font-bold ml-2 text-xs">
+              <View className="flex-row items-center mb-2 border-t border-border pt-2 rounded-2xl">
+                <Ionicons name="time-outline" size={18} color={THEME.colors.primary} />
+                <Text className="text-text font-bold ml-2 text-xs">
                   Hours: {business.opening_time || '09:00 AM'} -{' '}
                   {business.closing_time || '09:00 PM'}
                 </Text>
                 <View
                   className="w-1.5 h-1.5 rounded-full ml-auto mr-1"
-                  style={{ backgroundColor: shopIsOpen ? '#22C55E' : '#EF4444' }}
+                  style={{
+                    backgroundColor: shopIsOpen ? THEME.colors.success : THEME.colors.error,
+                  }}
                 />
                 <Text
                   className={
@@ -268,37 +313,35 @@ export default function SalonDetailsScreen() {
               </View>
 
               {/* Owner Info & Contact Row */}
-              <View className="border-t border-slate-100 pt-6">
-                <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">
+              <View className="border-t border-border pt-6">
+                <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider mb-3">
                   Owner Info
                 </Text>
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center">
-                    {isValidImageUrl(business.owner_image) ? (
-                      <Image
-                        source={{ uri: business.owner_image }}
-                        className="w-12 h-12 rounded-full mr-3 border border-slate-200 shadow-sm"
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View className="w-12 h-12 rounded-full bg-slate-900 items-center justify-center border border-slate-200 shadow-sm mr-3">
-                        <Text className="text-white font-bold text-base">
-                          {business.owner_name ? business.owner_name.charAt(0) : 'O'}
-                        </Text>
-                      </View>
-                    )}
+                    <Avatar
+                      userId={business.owner_user_id}
+                      name={business.owner_name || 'Owner'}
+                      size={42}
+                      className="w-[42px] h-[42px] rounded-full mr-3  shadow-sm"
+                    />
                     <View>
-                      <Text className="text-slate-900 font-bold text-base">
+                      <Text className="text-text font-bold text-base">
                         {business.owner_name || 'Salon Owner'}
                       </Text>
-                      <Text className="text-slate-500 text-xs">Verified Business Partner</Text>
+                      <Text className="text-textSecondary text-xs">Verified Business Partner</Text>
                     </View>
                   </View>
-
+                  <Pressable
+                    onPress={() => handleCall(business.whatsapp_number)}
+                    className="flex-row items-center px-4 py-2.5 rounded-full shadow-sm bg-primary/10"
+                  >
+                    <Ionicons name="call-outline" size={24} color={THEME.colors.primary} />
+                  </Pressable>
                   {business.whatsapp_number ? (
                     <Pressable
                       onPress={handleContactWhatsApp}
-                      className="flex-row items-center px-4 py-2.5 rounded-full shadow-sm"
+                      className="flex-row items-center px-4 py-2.5 rounded-full shadow-sm bg-primary/10"
                     >
                       <Ionicons name="logo-whatsapp" size={25} color="#25D366" />
                     </Pressable>
@@ -311,18 +354,20 @@ export default function SalonDetailsScreen() {
 
         {/* Services Section */}
         <View className="px-luxury mt-8">
-          <Text className="text-slate-900 text-xl font-bold mb-4 tracking-tight uppercase">
+          <Text className="text-text text-xl font-bold mb-4 tracking-tight uppercase">
             Services
           </Text>
           {loadingExtra ? (
-            <View className="bg-white border border-slate-200 rounded-3xl p-8 items-center justify-center">
-              <ActivityIndicator size="small" color="#000000" />
-              <Text className="text-slate-500 text-xs mt-2 font-bold">Scanning services...</Text>
+            <View className="bg-card  rounded-3xl p-8 items-center justify-center">
+              <ActivityIndicator size="small" color={THEME.colors.primary} />
+              <Text className="text-textSecondary text-xs mt-2 font-bold">
+                Scanning services...
+              </Text>
             </View>
           ) : services.length === 0 ? (
-            <View className="bg-white border border-slate-200 rounded-3xl p-6 items-center">
-              <Ionicons name="construct-outline" size={32} color="#94A3B8" />
-              <Text className="text-slate-500 text-sm mt-2 text-center">
+            <View className="bg-card  rounded-3xl p-6 items-center">
+              <Ionicons name="construct-outline" size={32} color={THEME.colors.textSecondary} />
+              <Text className="text-textSecondary text-sm mt-2 text-center">
                 No services currently listed for this salon.
               </Text>
             </View>
@@ -334,35 +379,41 @@ export default function SalonDetailsScreen() {
                   <Pressable
                     key={service.id}
                     onPress={() => handleSelectService(service)}
-                    className={`bg-white border p-5 rounded-3xl flex-row items-center ${
-                      isSelected ? 'border-black bg-slate-50 shadow-sm' : 'border-slate-200'
+                    className={`bg-card border p-5 rounded-3xl flex-row items-center ${
+                      isSelected ? 'border-primary bg-primary/10 shadow-sm' : 'border-border'
                     }`}
                   >
                     <View className="flex-1 mr-4">
-                      <Text className="text-slate-900 font-bold text-lg mb-1">{service.name}</Text>
+                      <Text className="text-text font-bold text-lg mb-1">{service.name}</Text>
                       {service.description ? (
-                        <Text className="text-slate-500 text-sm mb-2" numberOfLines={2}>
+                        <Text className="text-textSecondary text-sm mb-2" numberOfLines={2}>
                           {service.description}
                         </Text>
                       ) : null}
                       <View className="flex-row items-center">
-                        <Ionicons name="time-outline" size={14} color="#64748B" />
-                        <Text className="text-slate-500 text-xs font-semibold ml-1 mr-4">
+                        <Ionicons
+                          name="time-outline"
+                          size={14}
+                          color={THEME.colors.textSecondary}
+                        />
+                        <Text className="text-textSecondary text-xs font-semibold ml-1 mr-4">
                           {service.duration} mins
                         </Text>
-                        <Ionicons name="cash-outline" size={14} color="#64748B" />
-                        <Text className="text-slate-700 text-xs font-bold ml-1">
-                          ₹{service.price}
-                        </Text>
+                        <Ionicons
+                          name="cash-outline"
+                          size={14}
+                          color={THEME.colors.textSecondary}
+                        />
+                        <Text className="text-text text-xs font-bold ml-1">₹{service.price}</Text>
                       </View>
                     </View>
                     <Pressable
                       onPress={() => {
                         handleBookNow();
                       }}
-                      className="bg-black px-4 py-2 rounded-xl items-center justify-center"
+                      className="bg-primary px-4 py-2 rounded-xl items-center justify-center"
                     >
-                      <Text className="text-white font-bold text-xs">Book</Text>
+                      <Text className="text-background font-bold text-xs">Book</Text>
                     </Pressable>
                   </Pressable>
                 );
@@ -374,41 +425,41 @@ export default function SalonDetailsScreen() {
         {/* Gallery Section */}
         {photos.length > 0 && (
           <View className="px-luxury mt-10">
-            <Text className="text-slate-900 text-xl font-bold mb-4 tracking-tight uppercase">
-              Photos & Vibe
+            <Text className="text-text text-xl font-bold mb-4 tracking-tight uppercase">
+              Photos
             </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="flex-row gap-x-4"
-            >
+
+            {/* 2 Column Grid */}
+            <View className="flex-row flex-wrap justify-between">
               {photos.map((url, i) => (
                 <View
                   key={i}
-                  className="w-56 h-40 bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm mr-3"
+                  className="w-[48%] h-44 bg-card rounded-3xl  overflow-hidden shadow-sm mb-4"
                 >
                   <Image source={{ uri: url }} className="w-full h-full" resizeMode="cover" />
                 </View>
               ))}
-            </ScrollView>
+            </View>
           </View>
         )}
 
         {/* Reviews Section */}
         <View className="px-luxury mt-10">
-          <Text className="text-slate-900 text-xl font-bold mb-4 tracking-tight uppercase">
+          <Text className="text-text text-xl font-bold mb-4 tracking-tight uppercase">
             Recent Reviews
           </Text>
           <View className="gap-y-3">
             {reviewsList.length > 0 ? (
               reviewsList.map((rev: any) => (
-                <View
-                  key={rev.id}
-                  className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm"
-                >
-                  <View className="flex-row justify-between items-center mb-2">
-                    <Text className="text-slate-900 font-bold text-sm">{rev.name}</Text>
-                    <Text className="text-slate-400 text-xs">{rev.date}</Text>
+                <View key={rev.id} className="bg-card  rounded-3xl p-5 shadow-sm">
+                  <View className="flex-row justify-between items-center mb-3">
+                    <View className="flex-row items-center flex-1 gap-x-3">
+                      <Avatar userId={rev.user_id} name={rev.name} size={36} className="" />
+                      <Text className="text-text font-bold text-sm flex-1" numberOfLines={1}>
+                        {rev.name}
+                      </Text>
+                    </View>
+                    <Text className="text-textSecondary text-xs ml-2">{rev.date}</Text>
                   </View>
                   <View className="flex-row items-center mb-2">
                     <View className="flex-row items-center">
@@ -428,14 +479,20 @@ export default function SalonDetailsScreen() {
                     </Text>
                   </View>
                   {rev.comment ? (
-                    <Text className="text-slate-600 text-sm leading-relaxed">{rev.comment}</Text>
+                    <Text className="text-textSecondary text-sm leading-relaxed">
+                      {rev.comment}
+                    </Text>
                   ) : null}
                 </View>
               ))
             ) : (
-              <View className="bg-white border border-slate-200 rounded-3xl p-6 items-center">
-                <Ionicons name="chatbox-ellipses-outline" size={32} color="#94A3B8" />
-                <Text className="text-slate-500 text-sm mt-2 text-center font-medium">
+              <View className="bg-card  rounded-3xl p-6 items-center">
+                <Ionicons
+                  name="chatbox-ellipses-outline"
+                  size={32}
+                  color={THEME.colors.textSecondary}
+                />
+                <Text className="text-textSecondary text-sm mt-2 text-center font-medium">
                   No reviews or ratings yet.
                 </Text>
               </View>
@@ -445,27 +502,27 @@ export default function SalonDetailsScreen() {
       </ScrollView>
 
       {/* Sticky Bottom Booking Button */}
-      <View className="absolute bottom-0 left-0 right-0 bg-white/80 border-t border-slate-100 px-6 pt-4 pb-10 flex-row justify-between items-center shadow-lg">
+      <View className="absolute bottom-0 left-0 right-0 bg-base_colors.white border-t border-border px-6 pt-4 pb-10 flex-row justify-between items-center shadow-lg">
         <View className="flex-1 mr-4">
-          <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+          <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider">
             {localSelectedServices.length > 0
               ? `${localSelectedServices.length} Selected`
               : 'Booking Flow'}
           </Text>
-          <Text className="text-slate-900 font-extrabold text-base" numberOfLines={1}>
+          <Text className="text-text font-extrabold text-base" numberOfLines={1}>
             {localSelectedServices.length > 0
               ? localSelectedServices.map((s) => s.name).join(', ')
               : 'Choose Service(s)'}
           </Text>
           {localSelectedServices.length > 0 ? (
-            <Text className="text-black font-extrabold text-lg">
+            <Text className="text-primary font-extrabold text-lg">
               ₹{totalSelectedPrice}{' '}
-              <Text className="text-slate-500 font-semibold text-xs">
+              <Text className="text-textSecondary font-semibold text-xs">
                 / {totalSelectedDuration}m
               </Text>
             </Text>
           ) : (
-            <Text className="text-slate-500 font-bold text-xs">
+            <Text className="text-textSecondary font-bold text-xs">
               First service selected by default
             </Text>
           )}
@@ -474,7 +531,7 @@ export default function SalonDetailsScreen() {
         <PremiumButton
           title={localSelectedServices.length > 0 ? 'Book Slot' : 'Reserve Slot'}
           onPress={handleBookNow}
-          className="flex-1 h-14 bg-black rounded-2xl"
+          className="flex-1 h-14 bg-primary rounded-2xl"
         />
       </View>
     </PremiumBackground>

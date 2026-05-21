@@ -10,6 +10,7 @@ import { resolveMediaPublicUrl } from '@/services/supabase/storage';
 
 import { useAuthStore } from '@/store/auth.store';
 import { logger, LogTag } from '@/utils/logger';
+import { queryClient } from '@/lib/queryClient';
 
 export const useProfileImage = () => {
   const [uploading, setUploading] = useState(false);
@@ -59,6 +60,11 @@ export const useProfileImage = () => {
 
       const { url: resolvedUrl } = await resolveMediaPublicUrl(mediaId);
       const avatarUrl: string | null = resolvedUrl ?? uploadResult?.url ?? null;
+
+      const user = useAuthStore.getState().user;
+      if (user?.id) {
+        queryClient.invalidateQueries({ queryKey: ['profileMedia', user.id] });
+      }
 
       await refreshProfile();
       return avatarUrl;

@@ -22,7 +22,7 @@ export default function ConfirmBookingScreen() {
 
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  const theme = isDark ? THEME.colors : THEME.colors;
 
   if (!selectedBusiness || !selectedService || !selectedSlot) {
     return (

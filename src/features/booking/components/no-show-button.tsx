@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useCallback, useState } from 'react';
 
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
@@ -71,10 +72,10 @@ export default function NoShowButton({ bookingId, onMarked }: NoShowButtonProps)
       className="w-full bg-slate-200 rounded-2xl py-4 flex-row items-center justify-center"
     >
       {loading ? (
-        <ActivityIndicator color="#0F172A" />
+        <ActivityIndicator color={THEME.colors.background} />
       ) : (
         <>
-          <Ionicons name="close-circle-outline" size={20} color="#0F172A" />
+          <Ionicons name="close-circle-outline" size={20} color={THEME.colors.background} />
 
           <Text className="ml-2 text-slate-900 font-bold">Mark No-Show</Text>
         </>

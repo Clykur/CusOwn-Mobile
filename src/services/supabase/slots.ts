@@ -5,6 +5,7 @@ import { logSupabaseFailure } from './errors';
 import { BookingSupabaseError } from './booking-errors';
 import dayjs from 'dayjs';
 import { businessHoursService } from './business-hours';
+import { getShopLocalDate, getShopLocalNow } from '@/utils/shopTime';
 
 export function normalizeTimeHHmm(raw: string): string {
   if (!raw) return '';
@@ -51,11 +52,17 @@ export async function listSlotsForBusiness(
   date: string,
   options?: { availableOnly?: boolean },
 ): Promise<{ slots: SlotListItem[] }> {
-  const availableOnly = options?.availableOnly !== false;
+  // When availableOnly is true we ONLY return 'available' slots (legacy behaviour).
+  // When false (default for the booking screen) we return available + booked/reserved
+  // slots so the UI can render booked ones as disabled — but we still hide:
+  //   • slots whose start_time is in the past (for today only)
+  //   • slots that start after the shop's closing time
+  const availableOnly = options?.availableOnly === true;
 
-  const today = dayjs().format('YYYY-MM-DD');
-  const isToday = date === today;
-  const now = dayjs();
+  // Use the shop-timezone-aware date comparison so midnight rollover is correct.
+  const todayStr = getShopLocalDate();
+  const isToday = date === todayStr;
+  const now = getShopLocalNow();
 
   const businessHours = await businessHoursService.getEffectiveHours(businessId, date);
   const closingTime = businessHours?.closing_time;
@@ -79,30 +86,33 @@ export async function listSlotsForBusiness(
       .order('start_time', { ascending: true });
   }
 
-  let rows: SlotRow[] = (result.data || []) as SlotRow[];
-
-  if (availableOnly && !result.error) {
-    rows = rows.filter((row) => {
-      const slotTime = dayjs(`${date}T${row.start_time}`);
-      const isAfterClosing = closingTime
-        ? slotTime.isAfter(dayjs(`${date}T${closingTime}`))
-        : false;
-      const isPastSlot = isToday ? slotTime.isBefore(now) : false;
-
-      return (
-        (row.status === 'available' || row.status === 'reserved') && !isPastSlot && !isAfterClosing
-      );
-    });
-  }
-
   if (result.error) {
     logSupabaseFailure('listSlotsForBusiness', result.error, { businessId, date });
     throw result.error;
   }
 
+  let rows: SlotRow[] = (result.data || []) as SlotRow[];
+
+  rows = rows.filter((row) => {
+    const slotTime = dayjs(`${date}T${row.start_time}`);
+
+    // Always hide slots that start after closing time
+    const isAfterClosing = closingTime ? slotTime.isAfter(dayjs(`${date}T${closingTime}`)) : false;
+
+    // Hide past slots for today (regardless of status)
+    const isPastSlot = isToday ? slotTime.isBefore(now) : false;
+
+    if (isPastSlot || isAfterClosing) return false;
+
+    // When availableOnly is true, additionally drop non-available slots
+    if (availableOnly && row.status !== 'available') return false;
+
+    return true;
+  });
+
   const slots = rows.map((row) => {
     const time = formatSlotTime(row.start_time);
-    const available = row.status === 'available' || row.status === 'reserved';
+    const available = row.status === 'available';
     return {
       id: row.id,
       business_id: row.business_id,
@@ -116,8 +126,7 @@ export async function listSlotsForBusiness(
 
   return { slots };
 }
-
-const BOOKABLE_STATUSES = new Set(['available', 'reserved']);
+const BOOKABLE_STATUSES = new Set(['available']);
 
 /**
  * Maps UI selection (including gen-slot fallbacks) to a real slots.id for booking RPCs.
@@ -188,17 +197,12 @@ export async function resolveSlotIdForBooking(params: {
     const duration = bizData?.slot_duration ? Number(bizData.slot_duration) : 30;
     const end_time = `${addMinutesToHHmm(target, duration)}:00`;
 
-    const { data: insertData, error: insertError } = await supabase
-      .from('slots')
-      .insert({
-        business_id: businessId,
-        date: date,
-        start_time: start_time,
-        end_time: end_time,
-        status: 'available',
-      })
-      .select('id')
-      .single();
+    const { data: slotId, error: insertError } = await supabase.rpc('create_custom_slot', {
+      p_business_id: businessId,
+      p_date: date,
+      p_start_time: start_time,
+      p_end_time: end_time,
+    });
 
     if (insertError) {
       // If unique constraint error, retry the select
@@ -215,8 +219,8 @@ export async function resolveSlotIdForBooking(params: {
       }
       throw insertError;
     }
-    if (insertData?.id) {
-      return String(insertData.id);
+    if (slotId) {
+      return String(slotId);
     }
   } catch (err) {
     // Retry select one last time

@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,7 +28,7 @@ export default function OwnerBusinessesScreen() {
           <View className="flex-1 justify-center items-center px-luxury">
             <GlassCard className="items-center w-full p-8 rounded-luxury border-slate-200/80">
               <View className="w-20 h-20 rounded-full bg-neutral-100 items-center justify-center mb-6 border border-neutral-200">
-                <Ionicons name="alert-circle-outline" size={40} color="#000000" />
+                <Ionicons name="alert-circle-outline" size={40} color={THEME.colors.background} />
               </View>
               <Text className="text-slate-900 text-xl font-bold mb-2">Fetch Error</Text>
               <Text className="text-slate-500 text-center px-12 text-sm font-medium">
@@ -69,11 +70,15 @@ export default function OwnerBusinessesScreen() {
           className="flex-1"
           contentContainerClassName="px-luxury pb-12 pt-4"
           refreshControl={
-            <RefreshControl refreshing={false} onRefresh={refetch} tintColor="#000000" />
+            <RefreshControl
+              refreshing={false}
+              onRefresh={refetch}
+              tintColor={THEME.colors.background}
+            />
           }
         >
           <AnimatedSection direction="down" className="mb-8">
-            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">
               Management
             </Text>
             <Text className="text-slate-900 text-3xl font-black tracking-tight">Businesses</Text>
@@ -82,31 +87,37 @@ export default function OwnerBusinessesScreen() {
           <View className="gap-y-4">
             {businesses?.map((b, index) => (
               <AnimatedSection key={b.id} delay={index * 100} direction="up">
-                <GlassCard className="p-6 border-slate-200/80 rounded-luxury shadow-sm">
+                <GlassCard className="p-2 border-slate-200/80 rounded-luxury shadow-sm">
                   <View className="flex-row justify-between items-start mb-6">
                     <View className="flex-1 mr-4">
                       <Text className="text-slate-900 text-xl font-extrabold mb-1">
                         {b.salon_name}
                       </Text>
                       <View className="flex-row items-center opacity-60">
-                        <Ionicons name="location-outline" size={12} color="#64748B" />
+                        <Ionicons
+                          name="location-outline"
+                          size={12}
+                          color={THEME.colors.textSecondary}
+                        />
                         <Text className="text-slate-500 text-xs ml-1" numberOfLines={1}>
                           {b.location || 'No location set'}
                         </Text>
                       </View>
                     </View>
-                    <View className="bg-neutral-100 px-3 py-1 rounded-full border border-neutral-200">
-                      <Text className="text-slate-900 text-[9px] font-black uppercase tracking-widest">
-                        Active Hub
+                    <View className="flex-row items-center">
+                      <View className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2" />
+
+                      <Text className="text-emerald-600 text-xs font-bold uppercase tracking-[2px]">
+                        Active
                       </Text>
                     </View>
                   </View>
 
-                  <View className="h-[0.5px] bg-slate-200/60 w-full mb-6" />
+                  <View className="h-[0.5px] bg-slate-200/60 w-full mb-2" />
 
                   <View className="flex-row justify-between items-center">
                     <View>
-                      <Text className="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-1">
+                      <Text className="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">
                         Operational Since
                       </Text>
                       <Text className="text-slate-900 text-xs font-semibold">
@@ -115,11 +126,18 @@ export default function OwnerBusinessesScreen() {
                     </View>
                     <Pressable
                       onPress={() => onManageBusiness(b.id)}
-                      className="bg-black px-6 py-3 rounded-full"
+                      className="flex-row items-center"
                     >
-                      <Text className="text-white text-xs font-black uppercase tracking-wider">
-                        Manage Hub
+                      <Text className="text-black text-xs font-black uppercase tracking-wider">
+                        Manage
                       </Text>
+
+                      <Ionicons
+                        name="arrow-forward"
+                        size={16}
+                        color="#000000"
+                        style={{ marginLeft: 6 }}
+                      />
                     </Pressable>
                   </View>
                 </GlassCard>
@@ -134,8 +152,8 @@ export default function OwnerBusinessesScreen() {
                 onPress={onAddBusiness}
                 className="border border-dashed border-slate-300 rounded-luxury p-8 items-center justify-center bg-white/40 active:bg-white/60"
               >
-                <View className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 items-center justify-center mb-4">
-                  <Ionicons name="add" size={24} color="#000000" />
+                <View className="w-12 h-12 rounded-full border border-slate-200 items-center justify-center mb-4">
+                  <Ionicons name="add" size={24} color={THEME.colors.background} />
                 </View>
                 <Text className="text-slate-900 font-black text-xs uppercase tracking-wider">
                   Launch New Business Hub

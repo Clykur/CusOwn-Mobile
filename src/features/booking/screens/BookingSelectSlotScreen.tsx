@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,66 +7,124 @@ import {
   TouchableOpacity,
   useColorScheme,
   FlatList,
+  Animated,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useBookingStore } from '@/store/booking.store';
 import { useSlots } from '@/hooks/useSlots';
 import { Slot } from '@/types/slot.types';
-import { Card } from '@/components/ui/Card';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import { useBusinessHours } from '@/hooks/useBusinessHours';
+import { useRealtimeClock } from '@/features/booking/hooks/useRealtimeClock';
+import { getDefaultBookingDate } from '@/utils/shopTime';
+import { queryClient } from '@/lib/queryClient';
+import { queryKeys } from '@/lib/queryClient';
 
 export default function SelectSlotScreen() {
   const { selectedBusiness, selectedService, setSlot } = useBookingStore();
 
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const today = dayjs();
-    const tomorrow = dayjs().add(1, 'day');
-    // Default to tomorrow if today is past closing time (assuming a default closing of 23:59 for this check)
-    // This initial check is a heuristic; the actual filtering happens on the backend.
-    if (today.hour() >= 23 && today.minute() >= 59) {
-      return tomorrow.format('YYYY-MM-DD');
-    }
-    return today.format('YYYY-MM-DD');
-  });
+  // ─── Live clock — ticks every minute, fires exactly at midnight ──────────────
+  // Pass selectedBusiness?.timezone here once that column exists.
+  const clock = useRealtimeClock(/* selectedBusiness?.timezone */);
 
-  const { data: slots, isLoading, isError } = useSlots(selectedBusiness?.id || null, selectedDate);
-  const { data: businessHours } = useBusinessHours(selectedBusiness?.id || null, selectedDate);
+  // ─── Selected date — defaults to today; corrected once business hours load ───
+  const [selectedDate, setSelectedDate] = useState<string>(clock.todayStr);
+
+  // Animated value for the shop-closed banner slide-in
+  const bannerAnim = React.useRef(new Animated.Value(0)).current;
+
+  const { data: slots, isLoading, isError } = useSlots(selectedBusiness?.id ?? null, selectedDate);
+  const { data: businessHours } = useBusinessHours(selectedBusiness?.id ?? null, selectedDate);
 
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  const theme = isDark ? THEME.colors : THEME.colors;
 
+  // ─── Shop-closed detection (driven by live clock) ─────────────────────────────
+  const isShopClosed = useMemo(() => {
+    if (!businessHours) return false;
+    if (businessHours.isClosed) return true;
+    if (!businessHours.closing_time) return false;
+
+    // Only flag as "closed" when the selected day is today
+    const isToday = selectedDate === clock.todayStr;
+    if (!isToday) return false;
+
+    const closingMinutes = businessHours.closing_time
+      .split(':')
+      .slice(0, 2)
+      .reduce((acc, v, i) => acc + (i === 0 ? Number(v) * 60 : Number(v)), 0);
+
+    const currentMinutes = clock.now.hour() * 60 + clock.now.minute();
+    return currentMinutes >= closingMinutes;
+  }, [clock.now, clock.todayStr, selectedDate, businessHours]);
+
+  // ─── Auto-advance to tomorrow when shop is closed ────────────────────────────
+  useEffect(() => {
+    if (isShopClosed && selectedDate === clock.todayStr) {
+      const tomorrow = dayjs(clock.todayStr).add(1, 'day').format('YYYY-MM-DD');
+      setSelectedDate(tomorrow);
+    }
+  }, [isShopClosed, selectedDate, clock.todayStr]);
+
+  // ─── Midnight rollover: auto-advance selectedDate when clock rolls over ───────
+  useEffect(() => {
+    // When the date rolls over (todayStr changes), if the user was still on the
+    // previous "today" we advance them to the new today and invalidate slots.
+    setSelectedDate((prev) => {
+      const prevDay = dayjs(prev);
+      const newToday = dayjs(clock.todayStr);
+      // If prev was "yesterday" relative to the new today, move to new today
+      if (newToday.isAfter(prevDay, 'day')) {
+        // Invalidate stale slot caches from the old day
+        queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
+        return clock.todayStr;
+      }
+      return prev;
+    });
+  }, [clock.todayStr]);
+
+  // ─── Default date correction once business hours are known ───────────────────
+  useEffect(() => {
+    if (!businessHours || businessHours.isClosed) return;
+    const correct = getDefaultBookingDate(
+      businessHours.closing_time ?? null,
+      /* selectedBusiness?.timezone */
+    );
+    setSelectedDate((prev) => {
+      // Only move forward, never backward
+      return dayjs(correct).isAfter(dayjs(prev), 'day') ? correct : prev;
+    });
+  }, [businessHours]);
+
+  // ─── Banner animation ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    Animated.timing(bannerAnim, {
+      toValue: isShopClosed ? 1 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [isShopClosed, bannerAnim]);
+
+  // ─── Date strip (14 days from today) ─────────────────────────────────────────
   const datesList = useMemo(() => {
     const list = [];
-    const base = dayjs();
-    // If selectedDate is already tomorrow, start the list from tomorrow
-    const startDay = dayjs(selectedDate).isAfter(base, 'day') ? dayjs(selectedDate) : base;
-
+    const base = dayjs(clock.todayStr); // Always start from today per clock
     for (let i = 0; i < 14; i++) {
-      const d = startDay.add(i, 'day');
+      const d = base.add(i, 'day');
       list.push({
         iso: d.format('YYYY-MM-DD'),
         dayOfWeek: d.format('ddd'),
         dayNum: d.date(),
         monthStr: d.format('MMM'),
+        isToday: i === 0,
       });
     }
     return list;
-  }, [selectedDate]);
-
-  const isShopClosed = useMemo(() => {
-    if (!businessHours) return false;
-    const now = dayjs();
-    const selected = dayjs(selectedDate);
-    const closingTime = dayjs(`${selectedDate}T${businessHours.closing_time}`);
-
-    // If selected date is today and current time is past closing time
-    return selected.isSame(now, 'day') && now.isAfter(closingTime);
-  }, [selectedDate, businessHours]);
+  }, [clock.todayStr]);
 
   if (!selectedBusiness || !selectedService) {
     return (
@@ -85,7 +143,13 @@ export default function SelectSlotScreen() {
     router.push('/booking/confirm');
   };
 
-  const renderDateItem = ({ item }: { item: any }) => {
+  const handleDateSelect = useCallback((iso: string) => {
+    setSelectedDate(iso);
+  }, []);
+
+  // ─── Render helpers ───────────────────────────────────────────────────────────
+
+  const renderDateItem = ({ item }: { item: (typeof datesList)[0] }) => {
     const isSelected = item.iso === selectedDate;
     return (
       <TouchableOpacity
@@ -94,16 +158,23 @@ export default function SelectSlotScreen() {
           { backgroundColor: theme.card, borderColor: theme.border },
           isSelected && { backgroundColor: theme.primary, borderColor: theme.primary },
         ]}
-        onPress={() => setSelectedDate(item.iso)}
+        onPress={() => handleDateSelect(item.iso)}
         activeOpacity={0.8}
       >
-        <Text style={[styles.dateDay, { color: isSelected ? '#FFFFFF' : theme.textSecondary }]}>
-          {item.dayOfWeek}
+        <Text
+          style={[styles.dateDay, { color: isSelected ? THEME.colors.text : theme.textSecondary }]}
+        >
+          {item.isToday ? 'Today' : item.dayOfWeek}
         </Text>
-        <Text style={[styles.dateNum, { color: isSelected ? '#FFFFFF' : theme.text }]}>
+        <Text style={[styles.dateNum, { color: isSelected ? THEME.colors.text : theme.text }]}>
           {item.dayNum}
         </Text>
-        <Text style={[styles.dateMonth, { color: isSelected ? '#FFFFFF' : theme.textSecondary }]}>
+        <Text
+          style={[
+            styles.dateMonth,
+            { color: isSelected ? THEME.colors.text : theme.textSecondary },
+          ]}
+        >
           {item.monthStr}
         </Text>
       </TouchableOpacity>
@@ -112,40 +183,110 @@ export default function SelectSlotScreen() {
 
   const renderSlotItem = ({ item }: { item: Slot }) => {
     const timeStr = dayjs(`${item.date}T${item.time}`).format('h:mm A');
+    const isBooked = !item.is_available;
 
     return (
       <TouchableOpacity
         style={[
           styles.slotBox,
           { backgroundColor: theme.card, borderColor: theme.border },
-          !item.is_available && { opacity: 0.4, backgroundColor: isDark ? '#1A1A1A' : '#F8FAFC' },
+          isBooked && {
+            opacity: 0.45,
+            backgroundColor: isDark ? THEME.colors.border : '#F1F5F9',
+          },
         ]}
-        disabled={!item.is_available}
+        disabled={isBooked}
         onPress={() => handleSlotPress(item)}
         activeOpacity={0.8}
+        accessibilityLabel={`${timeStr} ${isBooked ? 'Booked' : 'Available'}`}
+        accessibilityState={{ disabled: isBooked }}
       >
-        <Text
-          style={[
-            styles.slotTimeText,
-            { color: item.is_available ? theme.text : theme.textSecondary },
-          ]}
-        >
+        <Text style={[styles.slotTimeText, { color: isBooked ? theme.textSecondary : theme.text }]}>
           {timeStr}
         </Text>
-        <Text
-          style={[
-            styles.slotAvailText,
-            { color: item.is_available ? theme.primary : theme.textSecondary },
-          ]}
-        >
-          {item.is_available ? 'Available' : 'Booked'}
-        </Text>
+        <View style={[styles.slotBadge, isBooked && styles.slotBadgeBooked]}>
+          <Text
+            style={[
+              styles.slotAvailText,
+              { color: isBooked ? theme.textSecondary : theme.primary },
+            ]}
+          >
+            {isBooked ? 'Booked' : 'Available'}
+          </Text>
+        </View>
       </TouchableOpacity>
     );
   };
 
+  // ─── Shop-closed banner ───────────────────────────────────────────────────────
+  const renderClosedBanner = () => {
+    const translateY = bannerAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [-40, 0],
+    });
+    const opacity = bannerAnim;
+
+    return (
+      <Animated.View style={[styles.closedBanner, { opacity, transform: [{ translateY }] }]}>
+        <Ionicons name="lock-closed" size={16} color="#fff" style={{ marginRight: 8 }} />
+        <Text style={styles.closedBannerText}>
+          Shop is closed. Showing availability for tomorrow.
+        </Text>
+      </Animated.View>
+    );
+  };
+
+  // ─── Empty / closed states ────────────────────────────────────────────────────
+  const renderSlotArea = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.skeletonGrid}>
+          {[1, 2, 3, 4, 5, 6].map((key) => (
+            <LoadingSkeleton key={key} height={64} width="47%" borderRadius={12} />
+          ))}
+        </View>
+      );
+    }
+
+    if (isError) {
+      return (
+        <View style={[styles.errorBox, { backgroundColor: theme.card }]}>
+          <Text style={[styles.errorText, { color: theme.error }]}>
+            Failed to load availability slots
+          </Text>
+        </View>
+      );
+    }
+
+    if (!slots || slots.length === 0) {
+      const emptyMsg = businessHours?.isClosed
+        ? 'Shop is closed on this day.'
+        : 'No slots available for this date.';
+      return (
+        <View style={styles.emptyWrap}>
+          <Ionicons name="time-outline" size={40} color={theme.textSecondary} />
+          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{emptyMsg}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={slots}
+        renderItem={renderSlotItem}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        scrollEnabled={false}
+        columnWrapperStyle={styles.slotGridCols}
+        contentContainerStyle={styles.slotsGridContent}
+      />
+    );
+  };
+
+  // ─── Render ───────────────────────────────────────────────────────────────────
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      {/* Header */}
       <View
         style={[styles.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}
       >
@@ -158,6 +299,10 @@ export default function SelectSlotScreen() {
         <View style={{ width: 22 }} />
       </View>
 
+      {/* Shop closed banner */}
+      {renderClosedBanner()}
+
+      {/* Step indicator */}
       <View style={styles.stepIndicator}>
         <Text style={[styles.stepText, { color: theme.primary }]}>Step 2 of 3: Choose Slot</Text>
         <Text style={[styles.stepDesc, { color: theme.textSecondary }]} numberOfLines={1}>
@@ -165,7 +310,8 @@ export default function SelectSlotScreen() {
         </Text>
       </View>
 
-      <View style={styles.datesWrapper}>
+      {/* Date strip */}
+      <View style={[styles.datesWrapper, { borderBottomColor: theme.border }]}>
         <FlatList
           data={datesList}
           renderItem={renderDateItem}
@@ -176,41 +322,15 @@ export default function SelectSlotScreen() {
         />
       </View>
 
+      {/* Slot grid */}
       <ScrollView style={styles.slotsScroll}>
         <Text style={[styles.slotsGridHeader, { color: theme.textSecondary }]}>
-          Available Times on {dayjs(selectedDate).format('MMM D, YYYY')}
+          {selectedDate === clock.todayStr
+            ? `Today — ${dayjs(selectedDate).format('MMM D, YYYY')}`
+            : `${dayjs(selectedDate).format('ddd, MMM D, YYYY')}`}
         </Text>
 
-        {isLoading ? (
-          <View style={styles.skeletonGrid}>
-            {[1, 2, 3, 4, 5, 6].map((key) => (
-              <LoadingSkeleton key={key} height={64} width="47%" borderRadius={12} />
-            ))}
-          </View>
-        ) : isError ? (
-          <View style={[styles.errorBox, { backgroundColor: theme.card }]}>
-            <Text style={[styles.errorText, { color: theme.error }]}>
-              Failed to load availability slots
-            </Text>
-          </View>
-        ) : !slots || slots.length === 0 ? (
-          <View style={styles.emptyWrap}>
-            <Ionicons name="time-outline" size={40} color={theme.textSecondary} />
-            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-              {isShopClosed ? 'Shop Closed' : 'No slots configured for this date.'}
-            </Text>
-          </View>
-        ) : (
-          <FlatList
-            data={slots}
-            renderItem={renderSlotItem}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            scrollEnabled={false}
-            columnWrapperStyle={styles.slotGridCols}
-            contentContainerStyle={styles.slotsGridContent}
-          />
-        )}
+        {renderSlotArea()}
       </ScrollView>
     </View>
   );
@@ -248,6 +368,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: 12,
   },
+  // ── Closed banner ────────────────────────────────────────────────────────────
+  closedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E53E3E',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    overflow: 'hidden',
+  },
+  closedBannerText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+    flexShrink: 1,
+  },
+  // ── Step indicator ───────────────────────────────────────────────────────────
   stepIndicator: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -263,9 +399,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  // ── Date strip ───────────────────────────────────────────────────────────────
   datesWrapper: {
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
     paddingBottom: 14,
   },
   datesContent: {
@@ -281,7 +417,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dateDay: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     marginBottom: 2,
   },
@@ -294,6 +430,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
   },
+  // ── Slot grid ────────────────────────────────────────────────────────────────
   slotsScroll: {
     flex: 1,
   },
@@ -329,6 +466,8 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
     marginTop: 8,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   slotsGridContent: {
     paddingHorizontal: 20,
@@ -350,7 +489,15 @@ const styles = StyleSheet.create({
   slotTimeText: {
     fontSize: 15,
     fontWeight: '700',
-    marginBottom: 2,
+    marginBottom: 4,
+  },
+  slotBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 20,
+  },
+  slotBadgeBooked: {
+    // subtle distinction for booked state
   },
   slotAvailText: {
     fontSize: 11,

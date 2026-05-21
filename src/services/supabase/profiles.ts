@@ -70,20 +70,10 @@ export async function getProfilePayload(): Promise<ProfileApiPayload> {
     };
   }
 
-  let profileImageUrl: string | null = null;
-  if (profile.profile_media_id) {
-    try {
-      const { url } = await resolveMediaPublicUrl(profile.profile_media_id);
-      profileImageUrl = url;
-    } catch (err: any) {
-      logger.warn(LogTag.API, `Failed to resolve media for profile: ${err.message}`);
-    }
-  }
-
   const enrichedProfile: UserProfile = {
     ...profile,
     email: user.email,
-    media: profileImageUrl ? { url: profileImageUrl, signed_url: profileImageUrl } : null,
+    media: null,
   };
 
   return {
@@ -92,7 +82,7 @@ export async function getProfilePayload(): Promise<ProfileApiPayload> {
       id: user.id,
       email: user.email,
     },
-    profile_image_url: profileImageUrl,
+    profile_image_url: null,
   };
 }
 

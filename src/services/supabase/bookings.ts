@@ -8,7 +8,7 @@ import { parseTimeToMinutes } from '@/utils/time';
 import { logger, LogTag } from '@/utils/logger';
 
 export { BookingSupabaseError } from './booking-errors';
-import { BOOKING_RPC, getActorUserId, invokeBookingRpc } from './booking-rpc';
+import { BOOKING_RPC, getActorUserId, invokeRpc } from './rpc';
 import { resolveSlotIdForBooking } from './slots';
 import { listOwnedBusinessIds } from './owner-access';
 import { logSupabaseFailure } from './errors';
@@ -205,19 +205,20 @@ async function checkAndAutoCancelPendingBookings(bookings: Booking[]): Promise<B
   const processedBookings = [...bookings];
   const promises = processedBookings.map(async (booking, index) => {
     if (booking.status === 'pending' && isBookingTimePassed(booking)) {
-      // Optimistically update status to cancelled
-      processedBookings[index] = {
-        ...booking,
-        status: 'cancelled',
-        updated_at: new Date().toISOString(),
-      };
-
       try {
-        await invokeBookingRpc(BOOKING_RPC.cancel, {
+        await invokeRpc(BOOKING_RPC.cancel, {
           p_booking_id: booking.id,
           p_cancelled_by: 'system',
           p_cancellation_reason: 'Auto-cancelled: appointment time passed without action.',
         });
+
+        // Update local memory ONLY on success
+        processedBookings[index] = {
+          ...booking,
+          status: 'cancelled',
+          updated_at: new Date().toISOString(),
+        };
+
         logger.info(
           LogTag.API,
           `[AutoCancel] Booking ${booking.id} auto-cancelled because booking time passed.`,
@@ -475,12 +476,12 @@ export async function createBooking(input: MobileCreateBookingInput): Promise<Bo
 
   let rpcResult: unknown;
   try {
-    rpcResult = await invokeBookingRpc(BOOKING_RPC.createIdempotent, idempotent);
+    rpcResult = await invokeRpc(BOOKING_RPC.createIdempotent, idempotent);
   } catch (firstErr) {
     logBookingDebug('create_booking_idempotent_reserve failed, trying create_booking_atomically', {
       message: firstErr instanceof Error ? firstErr.message : String(firstErr),
     });
-    rpcResult = await invokeBookingRpc(BOOKING_RPC.create, atomic);
+    rpcResult = await invokeRpc(BOOKING_RPC.create, atomic);
   }
 
   // Check if result returned success: false
@@ -502,21 +503,21 @@ export async function createBooking(input: MobileCreateBookingInput): Promise<Bo
   throw new BookingSupabaseError('create booking RPC returned no booking row');
 }
 
-export async function acceptBooking(bookingId: string): Promise<Booking> {
+export async function confirmBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeBookingRpc<any>(BOOKING_RPC.confirm, {
+  const result = await invokeRpc<any>(BOOKING_RPC.confirm, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
   if (result && typeof result === 'object' && result.success === false) {
-    throw new BookingSupabaseError(result.error || 'Failed to accept booking');
+    throw new BookingSupabaseError(result.error || 'Failed to confirm booking');
   }
   return getBookingById(bookingId);
 }
 
 export async function rejectBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeBookingRpc<any>(BOOKING_RPC.reject, {
+  const result = await invokeRpc<any>(BOOKING_RPC.reject, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -526,21 +527,21 @@ export async function rejectBooking(bookingId: string): Promise<Booking> {
   return getBookingById(bookingId);
 }
 
-export async function undoAcceptBooking(bookingId: string): Promise<Booking> {
+export async function undoConfirm(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeBookingRpc<any>(BOOKING_RPC.undoConfirm, {
+  const result = await invokeRpc<any>(BOOKING_RPC.undoConfirm, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
   if (result && typeof result === 'object' && result.success === false) {
-    throw new BookingSupabaseError(result.error || 'Failed to undo accept booking');
+    throw new BookingSupabaseError(result.error || 'Failed to undo confirm booking');
   }
   return getBookingById(bookingId);
 }
 
-export async function undoRejectBooking(bookingId: string): Promise<Booking> {
+export async function undoReject(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeBookingRpc<any>(BOOKING_RPC.undoReject, {
+  const result = await invokeRpc<any>(BOOKING_RPC.undoReject, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -552,25 +553,16 @@ export async function undoRejectBooking(bookingId: string): Promise<Booking> {
 
 export async function markBookingNoShow(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const now = new Date().toISOString();
-  const { data, error } = await supabase
-    .from('bookings')
-    .update({
-      no_show: true,
-      no_show_marked_at: now,
-      no_show_marked_by: actorId,
-      status: 'no_show',
-      updated_at: now,
-    })
-    .eq('id', bookingId)
-    .select(BOOKING_DETAIL_SELECT)
-    .single();
+  const result = await invokeRpc<any>(BOOKING_RPC.markNoShow, {
+    p_booking_id: bookingId,
+    p_actor_id: actorId,
+  });
 
-  if (error) {
-    logBookingError('markBookingNoShow update failed', error, { bookingId });
-    throw new BookingSupabaseError('Failed to mark no-show', error, { bookingId });
+  if (result && typeof result === 'object' && result.success === false) {
+    throw new BookingSupabaseError(result.error || 'Failed to mark no-show');
   }
-  return mapAndEnrichBooking(data as Record<string, unknown>);
+
+  return getBookingById(bookingId);
 }
 
 export async function cancelBooking(
@@ -578,10 +570,12 @@ export async function cancelBooking(
   reason?: string,
   cancelledBy: 'customer' | 'owner' = 'customer',
 ): Promise<Booking> {
-  const result = await invokeBookingRpc<any>(BOOKING_RPC.cancel, {
+  const result = await invokeRpc<any>(BOOKING_RPC.cancel, {
     p_booking_id: bookingId,
     p_cancelled_by: cancelledBy,
     p_cancellation_reason: reason || '',
+    // 0 = no minimum window; late_cancellation flag is still computed by the RPC
+    p_default_cancellation_window_minutes: 0,
   });
   if (result && typeof result === 'object' && result.success === false) {
     throw new BookingSupabaseError(result.error || 'Failed to cancel booking');
@@ -653,7 +647,7 @@ export async function rescheduleBooking(
     }
   }
 
-  const result = await invokeBookingRpc<any>(BOOKING_RPC.reschedule, {
+  const result = await invokeRpc<any>(BOOKING_RPC.reschedule, {
     p_booking_id: bookingId,
     p_new_slot_id: slotId,
     p_rescheduled_by: payload.rescheduled_by ?? 'customer',
@@ -665,25 +659,4 @@ export async function rescheduleBooking(
   }
 
   return getBookingById(bookingId);
-}
-
-export async function patchBookingStatus(
-  bookingId: string,
-  status: BookingStatus,
-): Promise<Booking> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', bookingId)
-    .select(BOOKING_DETAIL_SELECT)
-    .single();
-
-  if (error) {
-    logBookingError('patchBookingStatus failed', error, { bookingId, status });
-    if (isRlsDenial(error)) {
-      throw new BookingSupabaseError('Permission denied updating booking status', error);
-    }
-    throw error;
-  }
-  return mapAndEnrichBooking(data as Record<string, unknown>);
 }

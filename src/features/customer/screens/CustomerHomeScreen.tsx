@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,7 +18,7 @@ import { BusinessCard } from '@/features/customer/components/BusinessCard';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CustomerHomeScreen() {
-  const { user, profileImageUrl } = useAuthStore();
+  const { user, profile, profileImageUrl } = useAuthStore();
   const { data: businesses, isLoading, isError, refetch } = useBusinesses();
   const { data: categories } = useCategories();
   const {
@@ -85,7 +86,7 @@ export default function CustomerHomeScreen() {
 
     return visitedBusinessIds
       .map((id) => businesses.find((b) => b.id === id))
-      .filter(Boolean) as Business[];
+      .filter((b): b is Business => Boolean(b) && b!.suspended !== true && b!.deleted_at == null);
   }, [normalizedBookings, businesses]);
 
   const totalCount = normalizedBookings.length;
@@ -109,9 +110,9 @@ export default function CustomerHomeScreen() {
     return (
       <AnimatedSection delay={index * 50} direction="up">
         <Pressable
-          className="w-[110px] rounded-[28px] border border-slate-200  items-center justify-center py-5 px-3"
+          className="w-[110px] rounded-[28px]  bg-card items-center justify-center py-5 px-3"
           style={{
-            shadowColor: '#000',
+            shadowColor: THEME.colors.background,
             shadowOpacity: 0.05,
             shadowRadius: 10,
             elevation: 3,
@@ -125,18 +126,13 @@ export default function CustomerHomeScreen() {
             })
           }
         >
-          <View
-            className="w-14 h-14 rounded-full items-center justify-center mb-3"
-            style={{
-              backgroundColor: '#F1F5F9',
-            }}
-          >
-            <Ionicons name="cut-outline" size={24} color="#0F172A" />
+          <View className="w-14 h-14 rounded-full items-center justify-center mb-3 border border-primary/20 bg-primary/10">
+            <Ionicons name="cut-outline" size={24} color={THEME.colors.primary} />
           </View>
 
           <Text
             numberOfLines={2}
-            className="text-slate-900 text-[11px] font-black text-center uppercase tracking-wide"
+            className="text-text text-xs font-black text-center uppercase tracking-wide"
           >
             {item.label}
           </Text>
@@ -155,20 +151,21 @@ export default function CustomerHomeScreen() {
             className="px-luxury pt-4 pb-6 flex-row justify-between items-center"
           >
             <View>
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
                 Welcome to CusOwn
               </Text>
 
-              <Text className="text-slate-900 text-3xl font-bold tracking-tight">
-                {user?.user_metadata?.full_name?.split(' ')[0] || 'Curated Client'}
+              <Text className="text-text text-3xl font-bold tracking-tight">
+                {(profile?.full_name || user?.user_metadata?.full_name)?.split(' ')[0] ||
+                  'Curated Client'}
               </Text>
             </View>
             <Pressable onPress={() => router.push('/(customer)/profile')}>
               <Avatar
-                url={profileImageUrl}
-                name={user?.user_metadata?.full_name || 'User'}
+                userId={user?.id}
+                name={profile?.full_name || user?.user_metadata?.full_name || 'User'}
                 size={50}
-                className="border-2 border-accent-premium/30"
+                className="border-2 border-primary/30"
               />
             </Pressable>
           </AnimatedSection>
@@ -177,33 +174,31 @@ export default function CustomerHomeScreen() {
           <AnimatedSection delay={50} direction="up" className="px-luxury mb-8">
             <View className="flex-row justify-between">
               {/* Total */}
-              <GlassCard className="w-[31%] h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
+              <GlassCard className="w-[31%] h-[110px]  bg-card shadow-sm items-center justify-center">
                 <View className="flex-1 items-center justify-center">
-                  <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
+                  <Text className="text-textSecondary text-xs font-black uppercase tracking-base mb-2 text-center">
                     Total
                   </Text>
 
                   {bookingsLoading ? (
                     <LoadingSkeleton height={24} width={40} borderRadius={8} />
                   ) : (
-                    <Text className="text-slate-900 text-2xl font-black text-center">
-                      {totalCount}
-                    </Text>
+                    <Text className="text-text text-2xl font-black text-center">{totalCount}</Text>
                   )}
                 </View>
               </GlassCard>
 
               {/* Upcoming */}
-              <GlassCard className="w-[31%] h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
+              <GlassCard className="w-[31%] h-[110px]  bg-card shadow-sm items-center justify-center">
                 <View className="flex-1 items-center justify-center">
-                  <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
+                  <Text className="text-textSecondary text-xs font-black uppercase tracking-base mb-2 text-center">
                     Upcoming
                   </Text>
 
                   {bookingsLoading ? (
                     <LoadingSkeleton height={24} width={40} borderRadius={8} />
                   ) : (
-                    <Text className="text-slate-900 text-2xl font-black text-center">
+                    <Text className="text-text text-2xl font-black text-center">
                       {upcomingCount}
                     </Text>
                   )}
@@ -211,16 +206,16 @@ export default function CustomerHomeScreen() {
               </GlassCard>
 
               {/* Completed */}
-              <GlassCard className="w-[31%] h-[110px] border border-slate-200/80 bg-white/90 shadow-sm items-center justify-center">
+              <GlassCard className="w-[31%] h-[110px]  bg-card shadow-sm items-center justify-center">
                 <View className="flex-1 items-center justify-center">
-                  <Text className="text-slate-400 text-[9px] font-black uppercase tracking-wider mb-2 text-center">
-                    Completed
+                  <Text className="text-textSecondary text-xs font-black uppercase tracking-base mb-2 text-center">
+                    Finished
                   </Text>
 
                   {bookingsLoading ? (
                     <LoadingSkeleton height={24} width={40} borderRadius={8} />
                   ) : (
-                    <Text className="text-slate-900 text-2xl font-black text-center">
+                    <Text className="text-text text-2xl font-black text-center">
                       {completedCount}
                     </Text>
                   )}
@@ -233,11 +228,11 @@ export default function CustomerHomeScreen() {
           {categories && categories.length > 0 && (
             <View className="mb-10">
               <View className="flex-row justify-between items-center px-luxury mb-5">
-                <Text className="text-slate-900 text-lg font-bold tracking-tight uppercase">
+                <Text className="text-text text-lg font-bold tracking-tight uppercase">
                   Categories
                 </Text>
                 <Pressable onPress={() => router.push('/(customer)/browse/categories')}>
-                  <Text className="text-accent-premium font-bold text-sm">See All</Text>
+                  <Text className="text-primary font-bold text-sm">See All</Text>
                 </Pressable>
               </View>
               <ScrollView
@@ -262,11 +257,11 @@ export default function CustomerHomeScreen() {
           {/* Featured Businesses Section */}
           <View>
             <View className="flex-row justify-between items-center px-luxury mb-6">
-              <Text className="text-slate-900 text-lg font-bold tracking-tight uppercase">
+              <Text className="text-text text-lg font-bold tracking-tight uppercase">
                 Your Favourite Salons
               </Text>
               <Pressable onPress={() => router.push('/(customer)/browse')}>
-                <Text className="text-accent-premium font-bold text-sm">Browse All</Text>
+                <Text className="text-primary font-bold text-sm">Browse All</Text>
               </Pressable>
             </View>
 
@@ -277,13 +272,10 @@ export default function CustomerHomeScreen() {
               </View>
             ) : isError ? (
               <View className="px-luxury">
-                <GlassCard className="items-center bg-white border border-slate-200">
+                <GlassCard className="items-center bg-card ">
                   <Text className="text-error font-medium mb-4">Failed to load salons</Text>
-                  <Pressable
-                    onPress={() => refetch()}
-                    className="bg-white px-6 py-2 rounded-full border border-slate-200"
-                  >
-                    <Text className="text-slate-900 font-bold">Retry</Text>
+                  <Pressable onPress={() => refetch()} className="bg-card px-6 py-2 rounded-full ">
+                    <Text className="text-text font-bold">Retry</Text>
                   </Pressable>
                 </GlassCard>
               </View>
@@ -305,19 +297,24 @@ export default function CustomerHomeScreen() {
               </ScrollView>
             ) : (
               <View className="px-luxury">
-                <GlassCard className="p-6 border border-slate-200/80 bg-white/90 shadow-sm items-center">
-                  <Ionicons name="calendar-outline" size={36} color="#94A3B8" className="mb-2" />
-                  <Text className="text-slate-700 font-extrabold text-sm text-center">
+                <GlassCard className="p-6  bg-card shadow-sm items-center">
+                  <Ionicons
+                    name="calendar-outline"
+                    size={36}
+                    color={THEME.colors.textSecondary}
+                    className="mb-2"
+                  />
+                  <Text className="text-text font-extrabold text-sm text-center">
                     No Salons Visited Yet
                   </Text>
-                  <Text className="text-slate-400 text-xs text-center mt-1 mb-4 px-4">
+                  <Text className="text-textSecondary text-xs text-center mt-1 mb-4 px-4">
                     Your recently visited salons will show up here. Let's find your first salon!
                   </Text>
                   <Pressable
                     onPress={() => router.push('/(customer)/browse')}
-                    className="bg-black py-2.5 px-5 rounded-2xl"
+                    className="bg-primary py-2.5 px-5 rounded-2xl"
                   >
-                    <Text className="text-white font-extrabold text-xs">Explore Salons</Text>
+                    <Text className="text-background font-extrabold text-xs">Explore Salons</Text>
                   </Pressable>
                 </GlassCard>
               </View>

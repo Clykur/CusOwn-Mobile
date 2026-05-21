@@ -88,6 +88,7 @@ export const useCreateBooking = () => {
     onSuccess: (data) => {
       logger.info(LogTag.API, '✅ Booking created successfully via backend', data);
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
     },
     onError: (error) => {
       logger.error(LogTag.API, '❌ Failed to create booking via backend', error);
@@ -108,6 +109,7 @@ export const useUpdateBookingStatus = () => {
       queryClient.invalidateQueries({
         queryKey: ['owner', 'dashboard'],
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
     },
     onError: (error) => {
       logger.error(LogTag.API, '❌ Failed to update booking status', error);
@@ -127,6 +129,7 @@ export const useRescheduleBooking = () => {
       );
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(variables.bookingId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
     },
     onError: (error) => {
       logger.error(LogTag.API, '❌ Failed to reschedule booking', error);
@@ -134,15 +137,16 @@ export const useRescheduleBooking = () => {
   });
 };
 
-export const useAcceptBooking = () => {
+export const useConfirmBooking = () => {
   return useMutation({
-    mutationFn: (id: string) => apiService.acceptBooking(id),
+    mutationFn: (id: string) => apiService.confirmBooking(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(id) });
       queryClient.invalidateQueries({
         queryKey: ['owner', 'dashboard'],
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
     },
   });
 };
@@ -156,6 +160,7 @@ export const useRejectBooking = () => {
       queryClient.invalidateQueries({
         queryKey: ['owner', 'dashboard'],
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
     },
   });
 };
@@ -169,19 +174,21 @@ export const useMarkNoShow = () => {
       queryClient.invalidateQueries({
         queryKey: ['owner', 'dashboard'],
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
     },
   });
 };
 
-export const useUndoAccept = () => {
+export const useUndoConfirm = () => {
   return useMutation({
-    mutationFn: (id: string) => apiService.undoAccept(id),
+    mutationFn: (id: string) => apiService.undoConfirm(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(id) });
       queryClient.invalidateQueries({
         queryKey: ['owner', 'dashboard'],
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
     },
   });
 };
@@ -195,6 +202,19 @@ export const useUndoReject = () => {
       queryClient.invalidateQueries({
         queryKey: ['owner', 'dashboard'],
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
+    },
+  });
+};
+
+export const useCancelBooking = () => {
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      apiService.cancelBooking(id, reason),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
     },
   });
 };

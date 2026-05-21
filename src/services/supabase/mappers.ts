@@ -390,8 +390,9 @@ export async function enrichBusinessesWithImages(businesses: Business[]): Promis
     }
 
     for (const biz of businesses) {
+      // Prioritize the user's profile picture for the main business image
       const firstMedia =
-        bizMediaMap[biz.id] || (biz.owner_user_id ? profileMediaMap[biz.owner_user_id] : null);
+        (biz.owner_user_id ? profileMediaMap[biz.owner_user_id] : null) || bizMediaMap[biz.id];
       if (firstMedia) {
         try {
           const publicUrl = supabase.storage
@@ -412,7 +413,7 @@ export async function enrichBusinessesWithImages(businesses: Business[]): Promis
       if (ownerMedia) {
         try {
           const ownerPublicUrl = supabase.storage
-            .from(ownerMedia.bucket_name || 'profile-media')
+            .from(ownerMedia.bucket_name || 'business-media')
             .getPublicUrl(ownerMedia.storage_path).data.publicUrl;
           if (ownerPublicUrl) {
             biz.owner_image = ownerPublicUrl;

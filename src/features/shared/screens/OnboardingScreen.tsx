@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, FlatList, Dimensions } from 'react-native';
+import { View, Text, FlatList, useWindowDimensions } from 'react-native';
 
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,8 +8,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { useOnboardingStore } from '@/store/onboarding.store';
-
-const { width } = Dimensions.get('window');
+import {
+  responsiveFontSize,
+  horizontalScale,
+  verticalScale,
+  moderateScale,
+} from '@/utils/responsive';
+import { THEME } from '@/theme/theme';
 
 const SLIDES = [
   {
@@ -33,6 +38,7 @@ const SLIDES = [
 ];
 
 export default function OnboardingScreen() {
+  const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
 
   const flatListRef = useRef<FlatList>(null);
@@ -67,18 +73,18 @@ export default function OnboardingScreen() {
         <AnimatedSection direction="down">
           <View
             style={{
-              paddingHorizontal: 28,
-              paddingTop: 90,
+              paddingHorizontal: horizontalScale(28),
+              paddingTop: verticalScale(90),
             }}
           >
             <Text
               style={{
-                fontSize: 11,
+                fontSize: responsiveFontSize(11),
                 letterSpacing: 5,
                 textTransform: 'uppercase',
                 color: '#D97706',
                 fontWeight: '600',
-                marginBottom: 20,
+                marginBottom: verticalScale(20),
               }}
             >
               Premium Experience
@@ -86,10 +92,10 @@ export default function OnboardingScreen() {
 
             <Text
               style={{
-                fontSize: 48,
+                fontSize: responsiveFontSize(48),
                 fontWeight: '900',
-                color: '#0F172A',
-                lineHeight: 54,
+                color: THEME.colors.background,
+                lineHeight: responsiveFontSize(54),
               }}
             >
               Everything{'\n'}In One Place
@@ -112,41 +118,41 @@ export default function OnboardingScreen() {
               style={{
                 width,
                 justifyContent: 'center',
-                paddingHorizontal: 28,
-                paddingBottom: 120,
+                paddingHorizontal: horizontalScale(28),
+                paddingBottom: verticalScale(50),
               }}
             >
               <AnimatedSection direction="up">
                 <View
                   style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: 32,
-                    padding: 32,
+                    backgroundColor: THEME.colors.text,
+                    borderRadius: moderateScale(32),
+                    padding: moderateScale(32),
                     borderWidth: 1,
                     borderColor: '#E5E7EB',
                   }}
                 >
                   <View
                     style={{
-                      width: 80,
-                      height: 80,
-                      borderRadius: 40,
-                      backgroundColor: '#000',
+                      width: moderateScale(80),
+                      height: moderateScale(80),
+                      borderRadius: moderateScale(40),
+                      backgroundColor: THEME.colors.background,
                       justifyContent: 'center',
                       alignItems: 'center',
-                      marginBottom: 28,
+                      marginBottom: verticalScale(28),
                     }}
                   >
-                    <Ionicons name={item.icon} size={34} color="#FFF" />
+                    <Ionicons name={item.icon} size={moderateScale(34)} color={THEME.colors.text} />
                   </View>
 
                   <Text
                     style={{
-                      fontSize: 34,
+                      fontSize: responsiveFontSize(34),
                       fontWeight: '900',
-                      color: '#0F172A',
-                      lineHeight: 40,
-                      marginBottom: 18,
+                      color: THEME.colors.background,
+                      lineHeight: responsiveFontSize(40),
+                      marginBottom: verticalScale(18),
                     }}
                   >
                     {item.title}
@@ -154,9 +160,9 @@ export default function OnboardingScreen() {
 
                   <Text
                     style={{
-                      fontSize: 17,
-                      color: '#64748B',
-                      lineHeight: 30,
+                      fontSize: responsiveFontSize(17),
+                      color: THEME.colors.textSecondary,
+                      lineHeight: responsiveFontSize(30),
                     }}
                   >
                     {item.description}
@@ -170,8 +176,8 @@ export default function OnboardingScreen() {
         {/* Footer */}
         <View
           style={{
-            paddingHorizontal: 28,
-            paddingBottom: 50,
+            paddingHorizontal: horizontalScale(28),
+            paddingBottom: verticalScale(50),
           }}
         >
           {/* Indicators */}
@@ -179,18 +185,19 @@ export default function OnboardingScreen() {
             style={{
               flexDirection: 'row',
               justifyContent: 'center',
-              marginBottom: 36,
+              marginBottom: verticalScale(36),
             }}
           >
             {SLIDES.map((_, index) => (
               <View
                 key={index}
                 style={{
-                  width: index === activeIndex ? 40 : 8,
-                  height: 8,
+                  width: index === activeIndex ? horizontalScale(40) : horizontalScale(8),
+                  height: horizontalScale(8),
                   borderRadius: 999,
-                  backgroundColor: index === activeIndex ? '#000' : '#CBD5E1',
-                  marginHorizontal: 4,
+                  backgroundColor:
+                    index === activeIndex ? THEME.colors.background : THEME.colors.border,
+                  marginHorizontal: horizontalScale(4),
                 }}
               />
             ))}
@@ -205,15 +212,15 @@ export default function OnboardingScreen() {
           <View
             style={{
               alignItems: 'center',
-              marginTop: 24,
+              marginTop: verticalScale(24),
             }}
           >
             <Text
               style={{
-                fontSize: 10,
+                fontSize: responsiveFontSize(10),
                 letterSpacing: 4,
                 textTransform: 'uppercase',
-                color: '#94A3B8',
+                color: THEME.colors.textSecondary,
               }}
             >
               Designed For Modern Businesses

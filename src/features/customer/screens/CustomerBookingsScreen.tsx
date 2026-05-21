@@ -1,3 +1,4 @@
+import { THEME } from '@/theme/theme';
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, Pressable, FlatList, RefreshControl, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -76,88 +77,85 @@ export default function CustomerBookingsScreen() {
 
     const salonAddress = item.business?.address || item.salon?.address || 'Premium Suite';
 
-    const salonImage = item.business?.owner_image || item.salon?.owner_image || null;
+    const salonImage =
+      item.business?.owner_image ||
+      item.business?.image_url ||
+      item.salon?.owner_image ||
+      item.salon?.image_url ||
+      null;
 
     const displayPrice = getBookingPrice(item);
 
     return (
       <AnimatedSection delay={index * 30} direction="up" className="mb-3">
         <Pressable onPress={() => router.push(`/booking-detail/${item.id}`)}>
-          <GlassCard className="bg-white border border-slate-200 rounded-[22px] p-1 shadow-sm">
+          <GlassCard className="bg-card   rounded-[22px] p-1 shadow-sm">
             {/* Top */}
-            <View className="flex-row">
-              {/* Image */}
-              <View className="relative items-center justify-center">
-                {/* Image */}
-                {isValidImageUrl(salonImage) ? (
-                  <Image
-                    source={{ uri: salonImage }}
-                    className="w-[74px] h-[74px] rounded-full"
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <Avatar name={salonName} size={74} className="w-[74px] h-[74px] rounded-full" />
-                )}
-
-                {/* Status Badge */}
-                <View className="absolute -top-2 self-center bg-white border border-slate-200 min-w-[64px] h-[22px] px-2 rounded-full items-center justify-center">
-                  <Text
-                    numberOfLines={1}
-                    className="text-[8px] font-black uppercase text-slate-700"
-                  >
-                    {item.status}
-                  </Text>
-                </View>
+            <View className="flex-row items-center">
+              {/* Avatar */}
+              <View className="relative">
+                <Avatar
+                  userId={item.business?.owner_user_id || item.salon?.owner_user_id}
+                  name={salonName}
+                  size={70}
+                  className="w-[70px] h-[70px] rounded-full"
+                />
               </View>
 
-              {/* Right */}
-              <View className="flex-1 ml-3 justify-between">
-                {/* Salon */}
-                <View>
-                  <Text className="text-slate-900 text-[17px] font-black" numberOfLines={1}>
+              {/* Right Content */}
+              <View className="flex-1 ml-3 justify-center">
+                {/* Name + Badge */}
+                <View className="flex-row items-center justify-between">
+                  <Text className="flex-1 text-text text-xl font-black mr-3" numberOfLines={1}>
                     {salonName}
                   </Text>
 
-                  <View className="flex-row items-center mt-0.5">
-                    <Ionicons name="location-outline" size={11} color="#64748B" />
-
-                    <Text className="text-slate-500 text-[11px] ml-1 flex-1" numberOfLines={1}>
-                      {salonAddress}
-                    </Text>
-                  </View>
+                  <Badge status={item.status as any} />
                 </View>
+                {/* Location */}
+                <View className="flex-row items-center mt-1">
+                  <Ionicons name="location-outline" size={13} color={THEME.colors.textSecondary} />
 
-                {/* Price */}
-                <View className="mt-3">
-                  <Text className="text-slate-900 text-[24px] font-black tracking-tight">
-                    ₹{displayPrice % 1 === 0 ? displayPrice.toFixed(0) : displayPrice.toFixed(2)}
+                  <Text className="text-textSecondary text-sm ml-1 flex-1" numberOfLines={1}>
+                    {salonAddress}
                   </Text>
                 </View>
               </View>
             </View>
+            <View className="h-[1px] bg-border my-2" />
 
-            {/* Bottom */}
-            <View className="flex-row items-center justify-between mt-4 pt-4 border-t border-slate-100">
-              <View className="flex-1 mr-3">
-                {/* Service */}
-                <Text className="text-[9px] uppercase tracking-[2px] text-slate-400 font-black mb-1">
+            {/* Service + Price */}
+            <View className="flex-row items-start justify-between">
+              {/* Service */}
+              <View className="flex-1">
+                <Text className="text-[11px] uppercase tracking-[2px] text-textSecondary font-black">
                   Service
                 </Text>
 
-                <Text className="text-slate-900 text-[17px] font-bold" numberOfLines={1}>
+                <Text className="text-text text-xl font-bold mt-1" numberOfLines={1}>
                   {item.services && item.services.length > 0
                     ? item.services.map((s: any) => s.name).join(', ')
                     : item.service?.name || 'Curated Session'}
                 </Text>
+              </View>
 
-                {/* Date & Time */}
-                <View className="flex-row items-center mt-2">
-                  <Ionicons name="calendar-outline" size={12} color="#64748B" />
+              {/* Price */}
+              <View className="items-end">
+                <Text className="text-text text-4xl font-black tracking-tight">
+                  ₹{displayPrice % 1 === 0 ? displayPrice.toFixed(0) : displayPrice.toFixed(2)}
+                </Text>
+              </View>
+            </View>
 
-                  <Text className="text-slate-500 text-[11px] font-semibold ml-1">
-                    {formatBookingDate(item.date)} • {formatBookingTime(item.time)}
-                  </Text>
-                </View>
+            {/* Bottom */}
+            <View className="flex-row items-center justify-between pt-2 border-t border-border">
+              {/* Date & Time */}
+              <View className="flex-row items-center flex-1 mr-3">
+                <Ionicons name="calendar-outline" size={15} color={THEME.colors.textSecondary} />
+
+                <Text className="text-textSecondary text-sm font-semibold ml-1">
+                  {formatBookingDate(item.date)} • {formatBookingTime(item.time)}
+                </Text>
               </View>
 
               {/* Rebook */}
@@ -181,9 +179,9 @@ export default function CustomerBookingsScreen() {
                       },
                     });
                   }}
-                  className="border border-slate-500 px-4 py-2 rounded-full"
+                  className="px-5 py-2 rounded-full"
                 >
-                  <Text className="text-black text-[11px] font-black uppercase tracking-[1.5px]">
+                  <Text className="text-text text-xs font-black uppercase tracking-[1.5px]">
                     Rebook
                   </Text>
                 </Pressable>
@@ -200,27 +198,25 @@ export default function CustomerBookingsScreen() {
       <SafeAreaView className="flex-1" edges={['top']}>
         {/* Cinematic Page Title */}
         <View className="px-luxury pt-5 pb-2">
-          <Text className="text-slate-400 text-[10px] font-black uppercase tracking-[3px] mb-1">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
             My Bookings
           </Text>
-          <Text className="text-slate-900 text-3xl font-black tracking-tight">
-            Your Appointments
-          </Text>
+          <Text className="text-text text-3xl font-black tracking-tight">Your Appointments</Text>
         </View>
 
         {/* Custom Header Tab Bar */}
-        <View className="flex-row px-luxury pt-3 pb-1 border-b border-slate-100 bg-white/95 mt-2">
+        <View className="flex-row px-luxury pt-3 pb-1 border-b border-border bg-card mt-2">
           {(['upcoming', 'completed', 'cancelled'] as const).map((tab) => (
             <Pressable
               key={tab}
               className={`flex-1 py-3 items-center border-b-2 ${
-                filter === tab ? 'border-accent-premium' : 'border-transparent'
+                filter === tab ? 'border-primary' : 'border-transparent'
               }`}
               onPress={() => setFilter(tab)}
             >
               <Text
                 className={`text-xs font-black uppercase tracking-wider ${
-                  filter === tab ? 'text-accent-premium' : 'text-slate-400'
+                  filter === tab ? 'text-primary' : 'text-textSecondary'
                 }`}
               >
                 {tab}
@@ -237,16 +233,16 @@ export default function CustomerBookingsScreen() {
           </View>
         ) : isError ? (
           <View className="flex-1 justify-center items-center px-luxury">
-            <GlassCard className="items-center w-full bg-white border border-slate-200 p-6">
-              <Ionicons name="alert-circle-outline" size={48} color="#000000" />
-              <Text className="text-slate-900 text-lg font-bold mt-4 text-center">
+            <GlassCard className="items-center w-full bg-card p-6">
+              <Ionicons name="alert-circle-outline" size={48} color={THEME.colors.error} />
+              <Text className="text-text text-lg font-bold mt-4 text-center">
                 Failed to load your reservations
               </Text>
               <Pressable
                 onPress={() => refetch()}
-                className="mt-6 bg-black border border-black px-8 py-3 rounded-full"
+                className="mt-6 bg-error/10 border border-error/30 px-8 py-3 rounded-full"
               >
-                <Text className="text-white font-bold">Retry Connection</Text>
+                <Text className="text-error font-bold">Retry Connection</Text>
               </Pressable>
             </GlassCard>
           </View>
@@ -261,19 +257,23 @@ export default function CustomerBookingsScreen() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor="#000000"
-                colors={['#000000']}
+                tintColor={THEME.colors.primary}
+                colors={[THEME.colors.primary]}
               />
             }
             ListEmptyComponent={
               <AnimatedSection direction="up" className="items-center justify-center pt-24">
-                <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center mb-6 border border-slate-200">
-                  <Ionicons name="calendar-clear-outline" size={36} color="#64748B" />
+                <View className="w-20 h-20 rounded-full bg-border items-center justify-center mb-6  ">
+                  <Ionicons
+                    name="calendar-clear-outline"
+                    size={36}
+                    color={THEME.colors.textSecondary}
+                  />
                 </View>
-                <Text className="text-slate-900 text-xl font-black uppercase tracking-tight mb-2">
+                <Text className="text-text text-xl font-black uppercase tracking-tight mb-2">
                   No Bookings Found
                 </Text>
-                <Text className="text-slate-500 text-center px-8 text-sm leading-relaxed">
+                <Text className="text-textSecondary text-center px-8 text-sm leading-relaxed">
                   You have no {filter} booking schedules recorded under this account at the moment.
                 </Text>
               </AnimatedSection>

@@ -10,33 +10,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          DEFAULT: '#FFFFFF',
-          light: '#F5F5F5',
-          dark: '#171717',
-          premium: '#FFFFFF',
-          obsidian: '#000000',
-        },
-        secondary: {
-          DEFAULT: '#000000',
-          light: '#737373',
-          dark: '#000000',
-        },
-        accent: {
-          gold: '#000000',
-          goldLight: '#A3A3A3',
-          goldDark: '#000000',
-          premium: '#000000',
-        },
-        luxury: {
-          black: '#000000',
-          charcoal: '#171717',
-          gold: '#000000',
-          silver: '#737373',
-          emerald: '#000000',
-        },
-        textLight: '#737373',
-        textDark: '#000000',
+        background: '#0A0A0A',
+        card: '#141414',
+        input: '#1C1C1C',
+        primary: '#00E676',
+        secondary: '#0F3D2E',
+        text: '#F5F5F5',
+        textSecondary: '#A1A1A1',
+        border: '#2A2A2A',
+        error: '#FF5C5C',
+        success: '#22C55E',
+        disabled: '#525252',
+        transparent: 'transparent',
       },
       borderRadius: {
         premium: '20px',

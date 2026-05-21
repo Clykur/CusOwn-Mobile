@@ -9,13 +9,13 @@ import { Ionicons } from '@expo/vector-icons';
 export default function BookingSuccessScreen() {
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.dark : THEME.light;
+  const theme = isDark ? THEME.colors : THEME.colors;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.centerBox}>
         <View style={styles.iconCircle}>
-          <Ionicons name="checkmark-circle" size={88} color="#FFFFFF" />
+          <Ionicons name="checkmark-circle" size={88} color={THEME.colors.text} />
         </View>
 
         <Text style={[styles.titleText, { color: theme.text }]}>Booking Confirmed!</Text>
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   iconCircle: {
     marginBottom: 24,
-    shadowColor: '#FFFFFF',
+    shadowColor: THEME.colors.text,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
