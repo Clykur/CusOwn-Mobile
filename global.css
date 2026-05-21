@@ -5,25 +5,25 @@
 @layer utilities {
   /* Backgrounds */
   .bg-premium {
-    @apply bg-slate-50;
+    @apply bg-background;
   }
 
   .cinematic-background {
-    @apply flex-1 bg-slate-50;
+    @apply flex-1 bg-background;
   }
 
-  /* Glass Cards */
+  /* Glass Cards — dark-mode surfaces */
   .glass-card {
-    @apply bg-white/80 border border-slate-200/85 rounded-premium overflow-hidden shadow-sm;
+    @apply bg-card border border-border rounded-premium overflow-hidden;
   }
 
   .glass-card-dark {
-    @apply bg-slate-50/95 border border-slate-200 rounded-premium overflow-hidden shadow-sm;
+    @apply bg-card border border-border rounded-premium overflow-hidden;
   }
 
   /* Typography */
   .premium-heading {
-    @apply text-slate-900 font-bold tracking-tight text-3xl;
+    @apply text-text font-bold tracking-tight text-3xl;
   }
 
   .premium-subheading {
@@ -50,7 +50,7 @@
 
   /* Cards */
   .onboarding-card {
-    @apply bg-white/90 border border-slate-200/80 rounded-premium p-luxury mx-4 overflow-hidden shadow-sm;
+    @apply bg-card border border-border rounded-premium p-luxury mx-4 overflow-hidden;
   }
 
   .luxury-gradient {
@@ -58,6 +58,6 @@
   }
 
   .card-premium {
-    @apply bg-white border border-slate-100 rounded-luxury p-6 shadow-sm;
+    @apply bg-card border border-border rounded-luxury p-6;
   }
 }

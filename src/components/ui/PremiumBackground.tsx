@@ -8,7 +8,7 @@ interface PremiumBackgroundProps {
 
 export const PremiumBackground: React.FC<PremiumBackgroundProps> = ({ children }) => {
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-background">
       <View className="flex-1 relative z-10">{children}</View>
     </View>
   );

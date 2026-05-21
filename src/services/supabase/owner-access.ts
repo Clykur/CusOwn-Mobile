@@ -5,24 +5,13 @@ import { logger, LogTag } from '@/utils/logger';
  * Resolve business ids owned by a user (supports owner_user_id or legacy owner_id on businesses).
  */
 export async function listOwnedBusinessIds(ownerUserId: string): Promise<string[]> {
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('businesses')
     .select('id')
     .eq('owner_user_id', ownerUserId)
     .is('deleted_at', null);
 
-  if ((!data || data.length === 0) && !error) {
-    const alt = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('owner_id', ownerUserId)
-      .is('deleted_at', null);
-    if (!alt.error && alt.data?.length) {
-      data = alt.data;
-    }
-  }
-
-  if (error && (!data || data.length === 0)) {
+  if (error) {
     logger.error(LogTag.API, 'listOwnedBusinessIds failed', error);
     throw error;
   }

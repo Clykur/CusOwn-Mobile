@@ -101,26 +101,29 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
       <View className="flex-1 justify-end">
         <Pressable className="flex-1" onPress={onClose} />
 
-        <View className="bg-white rounded-t-[32px] max-h-[90%] w-full shadow-2xl relative overflow-hidden">
+        <View
+          className="rounded-t-[32px] max-h-[90%] w-full relative overflow-hidden"
+          style={{ backgroundColor: THEME.colors.card }}
+        >
           {/* Top Grab Bar */}
           <View className="items-center py-3">
-            <View className="w-12 h-1 bg-slate-200 rounded-full" />
+            <View className="w-12 h-1 bg-border rounded-full" />
           </View>
 
           {/* Header */}
-          <View className="flex-row justify-between items-center px-luxury pb-4 border-b border-slate-100">
+          <View className="flex-row justify-between items-center px-luxury pb-4 border-b border-border">
             <View className="flex-row items-center gap-x-2">
-              <Ionicons name="receipt-outline" size={20} color={THEME.colors.background} />
-              <Text className="text-slate-900 text-lg font-black tracking-tight">
+              <Ionicons name="receipt-outline" size={20} color={THEME.colors.primary} />
+              <Text className="text-text text-lg font-black tracking-tight">
                 Reservation Details
               </Text>
             </View>
 
             <TouchableOpacity
               onPress={onClose}
-              className="p-1.5 rounded-full bg-slate-100 border border-slate-200/50"
+              className="p-1.5 rounded-full bg-input border border-border"
             >
-              <Ionicons name="close" size={18} color={THEME.colors.border} />
+              <Ionicons name="close" size={18} color={THEME.colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -129,12 +132,12 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
             contentContainerClassName="px-luxury py-6 pb-12"
           >
             {/* Reference & Status Badges */}
-            <View className="flex-row justify-between items-center bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-6">
+            <View className="flex-row justify-between items-center bg-input border border-border rounded-2xl p-4 mb-6">
               <View>
-                <Text className="text-slate-400 text-xs font-black uppercase tracking-wider">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-wider">
                   Booking Reference
                 </Text>
-                <Text className="text-slate-800 font-extrabold text-sm mt-0.5">
+                <Text className="text-text font-extrabold text-sm mt-0.5">
                   {b.reference || b.booking_id || 'REF-N/A'}
                 </Text>
               </View>
@@ -142,8 +145,8 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
             </View>
 
             {/* Customer Information section */}
-            <View className="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-sm">
-              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
+            <View className="bg-input border border-border rounded-2xl p-5 mb-5">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Client Profile
               </Text>
 
@@ -152,28 +155,28 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                   userId={b.customer_user_id}
                   name={b.customer_name || 'Client Direct'}
                   size={52}
-                  className="border border-slate-100"
+                  className="border border-border"
                 />
 
                 <View className="flex-1">
-                  <Text className="text-slate-900 font-extrabold text-base">
+                  <Text className="text-text font-extrabold text-base">
                     {b.customer_name || 'Client Direct'}
                   </Text>
 
                   {(b.customer_phone || b.customer_profile?.phone) && (
-                    <Text className="text-slate-500 text-xs mt-1">
+                    <Text className="text-textSecondary text-xs mt-1">
                       Phone: {b.customer_phone || b.customer_profile?.phone}
                     </Text>
                   )}
 
                   {(b.customer_email || b.customer_profile?.email) && (
-                    <Text className="text-slate-500 text-xs mt-0.5" numberOfLines={1}>
+                    <Text className="text-textSecondary text-xs mt-0.5" numberOfLines={1}>
                       Email: {b.customer_email || b.customer_profile?.email}
                     </Text>
                   )}
                 </View>
                 <TouchableOpacity onPress={handleCall}>
-                  <Ionicons name="call-outline" size={25} color={THEME.colors.background} />
+                  <Ionicons name="call-outline" size={25} color={THEME.colors.primary} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleWhatsApp}>
@@ -183,60 +186,54 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
             </View>
 
             {/* Service & Time details */}
-            <View className="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-sm">
-              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
+            <View className="bg-input border border-border rounded-2xl p-5 mb-5">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Service & Appointment Details
               </Text>
 
               {/* Service Details */}
               <View className="mb-4">
-                <Text className="text-slate-900 font-extrabold text-base">{serviceNames}</Text>
+                <Text className="text-text font-extrabold text-base">{serviceNames}</Text>
                 {b.service?.description && (
-                  <Text className="text-slate-500 text-xs mt-1 leading-relaxed">
+                  <Text className="text-textSecondary text-xs mt-1 leading-relaxed">
                     {b.service.description}
                   </Text>
                 )}
               </View>
 
-              <View className="h-[1px] bg-slate-100 my-3" />
+              <View className="h-[1px] bg-border my-3" />
 
               {/* Schedule Info */}
               <View className="flex-row justify-between mb-4">
                 <View className="flex-1">
-                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+                  <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider mb-1.5">
                     Date
                   </Text>
-                  <Text className="text-slate-800 font-bold text-sm">
-                    {formatBookingDate(b.date)}
-                  </Text>
+                  <Text className="text-text font-bold text-sm">{formatBookingDate(b.date)}</Text>
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+                  <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider mb-1.5">
                     Arrival Slot
                   </Text>
-                  <Text className="text-slate-800 font-bold text-sm">
-                    {formatBookingTime(b.time)}
-                  </Text>
+                  <Text className="text-text font-bold text-sm">{formatBookingTime(b.time)}</Text>
                 </View>
               </View>
 
               {/* Duration & Assigned Specialist */}
               <View className="flex-row justify-between mb-2">
                 <View className="flex-1">
-                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+                  <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider mb-1.5">
                     Duration
                   </Text>
-                  <Text className="text-slate-800 font-bold text-sm">
-                    {serviceDuration} Minutes
-                  </Text>
+                  <Text className="text-text font-bold text-sm">{serviceDuration} Minutes</Text>
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1.5">
+                  <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider mb-1.5">
                     Assigned specialist
                   </Text>
-                  <Text className="text-slate-800 font-bold text-sm">
+                  <Text className="text-text font-bold text-sm">
                     {b.business?.owner_name || b.salon?.owner_name || 'Main Specialist'}
                   </Text>
                 </View>
@@ -244,35 +241,35 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
             </View>
 
             {/* Financial Details Card */}
-            <View className="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-sm">
-              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-4">
+            <View className="bg-input border border-border rounded-2xl p-5 mb-5">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Financial Details
               </Text>
 
               <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-slate-500 font-semibold text-sm">Booking Subtotal</Text>
-                <Text className="text-slate-900 font-extrabold text-sm">₹{price.toFixed(2)}</Text>
+                <Text className="text-textSecondary font-semibold text-sm">Booking Subtotal</Text>
+                <Text className="text-text font-extrabold text-sm">₹{price.toFixed(2)}</Text>
               </View>
 
-              <View className="h-[1px] bg-slate-100 my-2" />
+              <View className="h-[1px] bg-border my-2" />
 
               <View className="flex-row justify-between items-center mt-1">
                 <View>
-                  <Text className="text-slate-900 font-extrabold text-base">Total Amount</Text>
-                  <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">
+                  <Text className="text-text font-extrabold text-base">Total Amount</Text>
+                  <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider mt-0.5">
                     {b.payment_status === 'paid' ? 'Paid via App' : 'Pay at Venue'}
                   </Text>
                 </View>
-                <Text className="text-slate-900 font-black text-xl">₹{price.toFixed(0)}</Text>
+                <Text className="text-primary font-black text-xl">₹{price.toFixed(0)}</Text>
               </View>
             </View>
 
             {/* Client Notes Section */}
-            <View className="bg-white border border-slate-200/80 rounded-2xl p-5 mb-6 shadow-sm">
-              <Text className="text-slate-400 text-xs font-black uppercase tracking-wider mb-2">
+            <View className="bg-input border border-border rounded-2xl p-5 mb-6">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-2">
                 Special Instructions & Notes
               </Text>
-              <Text className="text-slate-600 text-xs leading-relaxed font-medium">
+              <Text className="text-textSecondary text-xs leading-relaxed font-medium">
                 {b.notes || b.instructions || 'No special requirements specified by client.'}
               </Text>
             </View>
@@ -287,9 +284,9 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                       onReject(b.id);
                       onClose();
                     }}
-                    className="flex-1 h-12 rounded-xl border border-red-200 bg-red-50/50 items-center justify-center active:bg-red-50"
+                    className="flex-1 h-12 rounded-xl border border-error/40 bg-error/10 items-center justify-center active:bg-error/20"
                   >
-                    <Text className="text-red-700 font-black text-xs uppercase tracking-widest">
+                    <Text className="text-error font-black text-xs uppercase tracking-widest">
                       Decline
                     </Text>
                   </TouchableOpacity>
@@ -299,9 +296,9 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                       onAccept(b.id);
                       onClose();
                     }}
-                    className="flex-1 h-12 rounded-xl bg-black items-center justify-center active:bg-slate-900"
+                    className="flex-1 h-12 rounded-xl bg-primary items-center justify-center active:opacity-80"
                   >
-                    <Text className="text-white font-black text-xs uppercase tracking-widest">
+                    <Text className="text-background font-black text-xs uppercase tracking-widest">
                       Approve
                     </Text>
                   </TouchableOpacity>
@@ -317,9 +314,9 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                         onNoShow(b.id);
                         onClose();
                       }}
-                      className="w-full h-12 rounded-xl bg-slate-800 items-center justify-center active:bg-slate-900"
+                      className="w-full h-12 rounded-xl bg-input border border-border items-center justify-center active:bg-card"
                     >
-                      <Text className="text-white font-black text-xs uppercase tracking-widest">
+                      <Text className="text-textSecondary font-black text-xs uppercase tracking-widest">
                         Mark as No-Show
                       </Text>
                     </TouchableOpacity>
@@ -331,10 +328,14 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                         onUndoAccept(b.id);
                         onClose();
                       }}
-                      className="w-full h-12 rounded-xl border border-slate-200 bg-white items-center justify-center active:bg-slate-50 flex-row gap-x-2"
+                      className="w-full h-12 rounded-xl border border-border bg-input items-center justify-center active:bg-card flex-row gap-x-2"
                     >
-                      <Ionicons name="refresh-outline" size={16} color={THEME.colors.background} />
-                      <Text className="text-slate-800 font-black text-xs uppercase tracking-widest">
+                      <Ionicons
+                        name="refresh-outline"
+                        size={16}
+                        color={THEME.colors.textSecondary}
+                      />
+                      <Text className="text-textSecondary font-black text-xs uppercase tracking-widest">
                         Undo Confirmation
                       </Text>
                     </TouchableOpacity>
@@ -349,10 +350,10 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                     onUndoReject(b.id);
                     onClose();
                   }}
-                  className="w-full h-12 rounded-xl border border-slate-200 bg-white items-center justify-center active:bg-slate-50 flex-row gap-x-2"
+                  className="w-full h-12 rounded-xl border border-border bg-input items-center justify-center active:bg-card flex-row gap-x-2"
                 >
-                  <Ionicons name="refresh-outline" size={16} color={THEME.colors.background} />
-                  <Text className="text-slate-800 font-black text-xs uppercase tracking-widest">
+                  <Ionicons name="refresh-outline" size={16} color={THEME.colors.textSecondary} />
+                  <Text className="text-textSecondary font-black text-xs uppercase tracking-widest">
                     Undo Rejection
                   </Text>
                 </TouchableOpacity>

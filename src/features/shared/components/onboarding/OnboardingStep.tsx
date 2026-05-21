@@ -36,14 +36,14 @@ export const OnboardingStep: React.FC<OnboardingStepProps> = ({
   return (
     <View style={{ width }} className="px-luxury items-center justify-center">
       <Animated.View entering={FadeInUp.delay(200).duration(800)} className="mb-12">
-        <View className="w-28 h-28 rounded-full items-center justify-center bg-white/5 border border-white/10 shadow-2xl">
+        <View className="w-28 h-28 rounded-full items-center justify-center bg-border/20 border border-border shadow-2xl">
           <Ionicons name={icon} size={56} color={color} />
         </View>
       </Animated.View>
 
       <GlassCard className="w-full">
         <Animated.View entering={FadeInDown.delay(400).duration(1000)}>
-          <Text className="text-white text-3xl font-bold mb-8 text-center tracking-tight">
+          <Text className="text-text text-3xl font-bold mb-8 text-center tracking-tight">
             {title}
           </Text>
         </Animated.View>
@@ -55,7 +55,7 @@ export const OnboardingStep: React.FC<OnboardingStepProps> = ({
               entering={FadeInDown.delay(600 + index * 100).duration(800)}
               className="flex-row items-center"
             >
-              <View className="w-8 h-8 rounded-full bg-white/5 items-center justify-center mr-4 border border-white/10">
+              <View className="w-8 h-8 rounded-full bg-border/20 items-center justify-center mr-4 border border-border">
                 <Ionicons name="checkmark-sharp" size={18} color={color} />
               </View>
               <Text className="text-textLight text-lg flex-1 leading-6">{point}</Text>

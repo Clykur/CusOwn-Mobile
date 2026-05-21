@@ -155,7 +155,7 @@ export default function OwnerProfileScreen() {
     return (
       <PremiumBackground>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color={THEME.colors.background} />
+          <ActivityIndicator size="large" color={THEME.colors.primary} />
         </View>
       </PremiumBackground>
     );
@@ -183,7 +183,7 @@ export default function OwnerProfileScreen() {
                   resizeMode="cover"
                 />
               ) : (
-                <View className="w-full h-full bg-slate-200 items-center justify-center">
+                <View className="w-full h-full bg-secondary items-center justify-center">
                   <Avatar
                     name={profileData?.profile?.full_name || 'User'}
                     size={400}
@@ -191,7 +191,7 @@ export default function OwnerProfileScreen() {
                   />
                 </View>
               )}
-              <View className="absolute inset-0 bg-black/20" />
+              <View className="absolute inset-0 bg-background/40" />
 
               {/* Edit Image Button */}
               {editMode && (
@@ -200,13 +200,13 @@ export default function OwnerProfileScreen() {
                   onPress={async () => {
                     await pickAndUpload();
                   }}
-                  className="absolute bottom-16 right-6 w-14 h-14 rounded-full items-center justify-center shadow-lg border-2 border-white/50"
-                  style={{ backgroundColor: THEME.colors.background }}
+                  className="absolute bottom-16 right-6 w-14 h-14 rounded-full items-center justify-center shadow-lg border-2 border-primary/30"
+                  style={{ backgroundColor: THEME.colors.primary }}
                 >
                   <Ionicons
                     name={uploading ? 'hourglass-outline' : 'camera-outline'}
                     size={24}
-                    color={THEME.colors.text}
+                    color={THEME.colors.background}
                   />
                 </Pressable>
               )}
@@ -215,14 +215,14 @@ export default function OwnerProfileScreen() {
             {/* Profile Info Overlapping Card */}
             <View className="px-luxury -mt-10 mb-6">
               <AnimatedSection direction="up">
-                <GlassCard className="p-2 border border-slate-200 bg-white/95 shadow-sm rounded-3xl">
-                  <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">
+                <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl">
+                  <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
                     Manage your account
                   </Text>
-                  <Text className="text-slate-900 text-3xl font-extrabold tracking-tight mb-2">
+                  <Text className="text-text text-3xl font-extrabold tracking-tight mb-2">
                     {profileData?.profile?.full_name || 'User'}
                   </Text>
-                  <Text className="text-sm text-slate-500 font-medium">
+                  <Text className="text-sm text-textSecondary font-medium">
                     Manage your profile, security, and personal preferences
                   </Text>
                 </GlassCard>
@@ -232,24 +232,24 @@ export default function OwnerProfileScreen() {
             <View className="px-luxury">
               {/* Contact Card */}
               <AnimatedSection direction="up" delay={200}>
-                <GlassCard className="p-2 border border-slate-200 bg-white/95 shadow-sm rounded-3xl mb-6">
+                <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl mb-6">
                   <View className="flex-row items-center justify-between mb-6">
-                    <Text className="text-slate-900 text-xl font-bold tracking-tight uppercase">
+                    <Text className="text-text text-xl font-bold tracking-tight uppercase">
                       Contact
                     </Text>
 
                     {!editMode && (
                       <Pressable
                         onPress={() => setEditMode(true)}
-                        className="border border-slate-200 rounded-full px-4 py-2 active:bg-slate-100 flex-row items-center"
+                        className="border border-border rounded-full px-4 py-2 active:bg-input flex-row items-center"
                       >
                         <Ionicons
                           name="create-outline"
                           size={14}
-                          color={THEME.colors.textSecondary}
+                          color={THEME.colors.primary}
                           className="mr-1"
                         />
-                        <Text className="text-sm uppercase tracking-wider text-slate-500 font-bold ml-1">
+                        <Text className="text-sm uppercase tracking-wider text-primary font-bold ml-1">
                           Edit
                         </Text>
                       </Pressable>
@@ -259,7 +259,7 @@ export default function OwnerProfileScreen() {
                   <View className="space-y-6">
                     {/* Full Name */}
                     <View>
-                      <Text className="text-xs uppercase tracking-wider text-slate-400 mb-2 font-bold">
+                      <Text className="text-xs uppercase tracking-wider text-textSecondary mb-2 font-bold">
                         Full Name
                       </Text>
                       {editMode ? (
@@ -272,37 +272,38 @@ export default function OwnerProfileScreen() {
                             }))
                           }
                           placeholder="Enter full name"
-                          className="border border-slate-200 bg-slate-50 rounded-2xl px-4 py-4 text-base text-slate-900 font-medium"
+                          placeholderTextColor={THEME.colors.textSecondary}
+                          className="border border-border bg-input rounded-2xl px-4 py-4 text-base text-text font-medium"
                         />
                       ) : (
-                        <Text className="text-lg text-slate-900 font-bold">
+                        <Text className="text-lg text-text font-bold">
                           {profileData?.profile?.full_name || 'Not set'}
                         </Text>
                       )}
                     </View>
 
                     {/* Email */}
-                    <View className="border-t border-slate-100 pt-5">
+                    <View className="border-t border-border pt-5">
                       <View className="flex-row items-center justify-between mb-1">
-                        <Text className="text-xs uppercase tracking-wider text-slate-400 font-bold">
+                        <Text className="text-xs uppercase tracking-wider text-textSecondary font-bold">
                           Email
                         </Text>
                         <View className="flex-row items-center">
-                          <View className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2" />
+                          <View className="w-1.5 h-1.5 rounded-full bg-success mr-2" />
 
-                          <Text className="text-emerald-600 text-[10px] font-black uppercase tracking-[2px]">
+                          <Text className="text-success text-[10px] font-black uppercase tracking-[2px]">
                             Verified
                           </Text>
                         </View>
                       </View>
-                      <Text className="text-lg text-slate-900 font-bold mt-1">
+                      <Text className="text-lg text-text font-bold mt-1">
                         {profileData?.user?.email || user?.email || 'N/A'}
                       </Text>
                     </View>
 
                     {/* Phone */}
-                    <View className="border-t border-slate-100 pt-5">
-                      <Text className="text-xs uppercase tracking-wider text-slate-400 mb-2 font-bold">
+                    <View className="border-t border-border pt-5">
+                      <Text className="text-xs uppercase tracking-wider text-textSecondary mb-2 font-bold">
                         Phone
                       </Text>
                       {editMode ? (
@@ -315,11 +316,12 @@ export default function OwnerProfileScreen() {
                             }))
                           }
                           placeholder="Enter phone number"
+                          placeholderTextColor={THEME.colors.textSecondary}
                           keyboardType="phone-pad"
-                          className="border border-slate-200 bg-slate-50 rounded-2xl px-4 py-4 text-base text-slate-900 font-medium"
+                          className="border border-border bg-input rounded-2xl px-4 py-4 text-base text-text font-medium"
                         />
                       ) : (
-                        <Text className="text-lg text-slate-900 font-bold">
+                        <Text className="text-lg text-text font-bold">
                           {profileData?.profile?.phone_number || 'Not set'}
                         </Text>
                       )}
@@ -336,13 +338,13 @@ export default function OwnerProfileScreen() {
                       title={updating ? 'Saving...' : 'Save Changes'}
                       onPress={handleUpdateProfile}
                       disabled={updating}
-                      className="flex-1 h-14 bg-black rounded-2xl"
+                      className="flex-1 h-14 bg-primary rounded-2xl"
                     />
                     <Pressable
                       onPress={handleCancel}
-                      className="flex-1 border border-slate-200 bg-white rounded-2xl h-14 items-center justify-center active:bg-slate-50"
+                      className="flex-1 border border-border bg-input rounded-2xl h-14 items-center justify-center active:bg-card"
                     >
-                      <Text className="text-slate-700 font-bold text-sm uppercase tracking-widest">
+                      <Text className="text-textSecondary font-bold text-sm uppercase tracking-widest">
                         Cancel
                       </Text>
                     </Pressable>
@@ -352,18 +354,18 @@ export default function OwnerProfileScreen() {
 
               {/* Account Card */}
               <AnimatedSection direction="up" delay={300}>
-                <GlassCard className="p-2 border border-slate-200 bg-white/95 shadow-sm rounded-3xl mb-6">
-                  <Text className="text-slate-900 text-xl font-bold tracking-tight uppercase mb-6">
+                <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl mb-6">
+                  <Text className="text-text text-xl font-bold tracking-tight uppercase mb-6">
                     Account
                   </Text>
 
                   <View className="space-y-5">
-                    <View className="flex-row items-center justify-between pb-5 border-b border-slate-100">
-                      <Text className="text-xs uppercase tracking-wider text-slate-400 font-bold">
+                    <View className="flex-row items-center justify-between pb-5 border-b border-border">
+                      <Text className="text-xs uppercase tracking-wider text-textSecondary font-bold">
                         Account Type
                       </Text>
-                      <View className="bg-slate-100 px-4 py-1.5 rounded-full">
-                        <Text className="text-slate-700 font-bold text-xs">
+                      <View className="bg-secondary/50 border border-primary/20 px-4 py-1.5 rounded-full">
+                        <Text className="text-primary font-bold text-xs">
                           {profileData?.profile?.user_type === 'owner'
                             ? 'Business Owner'
                             : profileData?.profile?.user_type === 'both'
@@ -375,11 +377,11 @@ export default function OwnerProfileScreen() {
                       </View>
                     </View>
 
-                    <View className="pb-5 border-b border-slate-100">
-                      <Text className="text-xs uppercase tracking-wider text-slate-400 mb-1 font-bold">
+                    <View className="pb-5 border-b border-border">
+                      <Text className="text-xs uppercase tracking-wider text-textSecondary mb-1 font-bold">
                         Account Created
                       </Text>
-                      <Text className="text-base text-slate-900 font-bold">
+                      <Text className="text-base text-text font-bold">
                         {formatDate(
                           profileData?.profile?.created_at ||
                             profileData?.created_at ||
@@ -389,10 +391,10 @@ export default function OwnerProfileScreen() {
                     </View>
 
                     <View>
-                      <Text className="text-xs uppercase tracking-wider text-slate-400 mb-1 font-bold">
+                      <Text className="text-xs uppercase tracking-wider text-textSecondary mb-1 font-bold">
                         Last Sign-In
                       </Text>
-                      <Text className="text-base text-slate-900 font-bold">
+                      <Text className="text-base text-text font-bold">
                         {formatDate(user?.last_sign_in_at || new Date().toISOString())}
                       </Text>
                     </View>
@@ -402,23 +404,23 @@ export default function OwnerProfileScreen() {
 
               {/* Danger Zone */}
               <AnimatedSection direction="up" delay={500}>
-                <GlassCard className="p-2 border border-red-200 bg-red-50 rounded-3xl mb-6">
+                <GlassCard className="p-2 border border-error/30 bg-error/5 rounded-3xl mb-6">
                   <View className="flex-row items-center mb-3">
-                    <Text className="text-red-600 text-xl font-black uppercase tracking-[2px]">
+                    <Text className="text-error text-xl font-black uppercase tracking-[2px]">
                       Danger Zone
                     </Text>
                   </View>
 
-                  <Text className="text-sm leading-6 text-slate-600 font-medium mb-5">
+                  <Text className="text-sm leading-6 text-textSecondary font-medium mb-5">
                     Permanently remove your account and all associated data. This action cannot be
                     undone after 30 days.
                   </Text>
 
                   <Pressable
                     onPress={handleDeleteAccount}
-                    className="flex-row items-center justify-center border border-red-200 bg-white rounded-2xl h-14 active:bg-red-50"
+                    className="flex-row items-center justify-center border border-error/40 bg-error/10 rounded-2xl h-14 active:bg-error/20"
                   >
-                    <Text className="text-red-600 font-black text-sm uppercase tracking-[2px]">
+                    <Text className="text-error font-black text-sm uppercase tracking-[2px]">
                       Delete Account
                     </Text>
                   </Pressable>
@@ -429,15 +431,15 @@ export default function OwnerProfileScreen() {
               <AnimatedSection direction="up" delay={600}>
                 <Pressable
                   onPress={handleSignOut}
-                  className="bg-white border border-slate-200 rounded-2xl h-14 items-center justify-center shadow-sm active:bg-slate-50 mb-10"
+                  className="bg-input border border-border rounded-2xl h-14 items-center justify-center active:bg-card mb-10"
                 >
-                  <Text className="text-slate-900 font-bold text-sm uppercase tracking-widest">
+                  <Text className="text-text font-bold text-sm uppercase tracking-widest">
                     Sign Out
                   </Text>
                 </Pressable>
               </AnimatedSection>
 
-              {error && <Text className="text-rose-500 text-center mb-6 font-bold">{error}</Text>}
+              {error && <Text className="text-error text-center mb-6 font-bold">{error}</Text>}
             </View>
           </ScrollView>
         </KeyboardAvoidingView>

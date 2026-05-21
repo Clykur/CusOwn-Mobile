@@ -179,7 +179,7 @@ export default function CustomerBookingsScreen() {
                       },
                     });
                   }}
-                  className="px-5 py-2 rounded-full"
+                  className="px-4 py-2 rounded-full border border-text"
                 >
                   <Text className="text-text text-xs font-black uppercase tracking-[1.5px]">
                     Rebook
@@ -201,7 +201,9 @@ export default function CustomerBookingsScreen() {
           <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
             My Bookings
           </Text>
-          <Text className="text-text text-3xl font-black tracking-tight">Your Appointments</Text>
+          <Text className="text-text text-3xl font-black tracking-tight">
+            Your <Text className="text-primary">Appointments</Text>
+          </Text>
         </View>
 
         {/* Custom Header Tab Bar */}

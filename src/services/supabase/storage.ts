@@ -109,6 +109,7 @@ async function insertMediaRow(params: {
   bucket_name: string;
   storage_path: string;
   content_type: string;
+  size_bytes: number;
   sort_order?: number;
 }): Promise<Record<string, unknown>> {
   const { data, error } = await supabase
@@ -119,8 +120,8 @@ async function insertMediaRow(params: {
       bucket_name: params.bucket_name,
       storage_path: params.storage_path,
       content_type: params.content_type,
+      size_bytes: params.size_bytes,
       sort_order: params.sort_order ?? 0,
-      processing_status: 'ready',
     })
     .select('*')
     .single();
@@ -140,7 +141,7 @@ export async function uploadToStorage(params: {
   storagePath: string;
   file: PickedImageFile;
   upsert?: boolean;
-}): Promise<void> {
+}): Promise<{ size_bytes: number }> {
   const buffer = await uriToArrayBuffer(params.file.uri);
   const contentType = params.file.type || 'image/jpeg';
 
@@ -158,6 +159,8 @@ export async function uploadToStorage(params: {
     });
     throw error;
   }
+
+  return { size_bytes: buffer.byteLength };
 }
 
 export async function listBusinessMedia(businessId: string): Promise<{ items: MediaListItem[] }> {
@@ -208,7 +211,7 @@ export async function uploadBusinessGalleryImage(
   const storagePath = `business/${businessId}/gallery/${Date.now()}.${ext}`;
   const bucket = STORAGE_BUCKETS.business;
 
-  await uploadToStorage({ bucket, storagePath, file, upsert: false });
+  const { size_bytes } = await uploadToStorage({ bucket, storagePath, file, upsert: false });
 
   const row = await insertMediaRow({
     entity_type: 'business',
@@ -216,6 +219,7 @@ export async function uploadBusinessGalleryImage(
     bucket_name: bucket,
     storage_path: storagePath,
     content_type: file.type || `image/${ext}`,
+    size_bytes,
   });
 
   return {
@@ -234,7 +238,7 @@ export async function uploadProfileAvatar(
   const storagePath = `profile/${userId}/avatar/${Date.now()}.${ext}`;
   const bucket = STORAGE_BUCKETS.profile;
 
-  await uploadToStorage({ bucket, storagePath, file, upsert: true });
+  const { size_bytes } = await uploadToStorage({ bucket, storagePath, file, upsert: true });
 
   const row = await insertMediaRow({
     entity_type: 'profile',
@@ -242,6 +246,7 @@ export async function uploadProfileAvatar(
     bucket_name: bucket,
     storage_path: storagePath,
     content_type: file.type || `image/${ext}`,
+    size_bytes,
   });
 
   const mediaId = String(row.id);

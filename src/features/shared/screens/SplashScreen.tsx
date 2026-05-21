@@ -134,7 +134,7 @@ export default function Splash() {
         </Animated.View>
 
         <Animated.View style={logoStyle} className="mt-8">
-          <Text className="text-white text-5xl font-bold tracking-tighter">
+          <Text className="text-text text-5xl font-bold tracking-tighter">
             Cus<Text className="text-accent-premium">Own</Text>
           </Text>
         </Animated.View>
@@ -160,7 +160,7 @@ export default function Splash() {
         delay={2000}
         className="absolute bottom-16 w-full items-center"
       >
-        <Text className="text-white/30 text-xs tracking-[8px] uppercase">
+        <Text className="text-textSecondary/50 text-xs tracking-[8px] uppercase">
           Powered by Gold Protocol
         </Text>
       </AnimatedSection>

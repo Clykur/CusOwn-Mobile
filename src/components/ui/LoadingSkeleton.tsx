@@ -37,7 +37,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 
   return (
     <Animated.View
-      className={`bg-white/10 ${className}`}
+      className={`bg-border ${className}`}
       style={[
         {
           width,

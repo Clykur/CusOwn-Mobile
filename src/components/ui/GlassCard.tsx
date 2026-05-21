@@ -18,7 +18,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   className = '',
   ...props
 }) => {
-  const cardClass = variant === 'light' ? 'glass-card' : 'glass-card-dark';
+  // Both variants use the same dark card styling in the owner dark-mode theme
+  const cardClass = 'glass-card-dark';
 
   return (
     <View className={`${cardClass} ${className}`} {...props}>
@@ -31,16 +32,16 @@ export const GlassCard: React.FC<GlassCardProps> = ({
        */}
       {Platform.OS === 'ios' ? (
         <BlurView
-          intensity={variant === 'light' ? 60 : 80}
-          tint={variant === 'light' ? 'light' : 'prominent'}
+          intensity={variant === 'light' ? 40 : 60}
+          tint="dark"
           className="absolute inset-0"
         />
       ) : (
         <View
           className="absolute inset-0"
           style={{
-            backgroundColor:
-              variant === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(248,250,252,0.95)',
+            // Elevated dark surface with slight transparency for depth
+            backgroundColor: 'rgba(20,20,20,0.97)',
           }}
         />
       )}

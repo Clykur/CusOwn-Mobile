@@ -66,7 +66,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           }
         }}
       >
-        <GlassCard className="p-1 border-slate-200/80 rounded-luxury">
+        <GlassCard className="p-1 border-border rounded-luxury">
           {/* Header */}
           <View className="flex-row justify-between items-start mb-2">
             <View className="flex-row items-center flex-1 gap-x-3">
@@ -81,7 +81,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
               <View className="flex-1 min-w-0">
                 {/* Customer Name */}
                 <Text
-                  className="text-slate-900 text-xl font-bold"
+                  className="text-text text-xl font-bold"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
@@ -90,7 +90,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
                 {/* Services */}
                 <Text
-                  className="text-slate-500 text-sm font-semibold"
+                  className="text-textSecondary text-sm font-semibold"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
@@ -106,7 +106,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           </View>
 
           {/* Divider */}
-          <View className="h-[1px] bg-slate-100 mb-2" />
+          <View className="h-[1px] bg-border mb-2" />
 
           {/* Footer */}
           <View className="flex-row justify-between items-center">
@@ -115,7 +115,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
               <View className="gap-x-4">
                 <Ionicons name="calendar-outline" size={14} color={THEME.colors.textSecondary} />
               </View>
-              <Text className="text-slate-600 text-xs font-medium">
+              <Text className="text-textSecondary text-xs font-medium">
                 {formatBookingDate(item.date)} - {formatBookingTime(item.time)}
               </Text>
             </View>
@@ -127,16 +127,16 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 <>
                   <Pressable
                     onPress={() => onReject(item.id)}
-                    className="w-8 h-8 rounded-full bg-neutral-100 items-center justify-center border border-neutral-300"
+                    className="w-8 h-8 rounded-full bg-input items-center justify-center border border-border"
                   >
-                    <Ionicons name="close" size={16} color={THEME.colors.background} />
+                    <Ionicons name="close" size={16} color={THEME.colors.textSecondary} />
                   </Pressable>
 
                   <Pressable
                     onPress={() => onAccept(item.id)}
-                    className="w-8 h-8 rounded-full bg-black items-center justify-center border border-black"
+                    className="w-8 h-8 rounded-full bg-primary items-center justify-center border border-primary"
                   >
-                    <Ionicons name="checkmark" size={16} color={THEME.colors.text} />
+                    <Ionicons name="checkmark" size={16} color={THEME.colors.background} />
                   </Pressable>
                 </>
               )}
@@ -147,17 +147,21 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                   {onNoShow && !item.no_show && (
                     <Pressable
                       onPress={() => onNoShow(item.id)}
-                      className="w-8 h-8 rounded-full bg-orange-100 items-center justify-center border border-orange-300"
+                      className="w-8 h-8 rounded-full bg-warning/20 items-center justify-center border border-warning/30"
                     >
-                      <Ionicons name="person-remove-outline" size={16} color="#EA580C" />
+                      <Ionicons
+                        name="person-remove-outline"
+                        size={16}
+                        color={THEME.colors.warning}
+                      />
                     </Pressable>
                   )}
 
                   <Pressable
                     onPress={() => onUndoAccept(item.id)}
-                    className="w-8 h-8 rounded-full bg-neutral-100 items-center justify-center border border-neutral-300"
+                    className="w-8 h-8 rounded-full bg-input items-center justify-center border border-border"
                   >
-                    <Ionicons name="refresh-outline" size={16} color={THEME.colors.background} />
+                    <Ionicons name="refresh-outline" size={16} color={THEME.colors.textSecondary} />
                   </Pressable>
                 </View>
               )}
@@ -166,9 +170,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({
               {item.status === 'rejected' && onUndoReject && canUndo && (
                 <Pressable
                   onPress={() => onUndoReject(item.id)}
-                  className="w-8 h-8 rounded-full bg-neutral-100 items-center justify-center border border-neutral-300"
+                  className="w-8 h-8 rounded-full bg-input items-center justify-center border border-border"
                 >
-                  <Ionicons name="refresh-outline" size={16} color={THEME.colors.background} />
+                  <Ionicons name="refresh-outline" size={16} color={THEME.colors.textSecondary} />
                 </Pressable>
               )}
 

@@ -59,7 +59,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
         {loading && <ActivityIndicator size="small" color={THEME.colors.text} className="mr-2" />}
         <Text
           className={`text-lg font-bold tracking-tight ${
-            variant === 'primary' ? 'text-white' : 'text-accent-premium'
+            variant === 'primary' ? 'text-background' : 'text-accent-premium'
           } ${textClassName}`}
         >
           {title}

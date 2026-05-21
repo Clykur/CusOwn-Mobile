@@ -77,6 +77,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
     const payload = {
       businessId,
+      business_id: businessId,
       name: form.name,
       duration_minutes: Number(form.duration),
       price_cents: Math.round(Number(form.price) * 100),
@@ -123,16 +124,16 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
   return (
     <>
       {/* Main Card */}
-      <GlassCard className="p-6 border-slate-200/80 shadow-sm rounded-luxury">
+      <GlassCard className="p-2 border-border rounded-luxury">
         {/* Header */}
-        <View className="flex-row justify-between items-center mb-6 border-b border-slate-100 pb-4">
-          <Text className="text-slate-900 text-xl font-black tracking-tight">Services</Text>
+        <View className="flex-row justify-between items-center mb-6 border-b border-border pb-4">
+          <Text className="text-text text-xl font-black tracking-tight">Services</Text>
 
           <Pressable
             onPress={openAdd}
-            className="bg-black px-5 py-3 rounded-full active:bg-slate-950"
+            className="bg-primary px-5 py-3 rounded-full active:opacity-80"
           >
-            <Text className="text-white font-black text-xs uppercase tracking-wider">
+            <Text className="text-background font-black text-xs uppercase tracking-wider">
               + Add Service
             </Text>
           </Pressable>
@@ -146,7 +147,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
           <View className="py-10 items-center justify-center">
             <Ionicons name="cut-outline" size={52} color={THEME.colors.border} />
 
-            <Text className="text-slate-500 text-center mt-4 font-semibold">
+            <Text className="text-textSecondary text-center mt-4 font-semibold">
               No services listed yet.
             </Text>
           </View>
@@ -156,13 +157,13 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             {services.map((s) => (
               <View
                 key={s.id}
-                className="bg-slate-50 border border-slate-200/80 rounded-3xl p-4 flex-row justify-between items-center mb-3"
+                className="bg-input border border-border rounded-3xl p-4 flex-row justify-between items-center mb-3"
               >
                 {/* Left */}
                 <View className="flex-1 mr-4">
-                  <Text className="text-slate-900 text-base font-extrabold">{s.name}</Text>
+                  <Text className="text-text text-base font-extrabold">{s.name}</Text>
 
-                  <Text className="text-slate-500 text-xs mt-1 font-semibold">
+                  <Text className="text-textSecondary text-xs mt-1 font-semibold">
                     {s.duration} mins • ₹{s.price}
                   </Text>
                 </View>
@@ -170,16 +171,16 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
                 {/* Actions */}
                 <View className="flex-row gap-x-1">
                   {/* Edit */}
-                  <Pressable onPress={() => openEdit(s)} className="p-3 active:bg-slate-100">
-                    <Ionicons name="create-outline" size={16} color={THEME.colors.textSecondary} />
+                  <Pressable onPress={() => openEdit(s)} className="p-3 active:bg-card rounded-xl">
+                    <Ionicons name="create-outline" size={16} color={THEME.colors.primary} />
                   </Pressable>
 
                   {/* Delete */}
                   <Pressable
                     onPress={() => handleDelete(s.id)}
-                    className="p-3 active:bg-neutral-200"
+                    className="p-3 active:bg-card rounded-xl"
                   >
-                    <Ionicons name="trash-outline" size={16} color="#ca1919ff" />
+                    <Ionicons name="trash-outline" size={16} color={THEME.colors.error} />
                   </Pressable>
                 </View>
               </View>
@@ -195,34 +196,38 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
         animationType="slide"
         onRequestClose={() => setShowForm(false)}
       >
-        <Pressable className="flex-1 justify-end" onPress={() => setShowForm(false)}>
+        <Pressable
+          className="flex-1 justify-end"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+          onPress={() => setShowForm(false)}
+        >
           {/* Bottom Sheet */}
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="bg-white rounded-t-[36px] p-6 pb-10"
+            className="bg-card rounded-t-[36px] p-6 pb-10 border-t border-border"
           >
             {/* Handle */}
-            <View className="w-14 h-1.5 bg-slate-300 rounded-full self-center mb-6" />
+            <View className="w-14 h-1.5 bg-border rounded-full self-center mb-6" />
 
             {/* Header */}
             <View className="flex-row items-center justify-between mb-6">
-              <Text className="text-slate-900 text-lg font-black uppercase tracking-wide">
+              <Text className="text-text text-lg font-black uppercase tracking-wide">
                 {editing ? 'Edit Service' : 'Add Service'}
               </Text>
 
               <Pressable onPress={() => setShowForm(false)}>
-                <Ionicons name="close-outline" size={28} color={THEME.colors.background} />
+                <Ionicons name="close-outline" size={28} color={THEME.colors.textSecondary} />
               </Pressable>
             </View>
 
             {/* Service Name */}
             <View className="mb-4">
-              <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px] mb-2">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
                 Service Name
               </Text>
 
               <TextInput
-                className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 font-semibold"
+                className="bg-input border border-border rounded-2xl px-4 py-4 text-text font-semibold"
                 placeholder="e.g. Haircut"
                 placeholderTextColor={THEME.colors.textSecondary}
                 value={form.name}
@@ -234,12 +239,12 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             <View className="flex-row gap-x-3 mb-6">
               {/* Duration */}
               <View className="flex-1">
-                <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
                   Duration
                 </Text>
 
                 <TextInput
-                  className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 font-semibold"
+                  className="bg-input border border-border rounded-2xl px-4 py-4 text-text font-semibold"
                   placeholder="30"
                   placeholderTextColor={THEME.colors.textSecondary}
                   value={form.duration}
@@ -250,12 +255,12 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
               {/* Price */}
               <View className="flex-1">
-                <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
                   Price (₹)
                 </Text>
 
                 <TextInput
-                  className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-slate-800 font-semibold"
+                  className="bg-input border border-border rounded-2xl px-4 py-4 text-text font-semibold"
                   placeholder="500"
                   placeholderTextColor={THEME.colors.textSecondary}
                   value={form.price}
@@ -269,12 +274,12 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             <Pressable
               onPress={handleSave}
               disabled={saving}
-              className="bg-black py-4 rounded-full items-center active:bg-slate-950"
+              className="bg-primary py-4 rounded-full items-center active:opacity-80"
             >
               {saving ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color={THEME.colors.background} />
               ) : (
-                <Text className="text-white font-black text-xs uppercase tracking-widest">
+                <Text className="text-background font-black text-xs uppercase tracking-widest">
                   Save Service
                 </Text>
               )}
