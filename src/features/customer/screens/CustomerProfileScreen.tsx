@@ -13,33 +13,46 @@ import {
   Switch,
   Image,
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/auth.store';
+
 import { apiService } from '@/services/api.service';
+
 import { Ionicons } from '@expo/vector-icons';
+
 import { useProfileImage } from '@/hooks/useProfileImage';
 import { useProfileMedia } from '@/hooks/useProfileMedia';
+
 import { isValidImageUrl } from '@/utils/image';
-// New UI Components
+
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { PremiumButton } from '@/components/ui/PremiumButton';
+import { Avatar } from '@/components/ui/Avatar';
 
 export default function CustomerProfileScreen() {
   const { user, profile, profileImageUrl } = useAuthStore();
+
   const { signOut } = useAuth();
+
   const { pickAndUpload, uploading } = useProfileImage();
+
   const { data: mediaUrl } = useProfileMedia(user?.id);
 
   const [loading, setLoading] = useState(!profile);
+
   const [updating, setUpdating] = useState(false);
+
   const [editMode, setEditMode] = useState(false);
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   const [profileData, setProfileData] = useState<any>(profile ? { profile } : null);
+
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -75,6 +88,7 @@ export default function CustomerProfileScreen() {
   const handleUpdateProfile = async () => {
     if (!formData.full_name.trim()) {
       Alert.alert('Error', 'Full name is required');
+
       return;
     }
 
@@ -87,7 +101,9 @@ export default function CustomerProfileScreen() {
       });
 
       Alert.alert('Success', 'Profile updated successfully');
+
       setEditMode(false);
+
       fetchProfile();
     } catch (err: any) {
       Alert.alert('Update Failed', err.message || 'Could not update profile');
@@ -98,6 +114,7 @@ export default function CustomerProfileScreen() {
 
   const handleCancel = () => {
     setEditMode(false);
+
     setFormData({
       full_name: profileData?.profile?.full_name || '',
       phone_number: profileData?.profile?.phone_number || '',
@@ -109,13 +126,17 @@ export default function CustomerProfileScreen() {
       'Delete Account',
       'This action is permanent and will remove all your data after 30 days. Are you absolutely sure?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
         {
           text: 'Delete Permanently',
           style: 'destructive',
           onPress: async () => {
             try {
               await apiService.deleteAccount('User requested deletion via mobile app');
+
               signOut();
             } catch (err: any) {
               Alert.alert('Error', 'Failed to delete account. Please try again.');
@@ -128,13 +149,21 @@ export default function CustomerProfileScreen() {
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to exit?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: signOut },
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Sign Out',
+        style: 'destructive',
+        onPress: signOut,
+      },
     ]);
   };
 
   const formatDate = (date: string) => {
     if (!date) return 'N/A';
+
     return new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
       day: 'numeric',
@@ -147,7 +176,7 @@ export default function CustomerProfileScreen() {
     return (
       <PremiumBackground>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color={THEME.colors.background} />
+          <ActivityIndicator size="large" color={THEME.colors.primary} />
         </View>
       </PremiumBackground>
     );
@@ -166,61 +195,72 @@ export default function CustomerProfileScreen() {
               paddingBottom: 40,
             }}
           >
-            {/* Hero Profile Image */}
+            {/* Hero */}
             <View className="h-[360px] w-full relative">
               {isValidImageUrl(mediaUrl || profileImageUrl) ? (
                 <Image
-                  source={{ uri: (mediaUrl || profileImageUrl) as string }}
+                  source={{
+                    uri: (mediaUrl || profileImageUrl) as string,
+                  }}
                   className="w-full h-full"
                   resizeMode="cover"
                 />
               ) : (
-                <View className="w-full h-full bg-card items-center justify-center">
-                  <Ionicons name="person" size={80} color={THEME.colors.border} />
+                <View className="w-full h-full bg-secondary items-center justify-center">
+                  <Avatar
+                    name={profileData?.profile?.full_name || 'User'}
+                    size={400}
+                    className="w-full h-full"
+                  />
                 </View>
               )}
-              <View className="absolute inset-0 bg-black/20" />
 
-              {/* Edit Image Button */}
+              <View className="absolute inset-0 bg-background/40" />
+
+              {/* Edit Image */}
               {editMode && (
                 <Pressable
                   disabled={uploading}
                   onPress={async () => {
                     await pickAndUpload();
                   }}
-                  className="absolute bottom-16 right-6 w-14 h-14 rounded-full items-center justify-center shadow-lg border-2 border-white/50"
-                  style={{ backgroundColor: THEME.colors.background }}
+                  className="absolute bottom-16 right-6 w-14 h-14 rounded-full items-center justify-center shadow-lg border-2 border-primary/30"
+                  style={{
+                    backgroundColor: THEME.colors.primary,
+                  }}
                 >
                   <Ionicons
                     name={uploading ? 'hourglass-outline' : 'camera-outline'}
                     size={24}
-                    color={THEME.colors.text}
+                    color={THEME.colors.background}
                   />
                 </Pressable>
               )}
             </View>
 
-            {/* Profile Info Overlapping Card */}
+            {/* Header Card */}
             <View className="px-luxury -mt-10 mb-6">
               <AnimatedSection direction="up">
-                <GlassCard className="p-2  bg-card shadow-sm rounded-3xl">
+                <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl">
                   <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
                     Manage your account
                   </Text>
+
                   <Text className="text-text text-3xl font-extrabold tracking-tight mb-2">
                     {profileData?.profile?.full_name || 'User'}
                   </Text>
+
                   <Text className="text-sm text-textSecondary font-medium">
-                    Manage your profile and personal preferences
+                    Manage your profile, security, and personal preferences
                   </Text>
                 </GlassCard>
               </AnimatedSection>
             </View>
 
             <View className="px-luxury">
-              {/* Contact Card */}
+              {/* Contact */}
               <AnimatedSection direction="up" delay={200}>
-                <GlassCard className="p-2  bg-card shadow-sm rounded-3xl mb-6">
+                <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl mb-6">
                   <View className="flex-row items-center justify-between mb-6">
                     <Text className="text-text text-xl font-bold tracking-tight uppercase">
                       Contact
@@ -229,15 +269,11 @@ export default function CustomerProfileScreen() {
                     {!editMode && (
                       <Pressable
                         onPress={() => setEditMode(true)}
-                        className=" rounded-full px-4 py-2 flex-row items-center"
+                        className="border border-border rounded-full px-4 py-2 active:bg-input flex-row items-center"
                       >
-                        <Ionicons
-                          name="create-outline"
-                          size={14}
-                          color={THEME.colors.textSecondary}
-                          className="mr-1"
-                        />
-                        <Text className="text-sm uppercase tracking-wider text-textSecondary font-bold ml-1">
+                        <Ionicons name="create-outline" size={14} color={THEME.colors.primary} />
+
+                        <Text className="text-sm uppercase tracking-wider text-primary font-bold ml-1">
                           Edit
                         </Text>
                       </Pressable>
@@ -245,11 +281,12 @@ export default function CustomerProfileScreen() {
                   </View>
 
                   <View className="space-y-6">
-                    {/* Full Name */}
+                    {/* Name */}
                     <View>
                       <Text className="text-xs uppercase tracking-wider text-textSecondary mb-2 font-bold">
                         Full Name
                       </Text>
+
                       {editMode ? (
                         <TextInput
                           value={formData.full_name}
@@ -260,7 +297,8 @@ export default function CustomerProfileScreen() {
                             }))
                           }
                           placeholder="Enter full name"
-                          className=" bg-input rounded-2xl px-4 py-4 text-base text-text font-medium"
+                          placeholderTextColor={THEME.colors.textSecondary}
+                          className="border border-border bg-input rounded-2xl px-4 py-4 text-base text-text font-medium"
                         />
                       ) : (
                         <Text className="text-lg text-text font-bold">
@@ -270,29 +308,32 @@ export default function CustomerProfileScreen() {
                     </View>
 
                     {/* Email */}
-                    <View className="pt-5">
+                    <View className="border-t border-border pt-5">
                       <View className="flex-row items-center justify-between mb-1">
                         <Text className="text-xs uppercase tracking-wider text-textSecondary font-bold">
                           Email
                         </Text>
-                        <View className="flex-row items-center">
-                          <View className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2" />
 
-                          <Text className="text-emerald-600 text-[10px] font-black uppercase tracking-[2px]">
+                        <View className="flex-row items-center">
+                          <View className="w-1.5 h-1.5 rounded-full bg-success mr-2" />
+
+                          <Text className="text-success text-[10px] font-black uppercase tracking-[2px]">
                             Verified
                           </Text>
                         </View>
                       </View>
+
                       <Text className="text-lg text-text font-bold mt-1">
                         {profileData?.user?.email || user?.email || 'N/A'}
                       </Text>
                     </View>
 
                     {/* Phone */}
-                    <View className="pt-5">
+                    <View className="border-t border-border pt-5">
                       <Text className="text-xs uppercase tracking-wider text-textSecondary mb-2 font-bold">
                         Phone
                       </Text>
+
                       {editMode ? (
                         <TextInput
                           value={formData.phone_number}
@@ -303,8 +344,9 @@ export default function CustomerProfileScreen() {
                             }))
                           }
                           placeholder="Enter phone number"
+                          placeholderTextColor={THEME.colors.textSecondary}
                           keyboardType="phone-pad"
-                          className=" bg-input rounded-2xl px-4 py-4 text-base text-text font-medium"
+                          className="border border-border bg-input rounded-2xl px-4 py-4 text-base text-text font-medium"
                         />
                       ) : (
                         <Text className="text-lg text-text font-bold">
@@ -326,11 +368,12 @@ export default function CustomerProfileScreen() {
                       disabled={updating}
                       className="flex-1 h-14 bg-primary rounded-2xl"
                     />
+
                     <Pressable
                       onPress={handleCancel}
-                      className="flex-1  bg-card rounded-2xl h-14 items-center justify-center active:bg-border"
+                      className="flex-1 border border-border bg-input rounded-2xl h-14 items-center justify-center active:bg-card"
                     >
-                      <Text className="text-text font-bold text-sm uppercase tracking-widest">
+                      <Text className="text-textSecondary font-bold text-sm uppercase tracking-widest">
                         Cancel
                       </Text>
                     </Pressable>
@@ -338,20 +381,21 @@ export default function CustomerProfileScreen() {
                 </AnimatedSection>
               )}
 
-              {/* Account Card */}
+              {/* Account */}
               <AnimatedSection direction="up" delay={300}>
-                <GlassCard className="p-2  bg-card shadow-sm rounded-3xl mb-6">
+                <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl mb-6">
                   <Text className="text-text text-xl font-bold tracking-tight uppercase mb-6">
                     Account
                   </Text>
 
                   <View className="space-y-5">
-                    <View className="flex-row items-center justify-between pb-5">
+                    <View className="flex-row items-center justify-between pb-5 border-b border-border">
                       <Text className="text-xs uppercase tracking-wider text-textSecondary font-bold">
                         Account Type
                       </Text>
-                      <View className="bg-border px-4 py-1.5 rounded-full">
-                        <Text className="text-text font-bold text-xs">
+
+                      <View className="bg-secondary/50 border border-primary/20 px-4 py-1.5 rounded-full">
+                        <Text className="text-primary font-bold text-xs">
                           {profileData?.profile?.user_type === 'owner'
                             ? 'Business Owner'
                             : profileData?.profile?.user_type === 'both'
@@ -363,10 +407,11 @@ export default function CustomerProfileScreen() {
                       </View>
                     </View>
 
-                    <View className="pb-5">
+                    <View className="pb-5 border-b border-border">
                       <Text className="text-xs uppercase tracking-wider text-textSecondary mb-1 font-bold">
                         Account Created
                       </Text>
+
                       <Text className="text-base text-text font-bold">
                         {formatDate(
                           profileData?.profile?.created_at ||
@@ -380,6 +425,7 @@ export default function CustomerProfileScreen() {
                       <Text className="text-xs uppercase tracking-wider text-textSecondary mb-1 font-bold">
                         Last Sign-In
                       </Text>
+
                       <Text className="text-base text-text font-bold">
                         {formatDate(user?.last_sign_in_at || new Date().toISOString())}
                       </Text>
@@ -390,14 +436,14 @@ export default function CustomerProfileScreen() {
 
               {/* Preferences */}
               <AnimatedSection direction="up" delay={400}>
-                <GlassCard className="p-2  bg-card shadow-sm rounded-3xl mb-6">
+                <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl mb-6">
                   <Text className="text-text text-xl font-bold tracking-tight uppercase mb-6">
                     Preferences
                   </Text>
 
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center flex-1 mr-4">
-                      <View className="w-12 h-12 rounded-full bg-border items-center justify-center mr-4">
+                      <View className="w-12 h-12 rounded-full items-center justify-center mr-4">
                         <Ionicons
                           name="notifications-outline"
                           size={22}
@@ -413,7 +459,7 @@ export default function CustomerProfileScreen() {
                       onValueChange={setNotificationsEnabled}
                       trackColor={{
                         false: THEME.colors.border,
-                        true: THEME.colors.background,
+                        true: THEME.colors.primary,
                       }}
                       thumbColor={THEME.colors.text}
                     />
@@ -421,22 +467,23 @@ export default function CustomerProfileScreen() {
                 </GlassCard>
               </AnimatedSection>
 
-              {/* Danger Zone */}
+              {/* Danger */}
               <AnimatedSection direction="up" delay={500}>
-                <GlassCard className="p-2 border border-error/30 bg-error/10 shadow-sm rounded-3xl mb-6">
-                  <Text className="text-error text-xl font-bold tracking-tight uppercase mb-4">
+                <GlassCard className="p-2 border border-error/30 bg-error/5 rounded-3xl mb-6">
+                  <Text className="text-error text-xl font-black uppercase tracking-[2px] mb-3">
                     Danger Zone
                   </Text>
-                  <Text className="text-sm leading-relaxed text-textSecondary mb-6 font-medium">
+
+                  <Text className="text-sm leading-6 text-textSecondary font-medium mb-5">
                     Permanently remove your account and all associated data. This action cannot be
                     undone after 30 days.
                   </Text>
 
                   <Pressable
                     onPress={handleDeleteAccount}
-                    className="border border-error bg-card rounded-2xl h-14 items-center justify-center active:bg-error/20"
+                    className="flex-row items-center justify-center border border-error/40 bg-error/5 rounded-2xl h-14 active:bg-error/20"
                   >
-                    <Text className="text-error font-bold text-sm uppercase tracking-widest">
+                    <Text className="text-error font-black text-sm uppercase tracking-[2px]">
                       Delete Account
                     </Text>
                   </Pressable>
@@ -447,7 +494,7 @@ export default function CustomerProfileScreen() {
               <AnimatedSection direction="up" delay={600}>
                 <Pressable
                   onPress={handleSignOut}
-                  className="bg-card  rounded-2xl h-14 items-center justify-center active:bg-border mb-10"
+                  className="bg-input border border-border rounded-2xl h-14 items-center justify-center active:bg-card mb-10"
                 >
                   <Text className="text-text font-bold text-sm uppercase tracking-widest">
                     Sign Out

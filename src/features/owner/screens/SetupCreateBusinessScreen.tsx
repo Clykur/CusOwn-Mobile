@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -13,29 +14,35 @@ export default function CreateBusinessScreen() {
 
   return (
     <PremiumBackground>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
-      >
-        <ScrollView className="flex-1 px-luxury pt-16 pb-12" showsVerticalScrollIndicator={false}>
-          <AnimatedSection direction="down">
-            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-2">
-              Create Business
-            </Text>
-            <Text className="text-slate-900 text-3xl font-black tracking-tight mb-8">
-              Create Your{'\n'}
-              Business Identity
-            </Text>
-          </AnimatedSection>
+      <SafeAreaView className="flex-1" edges={['top']}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className="flex-1"
+        >
+          <ScrollView
+            className="flex-1 px-luxury"
+            contentContainerClassName="pt-8 pb-12"
+            showsVerticalScrollIndicator={false}
+          >
+            <AnimatedSection direction="down" className="mb-8">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-2">
+                Create Business
+              </Text>
+              <Text className="text-text text-3xl font-black tracking-tight">
+                Create Your{'\n'}
+                <Text className="text-primary">Business Identity</Text>
+              </Text>
+            </AnimatedSection>
 
-          <AnimatedSection delay={200}>
-            <GlassCard className="p-2 mb-8 border-slate-200/80 shadow-sm rounded-luxury">
-              <CreateBusinessForm onSuccess={handleSuccess} />
-            </GlassCard>
-            <View className="h-12" />
-          </AnimatedSection>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <AnimatedSection delay={200}>
+              <GlassCard className="p-2 mb-8 border-border shadow-sm rounded-luxury bg-card">
+                <CreateBusinessForm onSuccess={handleSuccess} />
+              </GlassCard>
+              <View className="h-12" />
+            </AnimatedSection>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </PremiumBackground>
   );
 }

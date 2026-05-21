@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
 import { router } from 'expo-router';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { THEME } from '@/theme/theme';
 
 export default function WelcomeScreen() {
   return (
@@ -13,15 +14,21 @@ export default function WelcomeScreen() {
         {/* Header */}
         <AnimatedSection direction="down">
           <View className="items-center">
-            <Text className="text-xs tracking-[6px] uppercase text-amber-500 font-semibold mb-5">
+            <Text
+              className="text-xs font-semibold mb-5 uppercase"
+              style={{ letterSpacing: 6, color: THEME.colors.warning }}
+            >
               Premium Appointment Platform
             </Text>
 
-            <Text className="text-[56px] font-black text-slate-900 tracking-[-2px] leading-[58px] text-center mt-5">
+            <Text
+              className="text-[56px] font-black tracking-[-2px] leading-[58px] text-center mt-5"
+              style={{ color: THEME.colors.primary }}
+            >
               CusOwn
             </Text>
 
-            <Text className="text-slate-500 text-center mt-6 text-base leading-8 px-4">
+            <Text className="text-textSecondary text-center mt-6 text-base leading-8 px-4">
               Seamlessly book appointments, manage experiences, and connect with premium service
               providers — all in one platform.
             </Text>
@@ -30,18 +37,16 @@ export default function WelcomeScreen() {
 
         {/* CTA Card */}
         <AnimatedSection delay={600} direction="up">
-          <GlassCard
-            variant="light"
-            className="rounded-[34px] border border-slate-200/70 bg-white/75 p-8 mt-8"
-          >
+          <GlassCard className="rounded-[34px] border border-border p-8 mt-8">
             <View className="mb-8">
-              <Text className="text-slate-900 text-[32px] font-black leading-9 mb-4">
-                Built Around
-                {'\n'}
-                Your Time
+              <Text
+                className="text-[32px] font-black leading-9 mb-4"
+                style={{ color: THEME.colors.primary }}
+              >
+                Built Around{'\n'}Your Time
               </Text>
 
-              <Text className="text-slate-600 text-base leading-8">
+              <Text className="text-textSecondary text-base leading-8">
                 Discover services, schedule appointments, manage bookings, and enjoy a smooth
                 premium experience designed for modern lifestyles.
               </Text>
@@ -59,7 +64,10 @@ export default function WelcomeScreen() {
         {/* Footer */}
         <AnimatedSection delay={900} direction="up">
           <View className="items-center pt-6">
-            <Text className="text-xs uppercase tracking-[4px] text-slate-400">
+            <Text
+              className="text-xs uppercase"
+              style={{ letterSpacing: 4, color: THEME.colors.textSecondary }}
+            >
               Designed For Premium Experiences
             </Text>
           </View>

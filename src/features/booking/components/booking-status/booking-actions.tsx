@@ -1,42 +1,34 @@
+import { THEME } from '@/theme/theme';
 import React, { memo, useState, useCallback } from 'react';
+import { Alert, Text, Pressable, View } from 'react-native';
+import { router } from 'expo-router';
 
 import RescheduleButton from '@/features/booking/components/reschedule-button';
 
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
-import { router } from 'expo-router';
-
 import { Slot } from '@/types/slot.types';
-
 import { useOptimisticMutation } from '@/hooks/useOptimisticMutation';
 import { apiService } from '@/services/api.service';
+import { Ionicons } from '@expo/vector-icons';
 
 interface BookingActionsProps {
   booking: {
     id: string;
     status: string;
     no_show?: boolean;
-
     slot?: Slot & {
       start_time?: string;
     };
-
     salon?: {
       id: string;
     };
-
     business_id: string;
     services?: Array<{ id: string; name: string }>;
     service?: { id: string; name: string };
   };
-
   salon_id?: string;
-
   availableSlots: Slot[];
-
   cancellationMinHoursMs: number;
-
   onCancelled: () => void;
-
   onRescheduled: () => void;
 }
 
@@ -75,7 +67,7 @@ function BookingActionsComponent({
     ? appointmentDateTime.getTime() - Date.now()
     : Number.POSITIVE_INFINITY;
 
-  const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000; // 30 minutes
+  const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
 
   const isActionDisabled = !appointmentDateTime || msUntilAppointment < THIRTY_MINUTES_IN_MS;
 
@@ -86,17 +78,13 @@ function BookingActionsComponent({
       await apiService.cancelBooking(booking.id);
       return { ok: true };
     },
-
     onMutate: async () => {
       setOptimisticStatus('cancelled');
-
       return null;
     },
-
     onSuccess: () => {
       onCancelled();
     },
-
     onError: (error: any) => {
       setOptimisticStatus(null);
       Alert.alert(
@@ -108,7 +96,6 @@ function BookingActionsComponent({
 
   const handleCancel = useCallback(async () => {
     if (cancelMutation.isPending) return;
-
     if (isCancellationTooLate) return;
 
     Alert.alert('Cancel Booking', 'Are you sure you want to cancel this booking?', [
@@ -124,8 +111,6 @@ function BookingActionsComponent({
         },
       },
     ]);
-
-    return;
   }, [cancelMutation, isCancellationTooLate]);
 
   const handleRebook = useCallback(() => {
@@ -141,9 +126,7 @@ function BookingActionsComponent({
   }, [booking.business_id, booking.services, booking.service]);
 
   const displayStatus = optimisticStatus || booking.status;
-
   const showCancelled = displayStatus === 'cancelled';
-
   const isPastOrInactive =
     displayStatus === 'completed' ||
     displayStatus === 'cancelled' ||
@@ -152,43 +135,56 @@ function BookingActionsComponent({
 
   return (
     <View className="space-y-3">
+      {/* Cancelled Notice */}
       {showCancelled && (
-        <View className="p-4 bg-slate-100 rounded-xl text-center mb-3">
-          <Text className="text-slate-600 font-medium">
+        <View className="p-4 bg-error/10 border border-error/20 rounded-xl mb-3">
+          <Text className="text-error font-semibold text-center">
             {cancelMutation.isPending ? 'Cancelling your booking...' : 'Booking cancelled'}
           </Text>
         </View>
       )}
 
+      {/* Active Actions */}
       {canCancelByStatus && !showCancelled && (
         <View className="space-y-3">
-          {/* CANCEL BUTTON */}
-          <TouchableOpacity
+          {/* Cancel Button */}
+          <Pressable
             onPress={handleCancel}
             disabled={cancelMutation.isPending || isActionDisabled}
-            activeOpacity={0.7}
-            className={`w-full rounded-xl py-3 px-6 items-center mb-3 ${isActionDisabled ? 'bg-red-300' : 'bg-red-600'}`}
+            className={`w-full rounded-2xl py-4 px-6 items-center mb-3 border ${
+              isActionDisabled
+                ? 'bg-error/10 border-error/20 opacity-50'
+                : 'bg-error/10 border-error/30 active:bg-error/20'
+            }`}
           >
-            <Text className="text-white font-semibold">
+            <Text className="text-error font-bold">
               {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Booking'}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          {/* CANCELLATION WARNING */}
+          {/* Too-Late Warning */}
           {isActionDisabled && (
-            <Text className="text-sm text-slate-500 mb-4 -mt-2">
-              Actions are disabled as the appointment time has passed or is too close.
-            </Text>
+            <View className="flex-row items-start gap-x-2 mb-2 -mt-2">
+              <Ionicons
+                name="information-circle-outline"
+                size={14}
+                color={THEME.colors.textSecondary}
+                style={{ marginTop: 1 }}
+              />
+              <Text className="text-textSecondary text-xs flex-1 leading-5">
+                Actions are disabled as the appointment time has passed or is too close.
+              </Text>
+            </View>
           )}
 
-          {/* ERROR */}
+          {/* Cancel Error */}
           {cancelMutation.isError && (
-            <Text className="text-sm text-red-600">
+            <Text className="text-error text-sm">
               {(cancelMutation.error as Error)?.message || 'Failed to cancel booking'}
             </Text>
           )}
 
-          {/* RESCHEDULE */}
+          {/* Reschedule */}
           {booking.slot && !booking.no_show && booking.status !== 'cancelled' && (
             <View className="flex justify-center">
               <RescheduleButton
@@ -205,14 +201,14 @@ function BookingActionsComponent({
         </View>
       )}
 
+      {/* Rebook Button */}
       {isPastOrInactive && (
-        <TouchableOpacity
+        <Pressable
           onPress={handleRebook}
-          activeOpacity={0.7}
-          className="w-full rounded-xl py-3 px-6 items-center bg-black"
+          className="w-full rounded-2xl py-4 px-6 items-center bg-primary/10 border border-primary/30 active:bg-primary/20"
         >
-          <Text className="text-white font-semibold">Rebook</Text>
-        </TouchableOpacity>
+          <Text className="text-primary font-bold">Rebook Appointment</Text>
+        </Pressable>
       )}
     </View>
   );

@@ -10,6 +10,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Core palette tokens
         background: '#0A0A0A',
         card: '#141414',
         input: '#1C1C1C',
@@ -22,6 +23,11 @@ module.exports = {
         success: '#22C55E',
         disabled: '#525252',
         transparent: 'transparent',
+        // Accent alias — maps to primary for legacy usages
+        'accent-premium': '#00E676',
+        // Gradient helpers
+        'gradient-start': '#00E676',
+        'gradient-end': '#0F3D2E',
       },
       borderRadius: {
         premium: '20px',

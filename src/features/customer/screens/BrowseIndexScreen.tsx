@@ -181,7 +181,7 @@ export default function CustomerBrowseScreen() {
             Explore Salons
           </Text>
           <Text className="text-text text-3xl font-black tracking-tight">
-            Discover Your Next Experience
+            Discover Your Next <Text className="text-primary">Experience</Text>
           </Text>
         </View>
         {/* Search + Location */}

@@ -1,10 +1,12 @@
 import { THEME } from '@/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, Alert } from 'react-native';
 import * as Location from 'expo-location';
 import { apiService } from '@/services/api.service';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { Business, BusinessCategory } from '@/types/business.types';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 interface EditBusinessFormProps {
   business: Business;
@@ -14,6 +16,18 @@ interface EditBusinessFormProps {
 
 const SLOT_DURATIONS = ['15', '30', '45', '60'];
 
+const inputClass =
+  'bg-input border border-border rounded-2xl px-4 py-4 text-text text-sm font-semibold';
+
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <View className="mb-5">
+    <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+      {label}
+    </Text>
+    {children}
+  </View>
+);
+
 export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
   business,
   onSuccess,
@@ -22,7 +36,6 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
-  const [fetchingCategories, setFetchingCategories] = useState(false);
 
   const [formData, setFormData] = useState({
     salon_name: business.salon_name,
@@ -47,15 +60,12 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
   }, []);
 
   const loadCategories = async () => {
-    setFetchingCategories(true);
     try {
       const cats = await apiService.getCategories();
       setCategories(cats);
     } catch (err) {
       console.error('Failed to load categories:', err);
       setCategories([{ value: 'salon', label: 'Salon' }]);
-    } finally {
-      setFetchingCategories(false);
     }
   };
 
@@ -119,152 +129,156 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
   };
 
   return (
-    <ScrollView className="px-1" showsVerticalScrollIndicator={false}>
+    <View className="space-y-2 px-1">
+      {/* Error Banner */}
       {error && (
-        <View className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-5">
-          <Text className="text-red-700 text-sm font-medium">{error}</Text>
+        <View className="bg-error/10 border border-error/30 rounded-2xl p-4 mb-2 flex-row items-start gap-x-2">
+          <Ionicons
+            name="alert-circle-outline"
+            size={16}
+            color={THEME.colors.error}
+            style={{ marginTop: 1 }}
+          />
+          <Text className="text-error text-sm font-medium flex-1">{error}</Text>
         </View>
       )}
 
-      <View className="mb-5">
-        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
-          Business Name
-        </Text>
-
+      {/* Business Name */}
+      <Field label="Business Name">
         <TextInput
-          className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
+          className={inputClass}
           placeholder="Enter business name"
           placeholderTextColor={THEME.colors.textSecondary}
           value={formData.salon_name}
           onChangeText={(val) => handleChange('salon_name', val)}
+          style={{ color: THEME.colors.text }}
         />
-      </View>
+      </Field>
 
-      <View className="mb-5">
-        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
-          WhatsApp Number
-        </Text>
-
+      {/* WhatsApp */}
+      <Field label="WhatsApp Number">
         <TextInput
-          className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
+          className={inputClass}
           placeholder="Enter WhatsApp number"
           placeholderTextColor={THEME.colors.textSecondary}
           value={formData.whatsapp_number}
           onChangeText={(val) => handleChange('whatsapp_number', val.replace(/\D/g, ''))}
           keyboardType="phone-pad"
+          style={{ color: THEME.colors.text }}
         />
-      </View>
+      </Field>
 
+      {/* Hours */}
       <View className="flex-row gap-4 mb-5">
         <View className="flex-1">
-          <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
             Open Time
           </Text>
-
           <TextInput
-            className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
+            className={inputClass}
             placeholder="09:00"
             placeholderTextColor={THEME.colors.textSecondary}
             value={formData.opening_time}
             onChangeText={(val) => handleChange('opening_time', val)}
+            style={{ color: THEME.colors.text }}
           />
         </View>
-
         <View className="flex-1">
-          <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-2">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
             Close Time
           </Text>
-
           <TextInput
-            className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
+            className={inputClass}
             placeholder="21:00"
             placeholderTextColor={THEME.colors.textSecondary}
             value={formData.closing_time}
             onChangeText={(val) => handleChange('closing_time', val)}
+            style={{ color: THEME.colors.text }}
           />
         </View>
       </View>
 
-      <View className="mb-6">
-        <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px] mb-4">
+      {/* Slot Duration Chips */}
+      <View className="mb-5">
+        <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-3">
           Slot Duration
         </Text>
-
         <View className="flex-row flex-wrap gap-2">
           {SLOT_DURATIONS.map((dur) => (
-            <TouchableOpacity
+            <Pressable
               key={dur}
               onPress={() => handleChange('slot_duration', dur)}
               className={`px-5 py-3 rounded-full border ${
                 formData.slot_duration === dur
-                  ? 'bg-black border-black'
-                  : 'bg-white border-slate-200/80'
+                  ? 'bg-primary border-primary'
+                  : 'bg-input border-border'
               }`}
             >
               <Text
                 className={`font-black text-xs uppercase tracking-wider ${
-                  formData.slot_duration === dur ? 'text-white' : 'text-slate-700'
+                  formData.slot_duration === dur ? 'text-background' : 'text-textSecondary'
                 }`}
               >
                 {dur} min
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </View>
 
-      <View className="mb-6">
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-xs text-slate-500 font-black uppercase tracking-[2px]">
+      {/* Location */}
+      <View className="mb-5">
+        <View className="flex-row justify-between items-center mb-3">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
             Location
           </Text>
-
-          <TouchableOpacity onPress={handleUseLocation}>
-            <Text className="text-blue-600 text-sm font-semibold underline">
-              Use Current Location
-            </Text>
-          </TouchableOpacity>
+          <Pressable onPress={handleUseLocation} className="flex-row items-center gap-x-1">
+            <Ionicons name="locate-outline" size={14} color={THEME.colors.primary} />
+            <Text className="text-primary text-sm font-semibold">Use Current Location</Text>
+          </Pressable>
         </View>
 
         <TextInput
-          className="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold mb-3"
+          className={`${inputClass} mb-3`}
           placeholder="Address"
           placeholderTextColor={THEME.colors.textSecondary}
           value={formData.address}
           onChangeText={(val) => handleChange('address', val)}
           multiline
+          style={{ color: THEME.colors.text }}
         />
 
         <View className="flex-row gap-3">
           <TextInput
-            className="flex-1 bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
+            className={`flex-1 ${inputClass}`}
             placeholder="City"
             placeholderTextColor={THEME.colors.textSecondary}
             value={formData.city}
             onChangeText={(val) => handleChange('city', val)}
+            style={{ color: THEME.colors.text }}
           />
-
           <TextInput
-            className="flex-1 bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-4 text-slate-900 text-sm font-semibold"
+            className={`flex-1 ${inputClass}`}
             placeholder="Locality"
             placeholderTextColor={THEME.colors.textSecondary}
             value={formData.location}
             onChangeText={(val) => handleChange('location', val)}
+            style={{ color: THEME.colors.text }}
           />
         </View>
       </View>
 
+      {/* Actions */}
       <View className="gap-y-3 pt-4 pb-2">
         <PremiumButton title="Save Changes" onPress={handleSubmit} loading={loading} />
 
-        {onCancel && (
-          <TouchableOpacity onPress={onCancel} className="py-3 items-center">
-            <Text className="text-slate-500 font-black uppercase tracking-widest text-xs">
-              Cancel
-            </Text>
-          </TouchableOpacity>
-        )}
+        <Pressable
+          onPress={onCancel || (() => router.back())}
+          className="mt-6 flex-col items-center"
+        >
+          <Text className="text-white text-lg">Cancel</Text>
+        </Pressable>
       </View>
-    </ScrollView>
+    </View>
   );
 };

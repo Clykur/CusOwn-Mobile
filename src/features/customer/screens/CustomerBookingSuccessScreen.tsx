@@ -123,7 +123,7 @@ function BookingSuccessScreenInner() {
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row items-center flex-1 mr-3">
                     <View className="w-11 h-11 rounded-full bg-border items-center justify-center mr-3 ">
-                      <Ionicons name="cut-outline" size={18} color={BASE_COLORS.black} />
+                      <Ionicons name="cut-outline" size={18} color={THEME.colors.textSecondary} />
                     </View>
 
                     <View className="flex-1">
@@ -142,7 +142,11 @@ function BookingSuccessScreenInner() {
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row items-center flex-1 mr-3">
                     <View className="w-11 h-11 rounded-full bg-border items-center justify-center mr-3 ">
-                      <Ionicons name="calendar-outline" size={18} color={BASE_COLORS.black} />
+                      <Ionicons
+                        name="calendar-outline"
+                        size={18}
+                        color={THEME.colors.textSecondary}
+                      />
                     </View>
 
                     <View className="flex-1">
@@ -161,7 +165,7 @@ function BookingSuccessScreenInner() {
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row items-center flex-1 mr-3">
                     <View className="w-11 h-11 rounded-full bg-border items-center justify-center mr-3 ">
-                      <Ionicons name="time-outline" size={18} color={BASE_COLORS.black} />
+                      <Ionicons name="time-outline" size={18} color={THEME.colors.textSecondary} />
                     </View>
 
                     <View className="flex-1">

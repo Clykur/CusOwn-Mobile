@@ -28,11 +28,20 @@ export const THEME = {
     error: BASE_COLORS.coralRed,
     success: BASE_COLORS.freshGreen,
     disabled: BASE_COLORS.mutedGrey,
-    warning: BASE_COLORS.coralRed, // Optional mapping
+    warning: BASE_COLORS.coralRed,
     info: BASE_COLORS.offWhite,
     gradientStart: BASE_COLORS.vibrantMint,
     gradientEnd: BASE_COLORS.forestGreen,
     transparent: BASE_COLORS.transparent,
+    // Convenience aliases
+    accentPremium: BASE_COLORS.vibrantMint,
+    surface: BASE_COLORS.elevatedSurface,
+    surfaceInput: BASE_COLORS.darkSlate,
+  },
+  gradient: {
+    start: BASE_COLORS.vibrantMint,
+    end: BASE_COLORS.forestGreen,
+    colors: [BASE_COLORS.vibrantMint, BASE_COLORS.forestGreen] as string[],
   },
   spacing: {
     xs: 4,

@@ -155,7 +155,7 @@ export default function CustomerHomeScreen() {
                 Welcome to CusOwn
               </Text>
 
-              <Text className="text-text text-3xl font-bold tracking-tight">
+              <Text className="text-primary text-4xl font-bold tracking-tight">
                 {(profile?.full_name || user?.user_metadata?.full_name)?.split(' ')[0] ||
                   'Curated Client'}
               </Text>

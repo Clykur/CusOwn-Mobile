@@ -26,19 +26,19 @@ export default function OwnerBusinessesScreen() {
       <PremiumBackground>
         <SafeAreaView className="flex-1" edges={['top']}>
           <View className="flex-1 justify-center items-center px-luxury">
-            <GlassCard className="items-center w-full p-8 rounded-luxury border-slate-200/80">
-              <View className="w-20 h-20 rounded-full bg-neutral-100 items-center justify-center mb-6 border border-neutral-200">
-                <Ionicons name="alert-circle-outline" size={40} color={THEME.colors.background} />
+            <GlassCard className="items-center w-full p-8 rounded-luxury border border-border">
+              <View className="w-20 h-20 rounded-full bg-input items-center justify-center mb-6 border border-border">
+                <Ionicons name="alert-circle-outline" size={40} color={THEME.colors.error} />
               </View>
-              <Text className="text-slate-900 text-xl font-bold mb-2">Fetch Error</Text>
-              <Text className="text-slate-500 text-center px-12 text-sm font-medium">
+              <Text className="text-text text-xl font-bold mb-2">Fetch Error</Text>
+              <Text className="text-textSecondary text-center px-12 text-sm font-medium">
                 We couldn't retrieve your business portfolio. Please check your connection.
               </Text>
               <Pressable
                 onPress={() => refetch()}
-                className="mt-8 bg-black px-8 py-3.5 rounded-full active:bg-slate-950"
+                className="mt-8 bg-primary px-8 py-3.5 rounded-full active:opacity-80"
               >
-                <Text className="text-white font-black text-xs uppercase tracking-widest">
+                <Text className="text-background font-black text-xs uppercase tracking-widest">
                   Retry
                 </Text>
               </Pressable>
@@ -73,54 +73,52 @@ export default function OwnerBusinessesScreen() {
             <RefreshControl
               refreshing={false}
               onRefresh={refetch}
-              tintColor={THEME.colors.background}
+              tintColor={THEME.colors.primary}
             />
           }
         >
           <AnimatedSection direction="down" className="mb-8">
-            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
               Management
             </Text>
-            <Text className="text-slate-900 text-3xl font-black tracking-tight">Businesses</Text>
+            <Text className="text-text text-3xl font-black tracking-tight">Businesses</Text>
           </AnimatedSection>
 
           <View className="gap-y-4">
             {businesses?.map((b, index) => (
               <AnimatedSection key={b.id} delay={index * 100} direction="up">
-                <GlassCard className="p-2 border-slate-200/80 rounded-luxury shadow-sm">
+                <GlassCard className="p-2 border border-border rounded-luxury">
                   <View className="flex-row justify-between items-start mb-6">
                     <View className="flex-1 mr-4">
-                      <Text className="text-slate-900 text-xl font-extrabold mb-1">
-                        {b.salon_name}
-                      </Text>
-                      <View className="flex-row items-center opacity-60">
+                      <Text className="text-text text-xl font-extrabold mb-1">{b.salon_name}</Text>
+                      <View className="flex-row items-center opacity-70">
                         <Ionicons
                           name="location-outline"
                           size={12}
                           color={THEME.colors.textSecondary}
                         />
-                        <Text className="text-slate-500 text-xs ml-1" numberOfLines={1}>
+                        <Text className="text-textSecondary text-xs ml-1" numberOfLines={1}>
                           {b.location || 'No location set'}
                         </Text>
                       </View>
                     </View>
                     <View className="flex-row items-center">
-                      <View className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2" />
+                      <View className="w-1.5 h-1.5 rounded-full bg-success mr-2" />
 
-                      <Text className="text-emerald-600 text-xs font-bold uppercase tracking-[2px]">
+                      <Text className="text-success text-xs font-bold uppercase tracking-[2px]">
                         Active
                       </Text>
                     </View>
                   </View>
 
-                  <View className="h-[0.5px] bg-slate-200/60 w-full mb-2" />
+                  <View className="h-[0.5px] bg-border w-full mb-2" />
 
                   <View className="flex-row justify-between items-center">
                     <View>
-                      <Text className="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-widest mb-1">
                         Operational Since
                       </Text>
-                      <Text className="text-slate-900 text-xs font-semibold">
+                      <Text className="text-text text-xs font-semibold">
                         {new Date(b.created_at).toLocaleDateString()}
                       </Text>
                     </View>
@@ -128,14 +126,14 @@ export default function OwnerBusinessesScreen() {
                       onPress={() => onManageBusiness(b.id)}
                       className="flex-row items-center"
                     >
-                      <Text className="text-black text-xs font-black uppercase tracking-wider">
+                      <Text className="text-primary text-xs font-black uppercase tracking-wider">
                         Manage
                       </Text>
 
                       <Ionicons
                         name="arrow-forward"
                         size={16}
-                        color="#000000"
+                        color={THEME.colors.primary}
                         style={{ marginLeft: 6 }}
                       />
                     </Pressable>
@@ -150,15 +148,15 @@ export default function OwnerBusinessesScreen() {
             >
               <Pressable
                 onPress={onAddBusiness}
-                className="border border-dashed border-slate-300 rounded-luxury p-8 items-center justify-center bg-white/40 active:bg-white/60"
+                className="border border-dashed border-border rounded-luxury p-8 items-center justify-center bg-input/40 active:bg-input"
               >
-                <View className="w-12 h-12 rounded-full border border-slate-200 items-center justify-center mb-4">
-                  <Ionicons name="add" size={24} color={THEME.colors.background} />
+                <View className="w-12 h-12 rounded-full border border-primary/30 bg-secondary/30 items-center justify-center mb-4">
+                  <Ionicons name="add" size={24} color={THEME.colors.primary} />
                 </View>
-                <Text className="text-slate-900 font-black text-xs uppercase tracking-wider">
+                <Text className="text-text font-black text-xs uppercase tracking-wider">
                   Launch New Business Hub
                 </Text>
-                <Text className="text-slate-500 text-xs mt-1 font-medium">
+                <Text className="text-textSecondary text-xs mt-1 font-medium">
                   Expand your portfolio with a new location
                 </Text>
               </Pressable>

@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   textLight: {
-    color: THEME.colors.text,
+    color: THEME.colors.background,
   },
   textGhost: {},
 });

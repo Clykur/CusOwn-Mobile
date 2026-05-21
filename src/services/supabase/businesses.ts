@@ -15,7 +15,7 @@ import { logSupabaseFailure } from './errors';
 const BUSINESS_LIST_SELECT = '*';
 
 const BUSINESS_DETAIL_SELECT =
-  '*, services(id, business_id, name, description, price_cents, duration_minutes, duration, price)';
+  '*, services(id, business_id, name, description, price_cents, duration_minutes, is_active)';
 
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);

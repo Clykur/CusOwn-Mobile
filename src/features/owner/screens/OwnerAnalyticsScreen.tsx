@@ -36,19 +36,21 @@ const MetricCard = ({
   delay?: number;
 }) => (
   <AnimatedSection delay={delay} direction="up" className="w-[48%] mb-4">
-    <GlassCard className="p-5 border border-slate-200/70 rounded-[30px] h-36 bg-white/90">
+    <GlassCard className="p-5 border border-border rounded-[30px] h-36">
       {/* Top */}
       <View className="flex-row items-center justify-start mb-6">
-        <View className="w-8 h-8 rounded-2xl bg-slate-100 items-start justify-center">
-          <Ionicons name={icon} size={22} color={THEME.colors.background} />
+        <View className="w-8 h-8 rounded-2xl bg-secondary/40 items-start justify-center">
+          <Ionicons name={icon} size={22} color={THEME.colors.primary} />
         </View>
 
-        <Text className="text-xs font-bold uppercase tracking-[2px] text-slate-400">{title}</Text>
+        <Text className="text-xs font-bold uppercase tracking-[2px] text-textSecondary">
+          {title}
+        </Text>
       </View>
 
       {/* Value */}
       <View className="-mt-5">
-        <Text className="text-2xl leading-[38px] font-black text-slate-900">{value}</Text>
+        <Text className="text-2xl leading-[38px] font-black text-text">{value}</Text>
       </View>
     </GlassCard>
   </AnimatedSection>
@@ -341,19 +343,19 @@ export default function OwnerAnalyticsScreen() {
       <PremiumBackground>
         <SafeAreaView className="flex-1" edges={['top']}>
           <View className="flex-1 justify-center items-center px-luxury">
-            <GlassCard className="items-center w-full bg-white border border-slate-200 p-6">
+            <GlassCard className="items-center w-full bg-card border border-border p-6">
               <Ionicons name="alert-circle-outline" size={48} color={THEME.colors.background} />
-              <Text className="text-slate-900 text-lg font-bold mt-4 text-center">Sync Error</Text>
-              <Text className="text-slate-500 text-center mt-2 mb-8 text-sm font-medium">
+              <Text className="text-text text-lg font-bold mt-4 text-center">Sync Error</Text>
+              <Text className="text-textSecondary text-center mt-2 mb-8 text-sm font-medium">
                 We couldn't fetch your analytics data. Please check your connection or try again
                 later.
                 {apiError instanceof Error ? `\n\nError: ${apiError.message}` : ''}
               </Text>
               <Pressable
                 onPress={onRefresh}
-                className="bg-black py-4 px-10 rounded-full items-center justify-center active:bg-slate-900 w-full"
+                className="bg-primary py-4 px-10 rounded-full items-center justify-center active:opacity-80 w-full"
               >
-                <Text className="text-white font-extrabold text-sm uppercase tracking-widest">
+                <Text className="text-background font-extrabold text-sm uppercase tracking-widest">
                   Retry Sync
                 </Text>
               </Pressable>
@@ -372,19 +374,19 @@ export default function OwnerAnalyticsScreen() {
         {/* Cinematic Header & Filter Action */}
         <View className="px-luxury pt-5 pb-2 flex-row justify-between items-center">
           <View className="flex-1 mr-4">
-            <Text className="text-slate-400 text-xs font-black uppercase tracking-[3px] mb-1">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
               Performance
             </Text>
-            <Text className="text-slate-900 text-3xl font-black tracking-tight">Analytics</Text>
-            <Text className="text-slate-500 text-xs mt-1" numberOfLines={1}>
+            <Text className="text-text text-3xl font-black tracking-tight">Analytics</Text>
+            <Text className="text-textSecondary text-xs mt-1" numberOfLines={1}>
               {filterSummary}
             </Text>
           </View>
           <Pressable
             onPress={() => setShowFilter(true)}
-            className="bg-white/80 p-3 rounded-2xl border border-slate-200/80 active:bg-white shadow-sm"
+            className="bg-input p-3 rounded-2xl border border-border active:bg-card"
           >
-            <Ionicons name="funnel-outline" size={20} color={THEME.colors.background} />
+            <Ionicons name="funnel-outline" size={20} color={THEME.colors.primary} />
           </Pressable>
         </View>
 
@@ -401,19 +403,19 @@ export default function OwnerAnalyticsScreen() {
         >
           {noData && !analyticsLoading ? (
             <AnimatedSection className="px-luxury pt-12 items-center">
-              <GlassCard className="border border-slate-200/80 w-full p-8 items-center rounded-luxury">
-                <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center mb-6">
+              <GlassCard className="border border-border w-full p-8 items-center rounded-luxury">
+                <View className="w-20 h-20 rounded-full bg-input items-center justify-center mb-6">
                   <Ionicons name="bar-chart-outline" size={40} color={THEME.colors.textSecondary} />
                 </View>
-                <Text className="text-slate-900 text-xl font-bold mb-2">No Data Available</Text>
-                <Text className="text-slate-500 text-center px-6 text-sm font-medium leading-relaxed">
+                <Text className="text-text text-xl font-bold mb-2">No Data Available</Text>
+                <Text className="text-textSecondary text-center px-6 text-sm font-medium leading-relaxed">
                   There is no performance data for the selected period or business hub.
                 </Text>
                 <Pressable
                   onPress={() => router.push('/(owner)/businesses')}
-                  className="mt-8 bg-black py-4 px-10 rounded-full items-center justify-center active:bg-slate-900 w-full"
+                  className="mt-8 bg-primary py-4 px-10 rounded-full items-center justify-center active:opacity-80 w-full"
                 >
-                  <Text className="text-white font-extrabold text-sm uppercase tracking-widest">
+                  <Text className="text-background font-extrabold text-sm uppercase tracking-widest">
                     Launch Your Hub
                   </Text>
                 </Pressable>
@@ -424,17 +426,17 @@ export default function OwnerAnalyticsScreen() {
               {/* Key Metrics */}
               <View className="px-luxury pt-6 mb-6">
                 <AnimatedSection direction="up">
-                  <GlassCard className="border-slate-200/80 p-8 rounded-luxury overflow-hidden relative shadow-sm">
-                    <Text className="text-slate-400 text-xs font-black uppercase tracking-widest mb-2">
+                  <GlassCard className="border-border p-8 rounded-luxury overflow-hidden relative">
+                    <Text className="text-textSecondary text-xs font-black uppercase tracking-widest mb-2">
                       Total Revenue
                     </Text>
                     <View className="flex-row items-baseline">
-                      <Text className="text-slate-900 text-4xl font-extrabold tracking-tight">
+                      <Text className="text-text text-4xl font-extrabold tracking-tight">
                         ₹{((analytics?.overview?.totalRevenueCents || 0) / 100).toLocaleString()}
                       </Text>
-                      <View className="ml-3 bg-neutral-100 px-2 py-1 rounded-md flex-row items-center border border-neutral-200">
-                        <Ionicons name="trending-up" size={12} color={THEME.colors.background} />
-                        <Text className="text-neutral-800 text-xs font-bold ml-1">+12%</Text>
+                      <View className="ml-3 bg-secondary/60 px-2 py-1 rounded-md flex-row items-center border border-primary/20">
+                        <Ionicons name="trending-up" size={12} color={THEME.colors.primary} />
+                        <Text className="text-primary text-xs font-bold ml-1">+12%</Text>
                       </View>
                     </View>
                   </GlassCard>
@@ -471,14 +473,12 @@ export default function OwnerAnalyticsScreen() {
               {/* Trend Charts (Interactive Columns View) */}
               <View className="px-luxury mb-6">
                 <AnimatedSection direction="up" delay={450}>
-                  <GlassCard className="border-slate-200/80 p-2 rounded-luxury">
+                  <GlassCard className="border-border p-2 rounded-luxury">
                     <View className="flex-row items-center justify-between mb-6">
                       <View>
-                        <Text className="text-slate-900 text-base font-extrabold">
-                          Activity Trends
-                        </Text>
+                        <Text className="text-text text-base font-extrabold">Activity Trends</Text>
                         {activeBarIndex !== null && dailyPoints[activeBarIndex] && (
-                          <Text className="text-amber-600 text-xs font-bold mt-0.5">
+                          <Text className="text-primary text-xs font-bold mt-0.5">
                             {dailyPoints[activeBarIndex].label}:{' '}
                             {trendTab === 'bookings'
                               ? `${dailyPoints[activeBarIndex].bookingCount} bookings`
@@ -488,16 +488,16 @@ export default function OwnerAnalyticsScreen() {
                       </View>
 
                       {/* Sub-tabs */}
-                      <View className="flex-row bg-slate-100 p-1 rounded-full border border-slate-200">
+                      <View className="flex-row bg-input p-1 rounded-full border border-border">
                         <Pressable
                           onPress={() => {
                             setTrendTab('bookings');
                             setActiveBarIndex(null);
                           }}
-                          className={`px-4 py-1.5 rounded-full ${trendTab === 'bookings' ? 'bg-white' : ''}`}
+                          className={`px-4 py-1.5 rounded-full ${trendTab === 'bookings' ? 'bg-card' : ''}`}
                         >
                           <Text
-                            className={`text-xs font-bold ${trendTab === 'bookings' ? 'text-slate-900' : 'text-slate-500'}`}
+                            className={`text-xs font-bold ${trendTab === 'bookings' ? 'text-primary' : 'text-textSecondary'}`}
                           >
                             Bookings
                           </Text>
@@ -507,10 +507,10 @@ export default function OwnerAnalyticsScreen() {
                             setTrendTab('revenue');
                             setActiveBarIndex(null);
                           }}
-                          className={`px-4 py-1.5 rounded-full ${trendTab === 'revenue' ? 'bg-white' : ''}`}
+                          className={`px-4 py-1.5 rounded-full ${trendTab === 'revenue' ? 'bg-card' : ''}`}
                         >
                           <Text
-                            className={`text-xs font-bold ${trendTab === 'revenue' ? 'text-slate-900' : 'text-slate-500'}`}
+                            className={`text-xs font-bold ${trendTab === 'revenue' ? 'text-primary' : 'text-textSecondary'}`}
                           >
                             Revenue
                           </Text>
@@ -537,21 +537,21 @@ export default function OwnerAnalyticsScreen() {
                           >
                             {/* Hover info badge */}
                             {isActive && (
-                              <View className="absolute -top-12 bg-slate-900 px-2.5 py-1 rounded-lg items-center justify-center z-10">
-                                <Text className="text-white text-xs font-bold">
+                              <View className="absolute -top-12 bg-card border border-border px-2.5 py-1 rounded-lg items-center justify-center z-10">
+                                <Text className="text-primary text-xs font-bold">
                                   {trendTab === 'bookings' ? `${val}` : `₹${Math.round(val)}`}
                                 </Text>
-                                <View className="w-1.5 h-1.5 bg-slate-900 rotate-45 -mb-1 mt-0.5" />
+                                <View className="w-1.5 h-1.5 bg-card rotate-45 -mb-1 mt-0.5" />
                               </View>
                             )}
 
                             <View
                               style={{ height: barHeight }}
                               className={`w-8 rounded-t-lg transition-colors ${
-                                isActive ? 'bg-black' : 'bg-neutral-300'
+                                isActive ? 'bg-primary' : 'bg-border'
                               }`}
                             />
-                            <Text className="text-slate-400 text-xs font-bold mt-2">
+                            <Text className="text-textSecondary text-xs font-bold mt-2">
                               {point.label}
                             </Text>
                           </Pressable>
@@ -565,61 +565,65 @@ export default function OwnerAnalyticsScreen() {
               {/* Status Breakdown & Peak Hours Section */}
               <View className="px-luxury mb-6">
                 <AnimatedSection direction="up" delay={500}>
-                  <GlassCard className="border-slate-200/80 p-2 rounded-luxury mb-6">
-                    <Text className="text-slate-900 text-base font-extrabold mb-4">
+                  <GlassCard className="border-border p-2 rounded-luxury mb-6">
+                    <Text className="text-text text-base font-extrabold mb-4">
                       Booking Status Allocation
                     </Text>
 
                     {/* Stacked percentage bar */}
-                    <View className="h-4 bg-slate-100 rounded-full flex-row overflow-hidden mb-6">
+                    <View className="h-4 bg-input rounded-full flex-row overflow-hidden mb-6">
                       {statusSummary.confirmedPct > 0 && (
                         <View
                           style={{ width: `${statusSummary.confirmedPct}%` }}
-                          className="bg-black h-full"
+                          className="bg-primary h-full"
                         />
                       )}
                       {statusSummary.rejectedPct > 0 && (
                         <View
                           style={{ width: `${statusSummary.rejectedPct}%` }}
-                          className="bg-neutral-500 h-full"
+                          className="bg-error h-full"
                         />
                       )}
                       {statusSummary.cancelledPct > 0 && (
                         <View
                           style={{ width: `${statusSummary.cancelledPct}%` }}
-                          className="bg-neutral-300 h-full"
+                          className="bg-disabled h-full"
                         />
                       )}
                     </View>
 
-                    {/* Breakdown breakdown numbers */}
+                    {/* Breakdown numbers */}
                     <View className="space-y-3">
                       <View className="flex-row items-center justify-between">
                         <View className="flex-row items-center">
-                          <View className="w-3 h-3 bg-black rounded-full mr-2" />
-                          <Text className="text-slate-600 text-xs font-semibold">Confirmed</Text>
+                          <View className="w-3 h-3 bg-primary rounded-full mr-2" />
+                          <Text className="text-textSecondary text-xs font-semibold">
+                            Confirmed
+                          </Text>
                         </View>
-                        <Text className="text-slate-900 text-xs font-extrabold">
+                        <Text className="text-text text-xs font-extrabold">
                           {statusSummary.confirmed} ({statusSummary.confirmedPct}%)
                         </Text>
                       </View>
 
                       <View className="flex-row items-center justify-between">
                         <View className="flex-row items-center">
-                          <View className="w-3 h-3 bg-neutral-500 rounded-full mr-2" />
-                          <Text className="text-slate-600 text-xs font-semibold">Rejected</Text>
+                          <View className="w-3 h-3 bg-error rounded-full mr-2" />
+                          <Text className="text-textSecondary text-xs font-semibold">Rejected</Text>
                         </View>
-                        <Text className="text-slate-900 text-xs font-extrabold">
+                        <Text className="text-text text-xs font-extrabold">
                           {statusSummary.rejected} ({statusSummary.rejectedPct}%)
                         </Text>
                       </View>
 
                       <View className="flex-row items-center justify-between">
                         <View className="flex-row items-center">
-                          <View className="w-3 h-3 bg-neutral-300 rounded-full mr-2" />
-                          <Text className="text-slate-600 text-xs font-semibold">Cancelled</Text>
+                          <View className="w-3 h-3 bg-disabled rounded-full mr-2" />
+                          <Text className="text-textSecondary text-xs font-semibold">
+                            Cancelled
+                          </Text>
                         </View>
-                        <Text className="text-slate-900 text-xs font-extrabold">
+                        <Text className="text-text text-xs font-extrabold">
                           {statusSummary.cancelled} ({statusSummary.cancelledPct}%)
                         </Text>
                       </View>
@@ -629,12 +633,12 @@ export default function OwnerAnalyticsScreen() {
 
                 {/* Peak Booking Hours */}
                 <AnimatedSection direction="up" delay={550}>
-                  <GlassCard className="border border-slate-200/80 p-2 rounded-[28px] mb-6">
+                  <GlassCard className="border border-border p-2 rounded-[28px] mb-6">
                     {/* Header */}
                     <View className="mb-5">
-                      <Text className="text-slate-900 text-lg font-black">Peak Traffic Hours</Text>
+                      <Text className="text-text text-lg font-black">Peak Traffic Hours</Text>
 
-                      <Text className="text-slate-500 text-xs mt-1">
+                      <Text className="text-textSecondary text-xs mt-1">
                         Customer activity throughout the day
                       </Text>
                     </View>
@@ -708,12 +712,12 @@ export default function OwnerAnalyticsScreen() {
                                 <LinearGradient id="peakGradient" x1="0" y1="0" x2="0" y2="1">
                                   <Stop
                                     offset="0%"
-                                    stopColor={THEME.colors.background}
-                                    stopOpacity="0.15"
+                                    stopColor={THEME.colors.primary}
+                                    stopOpacity="0.25"
                                   />
                                   <Stop
                                     offset="100%"
-                                    stopColor={THEME.colors.background}
+                                    stopColor={THEME.colors.primary}
                                     stopOpacity="0.0"
                                   />
                                 </LinearGradient>
@@ -727,7 +731,7 @@ export default function OwnerAnalyticsScreen() {
                                     y1={tick.y}
                                     x2={chartWidth - padding.right}
                                     y2={tick.y}
-                                    stroke="#E2E8F0"
+                                    stroke={THEME.colors.border}
                                     strokeDasharray="4 4"
                                     strokeWidth="1"
                                   />
@@ -761,7 +765,7 @@ export default function OwnerAnalyticsScreen() {
                                 <Path
                                   d={pathD}
                                   fill="none"
-                                  stroke={THEME.colors.background}
+                                  stroke={THEME.colors.primary}
                                   strokeWidth="3"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
@@ -775,7 +779,11 @@ export default function OwnerAnalyticsScreen() {
                                   cx={p.x}
                                   cy={p.y}
                                   r={activeHourIndex === i ? 6 : 4}
-                                  fill={activeHourIndex === i ? '#D97706' : THEME.colors.background}
+                                  fill={
+                                    activeHourIndex === i
+                                      ? THEME.colors.primary
+                                      : THEME.colors.secondary
+                                  }
                                 />
                               ))}
 
@@ -822,8 +830,8 @@ export default function OwnerAnalyticsScreen() {
 
                 {/* Service Performance Rankings */}
                 <AnimatedSection direction="up" delay={600}>
-                  <GlassCard className="border-slate-200/80 p-2 rounded-luxury">
-                    <Text className="text-slate-900 text-base font-extrabold mb-4">
+                  <GlassCard className="border-border p-2 rounded-luxury">
+                    <Text className="text-text text-base font-extrabold mb-4">
                       Popular Treatments
                     </Text>
 
@@ -833,17 +841,20 @@ export default function OwnerAnalyticsScreen() {
                         return (
                           <View key={index} className="space-y-2">
                             <View className="flex-row justify-between items-center mt-1 mb-1">
-                              <Text className="text-slate-700 text-xs font-bold" numberOfLines={1}>
+                              <Text
+                                className="text-textSecondary text-xs font-bold"
+                                numberOfLines={1}
+                              >
                                 {service.name}
                               </Text>
-                              <Text className="text-slate-900 text-xs font-extrabold ml-2">
+                              <Text className="text-text text-xs font-extrabold ml-2">
                                 {service.count} book
                               </Text>
                             </View>
-                            <View className="bg-slate-100 h-2.5 rounded-full overflow-hidden w-full">
+                            <View className="bg-input h-2.5 rounded-full overflow-hidden w-full">
                               <View
                                 style={{ width: `${widthPct}%` }}
-                                className="bg-black h-full rounded-full"
+                                className="bg-primary h-full rounded-full"
                               />
                             </View>
                           </View>
@@ -866,26 +877,26 @@ export default function OwnerAnalyticsScreen() {
         >
           <Pressable
             className="flex-1 justify-end"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)' }}
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
             onPress={() => setShowFilter(false)}
           >
-            <View className="bg-white rounded-t-[40px] p-6 border-t border-slate-200 max-h-[90%] shadow-lg">
+            <View className="bg-card rounded-t-[40px] p-6 border-t border-border max-h-[90%]">
               <View className="items-center mb-6">
-                <View className="w-12 h-1.5 bg-slate-200 rounded-full mb-6" />
-                <Text className="text-slate-900 text-xl font-black uppercase tracking-wider">
+                <View className="w-12 h-1.5 bg-border rounded-full mb-6" />
+                <Text className="text-text text-xl font-black uppercase tracking-wider">
                   Configure Filters
                 </Text>
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
                 {/* 1. Hub Selection */}
-                <Text className="text-xs text-slate-400 font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
                   Select Hub
                 </Text>
 
                 <Pressable
                   onPress={() => setSelectedBusinessId('all')}
-                  className={`px-4 py-3.5 border-b border-slate-100 flex-row items-center justify-between rounded-xl mb-2 ${selectedBusinessId === 'all' ? 'bg-slate-50' : ''}`}
+                  className={`px-4 py-3.5 border-b border-border flex-row items-center justify-between rounded-xl mb-2 ${selectedBusinessId === 'all' ? 'bg-input' : ''}`}
                 >
                   <View className="flex-row items-center">
                     <Ionicons
@@ -893,18 +904,18 @@ export default function OwnerAnalyticsScreen() {
                       size={18}
                       color={
                         selectedBusinessId === 'all'
-                          ? THEME.colors.background
+                          ? THEME.colors.primary
                           : THEME.colors.textSecondary
                       }
                     />
                     <Text
-                      className={`text-sm ml-3 ${selectedBusinessId === 'all' ? 'text-slate-900 font-extrabold' : 'text-slate-600 font-medium'}`}
+                      className={`text-sm ml-3 ${selectedBusinessId === 'all' ? 'text-primary font-extrabold' : 'text-textSecondary font-medium'}`}
                     >
                       All Hubs (Portfolio)
                     </Text>
                   </View>
                   {selectedBusinessId === 'all' && (
-                    <Ionicons name="checkmark" size={20} color={THEME.colors.background} />
+                    <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
                   )}
                 </Pressable>
 
@@ -912,7 +923,7 @@ export default function OwnerAnalyticsScreen() {
                   <Pressable
                     key={biz.id}
                     onPress={() => setSelectedBusinessId(biz.id)}
-                    className={`px-4 py-3.5 border-b border-slate-100 flex-row items-center justify-between rounded-xl mb-2 ${selectedBusinessId === biz.id ? 'bg-slate-50' : ''}`}
+                    className={`px-4 py-3.5 border-b border-border flex-row items-center justify-between rounded-xl mb-2 ${selectedBusinessId === biz.id ? 'bg-input' : ''}`}
                   >
                     <View className="flex-row items-center">
                       <Ionicons
@@ -920,26 +931,26 @@ export default function OwnerAnalyticsScreen() {
                         size={18}
                         color={
                           selectedBusinessId === biz.id
-                            ? THEME.colors.background
+                            ? THEME.colors.primary
                             : THEME.colors.textSecondary
                         }
                       />
                       <Text
-                        className={`text-sm ml-3 ${selectedBusinessId === biz.id ? 'text-slate-900 font-extrabold' : 'text-slate-600 font-medium'}`}
+                        className={`text-sm ml-3 ${selectedBusinessId === biz.id ? 'text-primary font-extrabold' : 'text-textSecondary font-medium'}`}
                       >
                         {biz.salon_name}
                       </Text>
                     </View>
                     {selectedBusinessId === biz.id && (
-                      <Ionicons name="checkmark" size={20} color={THEME.colors.background} />
+                      <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
                     )}
                   </Pressable>
                 ))}
 
-                <View className="h-[0.5px] bg-slate-100 my-5" />
+                <View className="h-[0.5px] bg-border my-5" />
 
                 {/* 2. Date Selection */}
-                <Text className="text-xs text-slate-400 font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
                   Select Period
                 </Text>
 
@@ -975,7 +986,7 @@ export default function OwnerAnalyticsScreen() {
                   <Pressable
                     key={period.key}
                     onPress={() => setDateFilter(period.key)}
-                    className={`px-4 py-3.5 border-b border-slate-100 flex-row items-center justify-between rounded-xl mb-2 ${dateFilter === period.key ? 'bg-slate-50' : ''}`}
+                    className={`px-4 py-3.5 border-b border-border flex-row items-center justify-between rounded-xl mb-2 ${dateFilter === period.key ? 'bg-input' : ''}`}
                   >
                     <View className="flex-row items-center flex-1 mr-2">
                       <Ionicons
@@ -983,25 +994,25 @@ export default function OwnerAnalyticsScreen() {
                         size={18}
                         color={
                           dateFilter === period.key
-                            ? THEME.colors.background
+                            ? THEME.colors.primary
                             : THEME.colors.textSecondary
                         }
                       />
                       <View className="ml-3 flex-1">
                         <Text
-                          className={`text-sm ${dateFilter === period.key ? 'text-slate-900 font-extrabold' : 'text-slate-600 font-medium'}`}
+                          className={`text-sm ${dateFilter === period.key ? 'text-primary font-extrabold' : 'text-textSecondary font-medium'}`}
                         >
                           {period.label}
                         </Text>
                         {period.desc ? (
-                          <Text className="text-slate-400 text-xs mt-0.5 font-semibold">
+                          <Text className="text-textSecondary text-xs mt-0.5 font-semibold">
                             {period.desc}
                           </Text>
                         ) : null}
                       </View>
                     </View>
                     {dateFilter === period.key && (
-                      <Ionicons name="checkmark" size={20} color={THEME.colors.background} />
+                      <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
                     )}
                   </Pressable>
                 ))}
@@ -1010,7 +1021,7 @@ export default function OwnerAnalyticsScreen() {
                 {dateFilter === 'custom' && (
                   <View className="flex-row gap-x-2 mt-4 px-2">
                     <View className="flex-1">
-                      <Text className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1.5">
+                      <Text className="text-xs text-textSecondary font-bold uppercase tracking-wider mb-1.5">
                         Start Date
                       </Text>
                       <TextInput
@@ -1018,11 +1029,11 @@ export default function OwnerAnalyticsScreen() {
                         onChangeText={setStartDate}
                         placeholder="YYYY-MM-DD"
                         placeholderTextColor={THEME.colors.textSecondary}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800"
+                        className="bg-input border border-border rounded-xl px-4 py-2.5 text-xs text-text"
                       />
                     </View>
                     <View className="flex-1">
-                      <Text className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1.5">
+                      <Text className="text-xs text-textSecondary font-bold uppercase tracking-wider mb-1.5">
                         End Date
                       </Text>
                       <TextInput
@@ -1030,7 +1041,7 @@ export default function OwnerAnalyticsScreen() {
                         onChangeText={setEndDate}
                         placeholder="YYYY-MM-DD"
                         placeholderTextColor={THEME.colors.textSecondary}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800"
+                        className="bg-input border border-border rounded-xl px-4 py-2.5 text-xs text-text"
                       />
                     </View>
                   </View>
@@ -1039,9 +1050,9 @@ export default function OwnerAnalyticsScreen() {
 
               <Pressable
                 onPress={() => setShowFilter(false)}
-                className="bg-black py-4 rounded-full items-center justify-center active:bg-slate-950"
+                className="bg-primary py-4 rounded-full items-center justify-center active:opacity-80"
               >
-                <Text className="text-white font-black text-sm uppercase tracking-widest">
+                <Text className="text-background font-black text-sm uppercase tracking-widest">
                   Apply & Close
                 </Text>
               </Pressable>

@@ -303,9 +303,7 @@ export default function SalonDetailsScreen() {
                 />
                 <Text
                   className={
-                    shopIsOpen
-                      ? 'text-green-600 font-bold text-xs'
-                      : 'text-rose-500 font-bold text-xs'
+                    shopIsOpen ? 'text-success font-bold text-xs' : 'text-error font-bold text-xs'
                   }
                 >
                   {shopIsOpen ? 'Open Now' : 'Closed'}
@@ -334,14 +332,14 @@ export default function SalonDetailsScreen() {
                   </View>
                   <Pressable
                     onPress={() => handleCall(business.whatsapp_number)}
-                    className="flex-row items-center px-4 py-2.5 rounded-full shadow-sm bg-primary/10"
+                    className="flex-row items-center px-4 py-2.5 rounded-full shadow-sm"
                   >
                     <Ionicons name="call-outline" size={24} color={THEME.colors.primary} />
                   </Pressable>
                   {business.whatsapp_number ? (
                     <Pressable
                       onPress={handleContactWhatsApp}
-                      className="flex-row items-center px-4 py-2.5 rounded-full shadow-sm bg-primary/10"
+                      className="flex-row items-center px-4 py-2.5 rounded-full shadow-sm"
                     >
                       <Ionicons name="logo-whatsapp" size={25} color="#25D366" />
                     </Pressable>
@@ -474,7 +472,7 @@ export default function SalonDetailsScreen() {
                       ))}
                     </View>
 
-                    <Text className="text-amber-500 font-extrabold text-xs ml-2">
+                    <Text className="text-warning font-extrabold text-xs ml-2">
                       {Number.isFinite(rev.rating) ? rev.rating.toFixed(1) : '0.0'}
                     </Text>
                   </View>
@@ -502,7 +500,7 @@ export default function SalonDetailsScreen() {
       </ScrollView>
 
       {/* Sticky Bottom Booking Button */}
-      <View className="absolute bottom-0 left-0 right-0 bg-base_colors.white border-t border-border px-6 pt-4 pb-10 flex-row justify-between items-center shadow-lg">
+      <View className="absolute bottom-0 left-0 right-0 bg-card border-t border-border px-6 pt-4 pb-10 flex-row justify-between items-center shadow-lg">
         <View className="flex-1 mr-4">
           <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider">
             {localSelectedServices.length > 0

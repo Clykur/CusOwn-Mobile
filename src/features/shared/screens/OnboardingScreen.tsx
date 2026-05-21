@@ -1,19 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, FlatList, useWindowDimensions } from 'react-native';
-
 import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
+
 import { useOnboardingStore } from '@/store/onboarding.store';
-import {
-  responsiveFontSize,
-  horizontalScale,
-  verticalScale,
-  moderateScale,
-} from '@/utils/responsive';
 import { THEME } from '@/theme/theme';
 
 const SLIDES = [
@@ -39,6 +34,7 @@ const SLIDES = [
 
 export default function OnboardingScreen() {
   const { width } = useWindowDimensions();
+
   const [activeIndex, setActiveIndex] = useState(0);
 
   const flatListRef = useRef<FlatList>(null);
@@ -54,37 +50,31 @@ export default function OnboardingScreen() {
       setActiveIndex(activeIndex + 1);
     } else {
       setOnboardingCompleted(true);
+
       router.push('/(public)/role-selection');
     }
   };
 
   const onScroll = (event: any) => {
-    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const offsetX = event.nativeEvent.contentOffset.x;
 
-    const index = Math.round(contentOffsetX / width);
+    const index = Math.round(offsetX / width);
 
     setActiveIndex(index);
   };
 
   return (
-    <LinearGradient colors={['#FAFAFA', '#F4F4F5', '#EEEEEE']} style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
+    <PremiumBackground>
+      <View className="flex-1 pt-24 pb-12">
         {/* Header */}
         <AnimatedSection direction="down">
-          <View
-            style={{
-              paddingHorizontal: horizontalScale(28),
-              paddingTop: verticalScale(90),
-            }}
-          >
+          <View className="px-7 mb-8">
             <Text
+              className="uppercase font-semibold mb-5"
               style={{
-                fontSize: responsiveFontSize(11),
                 letterSpacing: 5,
-                textTransform: 'uppercase',
+                fontSize: 11,
                 color: '#D97706',
-                fontWeight: '600',
-                marginBottom: verticalScale(20),
               }}
             >
               Premium Experience
@@ -92,10 +82,11 @@ export default function OnboardingScreen() {
 
             <Text
               style={{
-                fontSize: responsiveFontSize(48),
+                fontSize: 52,
                 fontWeight: '900',
-                color: THEME.colors.background,
-                lineHeight: responsiveFontSize(54),
+                color: THEME.colors.primary,
+                lineHeight: 58,
+                letterSpacing: -2,
               }}
             >
               Everything{'\n'}In One Place
@@ -117,42 +108,33 @@ export default function OnboardingScreen() {
             <View
               style={{
                 width,
+                paddingHorizontal: 28,
                 justifyContent: 'center',
-                paddingHorizontal: horizontalScale(28),
-                paddingBottom: verticalScale(50),
               }}
             >
               <AnimatedSection direction="up">
-                <View
-                  style={{
-                    backgroundColor: THEME.colors.text,
-                    borderRadius: moderateScale(32),
-                    padding: moderateScale(32),
-                    borderWidth: 1,
-                    borderColor: '#E5E7EB',
-                  }}
-                >
+                <GlassCard className="rounded-[34px] border border-border p-8">
                   <View
                     style={{
-                      width: moderateScale(80),
-                      height: moderateScale(80),
-                      borderRadius: moderateScale(40),
-                      backgroundColor: THEME.colors.background,
+                      width: 84,
+                      height: 84,
+                      borderRadius: 999,
+                      backgroundColor: THEME.colors.primary,
                       justifyContent: 'center',
                       alignItems: 'center',
-                      marginBottom: verticalScale(28),
+                      marginBottom: 30,
                     }}
                   >
-                    <Ionicons name={item.icon} size={moderateScale(34)} color={THEME.colors.text} />
+                    <Ionicons name={item.icon} size={38} color={THEME.colors.text} />
                   </View>
 
                   <Text
                     style={{
-                      fontSize: responsiveFontSize(34),
+                      fontSize: 34,
                       fontWeight: '900',
-                      color: THEME.colors.background,
-                      lineHeight: responsiveFontSize(40),
-                      marginBottom: verticalScale(18),
+                      lineHeight: 40,
+                      color: THEME.colors.primary,
+                      marginBottom: 18,
                     }}
                   >
                     {item.title}
@@ -160,74 +142,60 @@ export default function OnboardingScreen() {
 
                   <Text
                     style={{
-                      fontSize: responsiveFontSize(17),
+                      fontSize: 16,
+                      lineHeight: 30,
                       color: THEME.colors.textSecondary,
-                      lineHeight: responsiveFontSize(30),
                     }}
                   >
                     {item.description}
                   </Text>
-                </View>
+                </GlassCard>
               </AnimatedSection>
             </View>
           )}
         />
 
         {/* Footer */}
-        <View
-          style={{
-            paddingHorizontal: horizontalScale(28),
-            paddingBottom: verticalScale(50),
-          }}
-        >
-          {/* Indicators */}
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              marginBottom: verticalScale(36),
-            }}
-          >
-            {SLIDES.map((_, index) => (
-              <View
-                key={index}
+        <AnimatedSection delay={400} direction="up">
+          <View className="px-7 mt-10">
+            {/* Indicators */}
+            <View className="flex-row justify-center mb-10">
+              {SLIDES.map((_, index) => (
+                <View
+                  key={index}
+                  style={{
+                    width: index === activeIndex ? 38 : 8,
+                    height: 8,
+                    borderRadius: 999,
+                    marginHorizontal: 4,
+                    backgroundColor:
+                      index === activeIndex ? THEME.colors.primary : THEME.colors.border,
+                  }}
+                />
+              ))}
+            </View>
+
+            <PremiumButton
+              title={activeIndex === SLIDES.length - 1 ? 'Get Started' : 'Continue'}
+              onPress={handleNext}
+              className="w-full"
+            />
+
+            <View className="items-center mt-6">
+              <Text
                 style={{
-                  width: index === activeIndex ? horizontalScale(40) : horizontalScale(8),
-                  height: horizontalScale(8),
-                  borderRadius: 999,
-                  backgroundColor:
-                    index === activeIndex ? THEME.colors.background : THEME.colors.border,
-                  marginHorizontal: horizontalScale(4),
+                  fontSize: 10,
+                  letterSpacing: 4,
+                  textTransform: 'uppercase',
+                  color: THEME.colors.textSecondary,
                 }}
-              />
-            ))}
+              >
+                Designed For Modern Businesses
+              </Text>
+            </View>
           </View>
-
-          <PremiumButton
-            title={activeIndex === SLIDES.length - 1 ? 'Get Started' : 'Continue'}
-            onPress={handleNext}
-            className="w-full"
-          />
-
-          <View
-            style={{
-              alignItems: 'center',
-              marginTop: verticalScale(24),
-            }}
-          >
-            <Text
-              style={{
-                fontSize: responsiveFontSize(10),
-                letterSpacing: 4,
-                textTransform: 'uppercase',
-                color: THEME.colors.textSecondary,
-              }}
-            >
-              Designed For Modern Businesses
-            </Text>
-          </View>
-        </View>
+        </AnimatedSection>
       </View>
-    </LinearGradient>
+    </PremiumBackground>
   );
 }

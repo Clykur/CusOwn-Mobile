@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
-
 import { Ionicons } from '@expo/vector-icons';
 
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -8,18 +7,11 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
 
 import { useOnboardingStore, UserRole } from '@/store/onboarding.store';
-
-import { useAuth } from '@/hooks/useAuth';
 import { useActiveRoleStore } from '@/store/active-role.store';
-
-import {
-  responsiveFontSize,
-  horizontalScale,
-  verticalScale,
-  moderateScale,
-} from '@/utils/responsive';
+import { useAuth } from '@/hooks/useAuth';
 
 import { THEME } from '@/theme/theme';
 
@@ -29,14 +21,12 @@ const RoleOption = ({
   selected,
   onPress,
   description,
-  points,
 }: {
   title: string;
   icon: keyof typeof Ionicons.glyphMap;
   selected: boolean;
   onPress: () => void;
   description: string;
-  points: string[];
 }) => {
   const scale = useSharedValue(1);
 
@@ -53,121 +43,72 @@ const RoleOption = ({
         scale.value = withSpring(1);
       }}
       onPress={onPress}
-      style={{
-        marginBottom: verticalScale(14),
-      }}
+      className="mb-4"
     >
-      <Animated.View
-        style={[
-          animatedStyle,
-          {
-            backgroundColor: selected ? '#F8FAFC' : THEME.colors.text,
-            borderWidth: 1.5,
-            borderColor: selected ? THEME.colors.background : '#E2E8F0',
-            borderRadius: moderateScale(28),
-            padding: moderateScale(18),
-          },
-        ]}
-      >
-        {/* Header */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: verticalScale(10),
-          }}
+      <Animated.View style={animatedStyle}>
+        <GlassCard
+          className={`rounded-[28px] border p-2 ${selected ? 'border-primary' : 'border-border'}`}
         >
-          <View
-            style={{
-              width: moderateScale(42),
-              height: moderateScale(42),
-              borderRadius: moderateScale(16),
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginRight: horizontalScale(12),
-            }}
-          >
-            <Ionicons
-              name={icon}
-              size={moderateScale(22)}
-              color={selected ? THEME.colors.background : THEME.colors.textSecondary}
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                fontSize: responsiveFontSize(21),
-                fontWeight: '900',
-                color: THEME.colors.background,
-              }}
-            >
-              {title}
-            </Text>
-
-            <Text
-              style={{
-                fontSize: responsiveFontSize(13),
-                color: THEME.colors.textSecondary,
-                marginTop: verticalScale(3),
-                lineHeight: responsiveFontSize(20),
-              }}
-            >
-              {description}
-            </Text>
-          </View>
-
-          {selected && (
+          <View className="flex-row items-center">
+            {/* Icon */}
             <View
               style={{
-                width: moderateScale(26),
-                height: moderateScale(26),
+                width: 64,
+                height: 64,
                 borderRadius: 999,
-                backgroundColor: THEME.colors.background,
                 justifyContent: 'center',
                 alignItems: 'center',
+                marginRight: 18,
               }}
             >
-              <Ionicons name="checkmark" size={moderateScale(16)} color={THEME.colors.text} />
-            </View>
-          )}
-        </View>
-
-        {/* Points */}
-        <View style={{ marginTop: verticalScale(4) }}>
-          {points.map((point, index) => (
-            <View
-              key={index}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'flex-start',
-                marginBottom: verticalScale(6),
-              }}
-            >
-              <View
-                style={{
-                  width: moderateScale(6),
-                  height: moderateScale(6),
-                  borderRadius: 999,
-                  backgroundColor: THEME.colors.background,
-                  marginTop: verticalScale(7),
-                  marginRight: horizontalScale(10),
-                }}
+              <Ionicons
+                name={icon}
+                size={28}
+                color={selected ? THEME.colors.text : THEME.colors.textSecondary}
               />
+            </View>
+
+            {/* Content */}
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: '900',
+                  color: THEME.colors.primary,
+                  marginBottom: 6,
+                }}
+              >
+                {title}
+              </Text>
 
               <Text
                 style={{
-                  flex: 1,
-                  fontSize: responsiveFontSize(14),
-                  color: THEME.colors.border,
-                  lineHeight: responsiveFontSize(20),
+                  fontSize: 14,
+                  lineHeight: 24,
+                  color: THEME.colors.textSecondary,
                 }}
               >
-                {point}
+                {description}
               </Text>
             </View>
-          ))}
-        </View>
+
+            {/* Check */}
+            {selected && (
+              <View
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 999,
+                  backgroundColor: THEME.colors.primary,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Ionicons name="checkmark" size={18} color={THEME.colors.text} />
+              </View>
+            )}
+          </View>
+        </GlassCard>
       </Animated.View>
     </Pressable>
   );
@@ -193,26 +134,16 @@ export default function RoleSelectionScreen() {
 
   return (
     <PremiumBackground>
-      <View
-        style={{
-          flex: 1,
-          paddingHorizontal: horizontalScale(24),
-          paddingTop: verticalScale(60),
-          paddingBottom: verticalScale(120),
-        }}
-      >
-        {/* Main Content */}
-        <View style={{ flex: 1 }}>
-          {/* Header */}
-          <AnimatedSection direction="down">
+      <View className="flex-1 px-7 pt-24 pb-14 justify-between">
+        {/* Header */}
+        <AnimatedSection direction="down">
+          <View>
             <Text
+              className="uppercase font-semibold mb-5"
               style={{
-                fontSize: responsiveFontSize(10),
-                letterSpacing: 3,
-                textTransform: 'uppercase',
+                letterSpacing: 5,
+                fontSize: 11,
                 color: '#D97706',
-                fontWeight: '700',
-                marginBottom: verticalScale(8),
               }}
             >
               Choose Your Experience
@@ -220,11 +151,12 @@ export default function RoleSelectionScreen() {
 
             <Text
               style={{
-                fontSize: responsiveFontSize(30),
-                fontWeight: '900',
-                color: THEME.colors.background,
-                lineHeight: responsiveFontSize(38),
-                marginBottom: verticalScale(10),
+                fontSize: 42,
+                fontWeight: '800',
+                color: THEME.colors.primary,
+                lineHeight: 50,
+                letterSpacing: -2,
+                marginBottom: 8,
               }}
             >
               Select Your{'\n'}Premium Access
@@ -232,29 +164,26 @@ export default function RoleSelectionScreen() {
 
             <Text
               style={{
-                fontSize: responsiveFontSize(14),
-                lineHeight: responsiveFontSize(22),
+                fontSize: 16,
+                lineHeight: 30,
                 color: THEME.colors.textSecondary,
-                marginBottom: verticalScale(20),
+                maxWidth: '95%',
               }}
             >
               Select the experience that best matches your journey on the platform.
             </Text>
-          </AnimatedSection>
+          </View>
+        </AnimatedSection>
 
-          {/* Roles */}
-          <AnimatedSection direction="up" delay={100}>
+        {/* Options */}
+        <AnimatedSection delay={300} direction="up">
+          <View>
             <RoleOption
               title="Customer"
               icon="person-outline"
               selected={role === 'Customer'}
               onPress={() => setRole('Customer')}
-              description="For users booking and managing appointments."
-              points={[
-                'Book appointments seamlessly',
-                'Manage schedules and experiences',
-                'Discover premium services',
-              ]}
+              description="Book appointments, manage schedules, and discover premium services."
             />
 
             <RoleOption
@@ -262,23 +191,14 @@ export default function RoleSelectionScreen() {
               icon="briefcase-outline"
               selected={role === 'Owner'}
               onPress={() => setRole('Owner')}
-              description="For businesses managing operations and growth."
-              points={[
-                'Manage bookings and customers',
-                'Track schedules and operations',
-                'Scale your business efficiently',
-              ]}
+              description="Manage customers, bookings, schedules, and business growth."
             />
-          </AnimatedSection>
-        </View>
+          </View>
+        </AnimatedSection>
 
         {/* Footer */}
-        <AnimatedSection delay={200} direction="up">
-          <View
-            style={{
-              paddingTop: verticalScale(12),
-            }}
-          >
+        <AnimatedSection delay={500} direction="up">
+          <View>
             <PremiumButton
               title="Continue with Google"
               onPress={handleContinue}
@@ -287,18 +207,18 @@ export default function RoleSelectionScreen() {
               className="w-full"
             />
 
-            <Text
-              style={{
-                textAlign: 'center',
-                fontSize: responsiveFontSize(9),
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                color: THEME.colors.textSecondary,
-                marginTop: verticalScale(10),
-              }}
-            >
-              Secure Authentication Powered By Google
-            </Text>
+            <View className="items-center mt-4">
+              <Text
+                style={{
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  textTransform: 'uppercase',
+                  color: THEME.colors.textSecondary,
+                }}
+              >
+                Secure Authentication Powered By Google
+              </Text>
+            </View>
           </View>
         </AnimatedSection>
       </View>
