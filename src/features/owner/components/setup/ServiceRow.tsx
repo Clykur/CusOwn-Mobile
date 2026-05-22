@@ -54,6 +54,11 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({
 
       <View className="flex-row gap-3">
         <View className="flex-1">
+          <View className="mb-2">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+              Duration (mins)
+            </Text>
+          </View>
           <TextInput
             className={inputClass}
             placeholder="Min"
@@ -65,6 +70,11 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({
           />
         </View>
         <View className="flex-1">
+          <View className="mb-2">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+              Price (₹)
+            </Text>
+          </View>
           <TextInput
             className={inputClass}
             placeholder="Price (₹)"

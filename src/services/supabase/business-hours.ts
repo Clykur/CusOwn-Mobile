@@ -77,6 +77,7 @@ export class BusinessHoursService {
       .from('businesses')
       .select('opening_time, closing_time')
       .eq('id', businessId)
+      .is('deleted_at', null)
       .maybeSingle();
 
     if (!biz?.opening_time || !biz?.closing_time) {

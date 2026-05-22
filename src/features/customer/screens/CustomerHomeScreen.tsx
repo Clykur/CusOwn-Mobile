@@ -257,9 +257,14 @@ export default function CustomerHomeScreen() {
           {/* Featured Businesses Section */}
           <View>
             <View className="flex-row justify-between items-center px-luxury mb-6">
-              <Text className="text-text text-lg font-bold tracking-tight uppercase">
-                Your Favourite Salons
-              </Text>
+              <View className="flex-row items-center">
+                <View className="border-b-2 border-primary">
+                  <Text className="text-text text-xl font-bold tracking-tight uppercase">
+                    Recently Booked{' '}
+                  </Text>
+                </View>
+                <Text className="text-text text-xl font-bold tracking-tight uppercase">Salons</Text>
+              </View>
               <Pressable onPress={() => router.push('/(customer)/browse')}>
                 <Text className="text-primary font-bold text-sm">Browse All</Text>
               </Pressable>
@@ -296,25 +301,28 @@ export default function CustomerHomeScreen() {
                 ))}
               </ScrollView>
             ) : (
-              <View className="px-luxury">
-                <GlassCard className="p-6  bg-card shadow-sm items-center">
+              <View className="px-luxury items-center">
+                <GlassCard className="w-full p-6 bg-card shadow-sm items-center justify-center">
                   <Ionicons
                     name="calendar-outline"
                     size={36}
                     color={THEME.colors.textSecondary}
                     className="mb-2"
                   />
+
                   <Text className="text-text font-extrabold text-sm text-center">
                     No Salons Visited Yet
                   </Text>
+
                   <Text className="text-textSecondary text-xs text-center mt-1 mb-4 px-4">
                     Your recently visited salons will show up here. Let's find your first salon!
                   </Text>
+
                   <Pressable
                     onPress={() => router.push('/(customer)/browse')}
-                    className="bg-primary py-2.5 px-5 rounded-2xl"
+                    className="bg-primary py-2.5 px-5 rounded-2xl items-center justify-center"
                   >
-                    <Text className="text-background font-extrabold text-xs">Explore Salons</Text>
+                    <Text className="text-success font-extrabold text-xs">Explore Salons</Text>
                   </Pressable>
                 </GlassCard>
               </View>

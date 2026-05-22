@@ -11,13 +11,18 @@ import {
   getBusinessById as getBusinessByIdSupabase,
   listBusinesses as listBusinessesSupabase,
   listOwnerBusinesses,
+  listDeletedOwnerBusinesses,
   searchBusinesses as searchBusinessesSupabase,
   updateBusiness as updateBusinessSupabase,
+  restoreBusiness as restoreBusinessSupabase,
+  hardDeleteBusiness as hardDeleteBusinessSupabase,
 } from '@/services/supabase/businesses';
 import {
   deleteUserAccount,
   getProfilePayload,
   updateProfile as updateProfileSupabase,
+  restoreUserAccount,
+  hardDeleteUserAccount,
 } from '@/services/supabase/profiles';
 import {
   listBusinessMedia,
@@ -171,6 +176,16 @@ export const apiService = {
     return deleteUserAccount(reason);
   },
 
+  restoreAccount: async (): Promise<void> => {
+    assertSupabaseOnly('restoreAccount');
+    return restoreUserAccount();
+  },
+
+  hardDeleteAccount: async (): Promise<void> => {
+    assertSupabaseOnly('hardDeleteAccount');
+    return hardDeleteUserAccount();
+  },
+
   confirmBooking: async (id: string) => {
     assertSupabaseOnly('confirmBooking');
     return confirmBookingSupabase(id);
@@ -230,6 +245,16 @@ export const apiService = {
     return deleteBusinessSupabase(id);
   },
 
+  restoreBusiness: async (id: string): Promise<void> => {
+    assertSupabaseOnly('restoreBusiness');
+    return restoreBusinessSupabase(id);
+  },
+
+  hardDeleteBusiness: async (id: string): Promise<void> => {
+    assertSupabaseOnly('hardDeleteBusiness');
+    return hardDeleteBusinessSupabase(id);
+  },
+
   updateBusiness: async (id: string, payload: Record<string, unknown>): Promise<Business> => {
     assertSupabaseOnly('updateBusiness');
     return updateBusinessSupabase(id, payload);
@@ -242,6 +267,15 @@ export const apiService = {
     } = await supabase.auth.getUser();
     if (!user?.id) throw new Error('Not authenticated');
     return listOwnerBusinesses(user.id);
+  },
+
+  getDeletedOwnerBusinesses: async (): Promise<Business[]> => {
+    assertSupabaseOnly('getDeletedOwnerBusinesses');
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error('Not authenticated');
+    return listDeletedOwnerBusinesses(user.id);
   },
 
   getOwnerServices: async (businessId?: string): Promise<Service[]> => {

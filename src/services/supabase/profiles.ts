@@ -6,6 +6,7 @@ import { resolveMediaPublicUrl } from './storage';
 
 const ACCOUNT_RPC = {
   softDeleteUser: 'soft_delete_user_account',
+  recoverUser: 'recover_user_account',
 } as const;
 
 export type ProfileApiPayload = {
@@ -68,6 +69,18 @@ export async function getProfilePayload(): Promise<ProfileApiPayload> {
       profile: null,
       user: { id: user.id, email: user.email },
     };
+  }
+
+  if (profile.deleted_at) {
+    logger.info(LogTag.AUTH, 'Soft deleted account detected on login. Recovering account...', {
+      userId: user.id,
+    });
+    try {
+      await recoverUserAccount();
+      profile.deleted_at = null;
+    } catch (err) {
+      logger.error(LogTag.AUTH, 'Failed to recover soft deleted account', err);
+    }
   }
 
   const enrichedProfile: UserProfile = {
@@ -148,22 +161,78 @@ async function getActorUserId(): Promise<string> {
  */
 export async function deleteUserAccount(reason?: string): Promise<void> {
   const userId = await getActorUserId();
+  const now = new Date();
+  const permanentDeletion = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   try {
-    // Matches production overload: (p_user_id, p_actor_id, p_reason) — not the admin overload with p_ip_address / p_override_legal_hold.
-    await invokeBookingRpc(ACCOUNT_RPC.softDeleteUser, {
-      p_user_id: userId,
-      p_actor_id: userId,
-      p_reason: reason || 'user_requested',
-    });
-  } catch (rpcError) {
-    logger.error(LogTag.API, 'soft_delete_user_account failed', { rpcError, userId, reason });
-    throw rpcError;
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({
+        deleted_at: now.toISOString(),
+        permanent_deletion_at: permanentDeletion.toISOString(),
+        deletion_reason: reason || 'user_requested',
+      })
+      .eq('id', userId);
+
+    if (error) {
+      throw error;
+    }
+  } catch (err) {
+    logger.error(LogTag.API, 'Direct soft delete of user failed', { err, userId, reason });
+    throw err;
   }
 
   const { error: signOutError } = await supabase.auth.signOut();
   if (signOutError) {
     logger.error(LogTag.AUTH, 'signOut after deleteAccount failed', signOutError);
     throw signOutError;
+  }
+}
+
+export async function restoreUserAccount(): Promise<void> {
+  const userId = await getActorUserId();
+  try {
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({
+        deleted_at: null,
+        permanent_deletion_at: null,
+        deletion_reason: null,
+      })
+      .eq('id', userId);
+
+    if (error) throw error;
+  } catch (err) {
+    logger.error(LogTag.API, 'Failed to restore user account', { err, userId });
+    throw err;
+  }
+}
+
+export async function hardDeleteUserAccount(): Promise<void> {
+  const userId = await getActorUserId();
+  try {
+    const { error } = await supabase.from('user_profiles').delete().eq('id', userId);
+
+    if (error) throw error;
+  } catch (err) {
+    logger.error(LogTag.API, 'Failed to hard delete user account', { err, userId });
+    throw err;
+  }
+}
+
+/**
+ * Account recovery via RPC `recover_user_account`.
+ */
+export async function recoverUserAccount(): Promise<void> {
+  const userId = await getActorUserId();
+
+  try {
+    await invokeBookingRpc(ACCOUNT_RPC.recoverUser, {
+      p_user_id: userId,
+    });
+    logger.info(LogTag.API, 'User account recovered successfully', { userId });
+  } catch (rpcError) {
+    logger.error(LogTag.API, 'recover_user_account failed', { rpcError, userId });
+    throw rpcError;
   }
 }

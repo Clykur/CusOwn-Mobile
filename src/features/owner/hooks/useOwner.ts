@@ -150,6 +150,42 @@ export const useDeleteBusiness = () => {
     mutationFn: (id: string) => apiService.deleteBusiness(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['owner', 'businesses'] });
+      queryClient.invalidateQueries({ queryKey: ['owner', 'businesses', 'deleted'] });
+    },
+  });
+};
+
+export const useDeletedOwnerBusinesses = () => {
+  const { user } = useAuthStore();
+
+  const query = useQuery({
+    queryKey: ['owner', 'businesses', 'deleted', user?.id],
+    queryFn: async () => {
+      if (!user?.id) throw new Error('User not authenticated');
+      return apiService.getDeletedOwnerBusinesses();
+    },
+    enabled: !!user?.id,
+  });
+  useQueryLogger('useDeletedOwnerBusinesses', query);
+  return query;
+};
+
+export const useRestoreBusiness = () => {
+  return useMutation({
+    mutationFn: (id: string) => apiService.restoreBusiness(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['owner', 'businesses'] });
+      queryClient.invalidateQueries({ queryKey: ['owner', 'businesses', 'deleted'] });
+    },
+  });
+};
+
+export const useHardDeleteBusiness = () => {
+  return useMutation({
+    mutationFn: (id: string) => apiService.hardDeleteBusiness(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['owner', 'businesses'] });
+      queryClient.invalidateQueries({ queryKey: ['owner', 'businesses', 'deleted'] });
     },
   });
 };

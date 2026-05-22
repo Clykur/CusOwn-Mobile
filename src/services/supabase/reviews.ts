@@ -26,7 +26,12 @@ export async function getReviewsForBusiness(businessId: string): Promise<Busines
       .limit(50);
 
   const [businessResult, reviewsResult] = await Promise.all([
-    supabase.from('businesses').select('rating_avg, review_count').eq('id', businessId).single(),
+    supabase
+      .from('businesses')
+      .select('rating_avg, review_count')
+      .eq('id', businessId)
+      .is('deleted_at', null)
+      .single(),
     reviewsQuery(),
   ]);
 

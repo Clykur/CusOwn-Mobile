@@ -185,6 +185,10 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
 
       const payload = {
         ...formData,
+        booking_link:
+          formData.salon_name.toLowerCase().replace(/[^a-z0-9]+/g, '-') +
+          '-' +
+          Math.random().toString(36).substring(2, 8),
         concurrent_booking_capacity: parseInt(formData.concurrent_booking_capacity, 10) || 1,
         opening_time:
           formData.opening_time.length === 5
@@ -198,6 +202,14 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       };
 
       const result = await apiService.createBusiness(payload);
+
+      router.push({
+        pathname: '/(owner)/success',
+        params: {
+          businessId: result.id,
+        },
+      });
+
       if (onSuccess) {
         onSuccess(result);
       }
