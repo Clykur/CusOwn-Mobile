@@ -186,10 +186,7 @@ export async function deleteService(serviceId: string): Promise<void> {
     ownerId,
   );
 
-  const { error } = await supabase
-    .from('services')
-    .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq('id', serviceId);
+  const { error } = await supabase.from('services').delete().eq('id', serviceId);
 
   if (error) throw error;
 }

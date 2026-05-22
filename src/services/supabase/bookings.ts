@@ -36,7 +36,7 @@ const BOOKING_DETAIL_SELECT = `
 `;
 
 function generatePublicBookingId(): string {
-  return `BK-${Math.floor(10000 + Math.random() * 90000)}`;
+  return `CUSOWN-${Math.floor(10000 + Math.random() * 90000)}`;
 }
 
 async function fetchBookingRow(bookingId: string): Promise<Record<string, unknown>> {
@@ -239,6 +239,9 @@ async function checkAndAutoCancelPendingBookings(bookings: Booking[]): Promise<B
 async function mapAndEnrichBooking(row: Record<string, unknown>): Promise<Booking> {
   const mapped = mapBooking(row);
   if (mapped.business) {
+    if (mapped.business.deleted_at != null || mapped.business.suspended === true) {
+      throw new BookingSupabaseError('This business is no longer available.');
+    }
     await enrichBusinessesWithImages([mapped.business]);
   }
   await enrichBookingsWithServices([mapped]);
@@ -247,7 +250,12 @@ async function mapAndEnrichBooking(row: Record<string, unknown>): Promise<Bookin
 }
 
 async function mapAndEnrichMany(rows: Record<string, unknown>[]): Promise<Booking[]> {
-  const mapped = rows.map((r) => mapBooking(r));
+  const validRows = rows.filter((r) => {
+    const biz = r.business as Record<string, unknown> | undefined;
+    if (biz && (biz.deleted_at != null || biz.suspended === true)) return false;
+    return true;
+  });
+  const mapped = validRows.map((r) => mapBooking(r));
   const businesses = mapped.map((b) => b.business).filter(Boolean) as Business[];
   if (businesses.length > 0) {
     await enrichBusinessesWithImages(businesses);

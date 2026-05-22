@@ -191,6 +191,7 @@ export async function resolveSlotIdForBooking(params: {
       .from('businesses')
       .select('slot_duration')
       .eq('id', businessId)
+      .is('deleted_at', null)
       .single();
 
     const start_time = `${target}:00`;

@@ -334,10 +334,10 @@ function BookingScreenInner(): JSX.Element {
         queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
 
         const newBookingId =
-          response?.id ||
-          response?.booking_id ||
           response?.reference ||
-          `BK-${Math.floor(10000 + Math.random() * 90000)}`;
+          response?.booking_id ||
+          response?.id ||
+          `CUSOWN-${Math.floor(10000 + Math.random() * 90000)}`;
 
         const options: Intl.DateTimeFormatOptions = {
           weekday: 'long',

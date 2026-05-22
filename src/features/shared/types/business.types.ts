@@ -50,6 +50,9 @@ export interface Business {
   suspended?: boolean;
   /** ISO timestamp set when the business is soft-deleted; null/undefined means active */
   deleted_at?: string | null;
+  permanent_deletion_at?: string | null;
+  deletion_reason?: string | null;
+  legal_hold?: boolean;
 }
 
 export interface BusinessStats {

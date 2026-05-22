@@ -19,4 +19,7 @@ export interface UserProfile {
   admin_note?: string | null;
   legal_hold?: boolean;
   data_classification?: 'public' | 'internal' | 'confidential' | 'regulated' | null;
+  deleted_at?: string | null;
+  permanent_deletion_at?: string | null;
+  deletion_reason?: string | null;
 }

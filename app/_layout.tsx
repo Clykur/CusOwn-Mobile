@@ -39,7 +39,7 @@ if (!isExpoGo) {
 }
 
 export default function RootLayout() {
-  const { session, role, isLoading, setSession } = useAuthStore();
+  const { session, profile, role, isLoading, setSession } = useAuthStore();
   const { onboardingCompleted } = useOnboardingStore();
   const segments = useSegments();
   const navigationState = useRootNavigationState();
@@ -78,19 +78,14 @@ export default function RootLayout() {
     // Wait for the initial session check to finish and navigation to be ready
     if (isLoading || !isNavigationReady) return;
 
-    // Some native configs require calling show before hide.
-    // Don't await to keep this effect non-async.
-    try {
-      // @ts-expect-error - expo-splash-screen typings vary across SDKs
-      SplashScreen.showAsync?.();
-    } catch {
-      // ignore
-    }
+    // Expo Router automatically shows the splash screen.
+    // Calling showAsync() here manually on iOS throws the "No native splash screen registered" error.
     SplashScreen.hideAsync();
 
     const rootSegment = segments[0];
     const isPublic = rootSegment === '(public)';
     const isAuth = rootSegment === '(auth)';
+    const isRecovery = rootSegment === 'recovery';
     const isSplash = isPublic && segments[0] === 'splash';
     const isCallback =
       rootSegment === 'google-callback' ||
@@ -108,6 +103,20 @@ export default function RootLayout() {
 
     // 1. Handle Redirect after Sign-in
     if (session) {
+      // 1a. Handle Soft Deleted Account
+      if (profile?.deleted_at) {
+        if (!isRecovery) {
+          logger.info(LogTag.AUTH, '🛑 RootLayout: Account deleted, redirecting to recovery...');
+          router.replace('/recovery');
+        }
+        return; // Prevent further routing logic
+      }
+
+      // If we are on the recovery screen but the profile is no longer deleted, continue to the app
+      if (isRecovery && !profile?.deleted_at) {
+        // Will fall through to the target check below
+      }
+
       if (!role) {
         logger.info(
           LogTag.AUTH,
@@ -118,8 +127,8 @@ export default function RootLayout() {
 
       const target = role === 'Owner' ? '/(owner)' : '/(customer)';
 
-      // Only redirect if they are currently in the public/auth screens (except callback)
-      if ((isPublic || isAuth) && !isCallback) {
+      // Only redirect if they are currently in the public/auth screens (except callback) or the recovery screen
+      if ((isPublic || isAuth || isRecovery) && !isCallback) {
         logger.info(LogTag.AUTH, `🚀 RootLayout: Navigating to ${target}`);
         router.replace(target as any);
       }

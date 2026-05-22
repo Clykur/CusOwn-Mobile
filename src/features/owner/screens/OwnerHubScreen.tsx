@@ -339,6 +339,43 @@ export default function ManageHubScreen() {
       message: `Book your appointment at ${business.salon_name} online here: ${link}`,
     });
   };
+  // Delete Business
+  const handleDeleteBusiness = () => {
+    if (!business) return;
+
+    Alert.alert(
+      'Delete Business',
+      `• "${business.salon_name}" will be deactivated immediately.\n• It will be scheduled for permanent deletion after 30 days.\n• During this period, you may be able to recover your business account.`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoading(true);
+
+              await apiService.deleteBusiness(business.id);
+
+              Alert.alert(
+                'Business Deleted',
+                'Business is deleted successfully and will be permanently removed after 30 days.',
+              );
+
+              router.replace('/(owner)');
+            } catch (err: any) {
+              Alert.alert('Error', err.message || 'Failed to delete business.');
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+    );
+  };
 
   if (loading && !refreshing) {
     return (
@@ -411,12 +448,30 @@ export default function ManageHubScreen() {
                   </Text>
                 </View>
               </View>
-              <Pressable
-                onPress={() => router.push({ pathname: '/(owner)/edit-business', params: { id } })}
-                className="w-10 h-10 rounded-full items-center"
-              >
-                <Ionicons name="create-outline" size={30} color={THEME.colors.primary} />
-              </Pressable>
+              <View className="flex-row items-center">
+                <View className="flex-row items-center">
+                  {/* Edit */}
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: '/(owner)/edit-business',
+                        params: { id },
+                      })
+                    }
+                    className="w-10 h-10 rounded-full items-center justify-center mr-2"
+                  >
+                    <Ionicons name="create-outline" size={26} color={THEME.colors.primary} />
+                  </Pressable>
+
+                  {/* Delete */}
+                  <Pressable
+                    onPress={handleDeleteBusiness}
+                    className="w-10 h-10 rounded-full items-center justify-center"
+                  >
+                    <Ionicons name="trash-outline" size={24} color={THEME.colors.error} />
+                  </Pressable>
+                </View>
+              </View>
             </View>
           </View>
 

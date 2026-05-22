@@ -7,11 +7,22 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Ionicons } from '@expo/vector-icons';
-import { useOwnerBusinesses } from '@/hooks/useOwner';
+import {
+  useOwnerBusinesses,
+  useDeletedOwnerBusinesses,
+  useRestoreBusiness,
+  useHardDeleteBusiness,
+} from '@/hooks/useOwner';
 import { router } from 'expo-router';
+import { useState } from 'react';
+import { Alert } from 'react-native';
 
 export default function OwnerBusinessesScreen() {
   const { data: businesses, isLoading, isError, refetch } = useOwnerBusinesses();
+  const { data: deletedBusinesses, refetch: refetchDeleted } = useDeletedOwnerBusinesses();
+  const restoreMutation = useRestoreBusiness();
+  const hardDeleteMutation = useHardDeleteBusiness();
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   const onAddBusiness = () => {
     router.push('/setup/create');
@@ -19,6 +30,10 @@ export default function OwnerBusinessesScreen() {
 
   const onManageBusiness = (id: string) => {
     router.push(`/(owner)/hub/${id}`);
+  };
+
+  const handleRefresh = async () => {
+    await Promise.all([refetch(), refetchDeleted()]);
   };
 
   if (isError) {
@@ -72,7 +87,7 @@ export default function OwnerBusinessesScreen() {
           refreshControl={
             <RefreshControl
               refreshing={false}
-              onRefresh={refetch}
+              onRefresh={handleRefresh}
               tintColor={THEME.colors.primary}
             />
           }
@@ -148,7 +163,7 @@ export default function OwnerBusinessesScreen() {
             >
               <Pressable
                 onPress={onAddBusiness}
-                className="border border-dashed border-border rounded-luxury p-8 items-center justify-center bg-input/40 active:bg-input"
+                className="border border-dashed border-border rounded-luxury p-8 items-center justify-center bg-input/40 active:bg-input mb-8"
               >
                 <View className="w-12 h-12 rounded-full border border-primary/30 bg-secondary/30 items-center justify-center mb-4">
                   <Ionicons name="add" size={24} color={THEME.colors.primary} />
@@ -161,6 +176,101 @@ export default function OwnerBusinessesScreen() {
                 </Text>
               </Pressable>
             </AnimatedSection>
+
+            {/* Deleted Businesses Section */}
+            {deletedBusinesses && deletedBusinesses.length > 0 && (
+              <AnimatedSection direction="up" className="mt-4">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-4">
+                  Recently Deleted
+                </Text>
+
+                {deletedBusinesses.map((b) => {
+                  let daysRemaining = 30;
+                  if (b.permanent_deletion_at) {
+                    const diffMs =
+                      new Date(b.permanent_deletion_at).getTime() - new Date().getTime();
+                    daysRemaining = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+                  }
+
+                  return (
+                    <GlassCard
+                      key={b.id}
+                      className="p-2 border border-error/30 bg-error/5 rounded-luxury mb-4"
+                    >
+                      <View className="flex-row justify-between items-start mb-6">
+                        <View className="flex-1 mr-4">
+                          <Text className="text-text text-xl font-extrabold mb-1">
+                            {b.salon_name}
+                          </Text>
+                          <Text className="text-error text-xs font-bold uppercase tracking-[1px]">
+                            {daysRemaining} Days until permanent deletion
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View className="h-[0.5px] bg-border w-full mb-2" />
+
+                      <View className="flex-row justify-between items-center mt-2">
+                        <Pressable
+                          disabled={processingId === b.id}
+                          onPress={() => {
+                            setProcessingId(b.id);
+                            restoreMutation.mutate(b.id, {
+                              onSettled: () => setProcessingId(null),
+                              onSuccess: () =>
+                                Alert.alert(
+                                  'Restored',
+                                  `${b.salon_name} has been restored successfully.`,
+                                ),
+                              onError: (err) => Alert.alert('Restore Failed', err.message),
+                            });
+                          }}
+                          className="bg-primary px-4 py-2 rounded-full"
+                        >
+                          <Text className="text-background text-xs font-black uppercase tracking-wider">
+                            {processingId === b.id ? 'Restoring...' : 'Restore'}
+                          </Text>
+                        </Pressable>
+
+                        <Pressable
+                          disabled={processingId === b.id}
+                          onPress={() => {
+                            Alert.alert(
+                              'Permanent Deletion',
+                              `Are you sure you want to permanently delete ${b.salon_name} now? This cannot be undone.`,
+                              [
+                                { text: 'Cancel', style: 'cancel' },
+                                {
+                                  text: 'Delete Permanently',
+                                  style: 'destructive',
+                                  onPress: () => {
+                                    setProcessingId(b.id);
+                                    hardDeleteMutation.mutate(b.id, {
+                                      onSettled: () => setProcessingId(null),
+                                      onSuccess: () =>
+                                        Alert.alert(
+                                          'Deleted',
+                                          `${b.salon_name} has been permanently deleted.`,
+                                        ),
+                                      onError: (err) => Alert.alert('Deletion Failed', err.message),
+                                    });
+                                  },
+                                },
+                              ],
+                            );
+                          }}
+                          className="px-4 py-2"
+                        >
+                          <Text className="text-error text-xs font-black uppercase tracking-wider">
+                            Delete Now
+                          </Text>
+                        </Pressable>
+                      </View>
+                    </GlassCard>
+                  );
+                })}
+              </AnimatedSection>
+            )}
           </View>
         </ScrollView>
       </SafeAreaView>

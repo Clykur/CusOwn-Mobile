@@ -196,18 +196,8 @@ export default function BookingDetailScreen() {
   };
 
   const handleRescheduled = () => {
-    router.push({
-      pathname: '/(customer)/book/[id]',
-      params: {
-        id: booking.business_id,
-        bookingId: booking.id,
-        serviceIds: JSON.stringify(
-          booking.services?.map((s: any) => s.id) || [booking.service?.id],
-        ),
-        selectedDate: booking.date,
-        selectedTime: booking.time,
-      },
-    });
+    // Booking is already rescheduled by RescheduleButton.
+    // Just refresh the data.
   };
 
   /* ---------------- LOADING ---------------- */

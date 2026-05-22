@@ -20,6 +20,7 @@ export async function getBusinessQrCode(
     .from('businesses')
     .select('qr_code, booking_link')
     .eq('id', businessId)
+    .is('deleted_at', null)
     .single();
 
   if (error) {

@@ -103,7 +103,12 @@ export async function getBusinessById(id: string): Promise<Business> {
   }
   if (error) {
     // Last resort: bare select with no filters that might fail on missing columns.
-    ({ data, error } = await supabase.from('businesses').select('*').eq('id', id).single());
+    ({ data, error } = await supabase
+      .from('businesses')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single());
   }
   if (error) {
     logSupabaseFailure('getBusinessById', error, { id });
@@ -232,6 +237,7 @@ export async function updateBusiness(
     .from('businesses')
     .select('*')
     .eq('id', businessId)
+    .is('deleted_at', null)
     .single();
 
   if (loadErr) {
@@ -285,13 +291,72 @@ export async function deleteBusiness(
   reason = 'owner_requested',
 ): Promise<void> {
   const ownerId = await getActorUserId();
-  await invokeBookingRpc('soft_delete_business', {
-    p_business_id: businessId,
-    p_actor_id: ownerId,
-    p_reason: reason,
-  });
+  await assertBusinessOwnedByUser(businessId, ownerId);
+  const now = new Date();
+  const permanentDeletion = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const { error } = await supabase
+    .from('businesses')
+    .update({
+      deleted_at: now.toISOString(),
+      permanent_deletion_at: permanentDeletion.toISOString(),
+      deletion_reason: reason,
+    })
+    .eq('id', businessId);
+
+  if (error) {
+    logger.error(LogTag.API, 'Failed to soft delete business directly', error);
+    throw error;
+  }
 }
 
+export async function restoreBusiness(businessId: string): Promise<void> {
+  const ownerId = await getActorUserId();
+  await assertBusinessOwnedByUser(businessId, ownerId, true);
+  const { error } = await supabase
+    .from('businesses')
+    .update({
+      deleted_at: null,
+      permanent_deletion_at: null,
+      deletion_reason: null,
+    })
+    .eq('id', businessId);
+
+  if (error) {
+    logger.error(LogTag.API, 'Failed to restore business', error);
+    throw error;
+  }
+}
+
+export async function hardDeleteBusiness(businessId: string): Promise<void> {
+  const ownerId = await getActorUserId();
+  await assertBusinessOwnedByUser(businessId, ownerId, true);
+  const { error } = await supabase.from('businesses').delete().eq('id', businessId);
+
+  if (error) {
+    logger.error(LogTag.API, 'Failed to hard delete business', error);
+    throw error;
+  }
+}
+
+export async function listDeletedOwnerBusinesses(ownerUserId?: string): Promise<Business[]> {
+  const ownerId = ownerUserId ?? (await getActorUserId());
+
+  const { data, error } = await supabase
+    .from('businesses')
+    .select(BUSINESS_LIST_SELECT)
+    .eq('owner_user_id', ownerId)
+    .not('deleted_at', 'is', null)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    logSupabaseFailure('listDeletedOwnerBusinesses', error, { ownerId });
+    throw error;
+  }
+
+  const rows = (data || []) as Record<string, unknown>[];
+  return rows.map(mapBusinessRow).filter((b) => b.deleted_at != null);
+}
 export async function searchBusinesses(params: {
   query?: string;
   categoryId?: string;
