@@ -2,7 +2,21 @@ const path = require('path');
 const { getDefaultConfig } = require('expo/metro-config');
 const { withNativeWind } = require('nativewind/metro');
 
-const config = withNativeWind(getDefaultConfig(__dirname), { input: './global.css' });
+const defaultConfig = getDefaultConfig(__dirname);
+
+// React Native SVG Transformer configuration
+const { transformer, resolver } = defaultConfig;
+defaultConfig.transformer = {
+  ...transformer,
+  babelTransformerPath: require.resolve('react-native-svg-transformer/expo'),
+};
+defaultConfig.resolver = {
+  ...resolver,
+  assetExts: resolver.assetExts.filter((ext) => ext !== 'svg'),
+  sourceExts: [...resolver.sourceExts, 'svg'],
+};
+
+const config = withNativeWind(defaultConfig, { input: './global.css' });
 
 // Hermes rejects dynamic import() in release bundles. @supabase/supabase-js 2.106.x
 // ships Hermes-safe CJS (require for optional OTEL); Metro must not use the ESM build.

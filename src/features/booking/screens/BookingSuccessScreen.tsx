@@ -20,7 +20,8 @@ export default function BookingSuccessScreen() {
 
         <Text style={[styles.titleText, { color: theme.text }]}>Booking Confirmed!</Text>
         <Text style={[styles.descText, { color: theme.textSecondary }]}>
-          Your slot reservation has been successfully registered. The hub owner has been notified.
+          Your slot reservation has been successfully registered. The businesss owner has been
+          notified.
         </Text>
       </View>
 

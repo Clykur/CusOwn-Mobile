@@ -11,32 +11,11 @@ import { THEME } from '@/theme/theme';
 const SERVICE_CATEGORIES = [
   {
     id: 'salon',
-    title: 'Salon',
+    title: 'Salons',
     description: 'Haircuts, styling, grooming, and beauty services.',
     icon: 'cut-outline',
     color: THEME.colors.primary,
   },
-  // {
-  //   id: "spa",
-  //   title: "Spa & Wellness",
-  //   description: "Massages, facials, and relaxation treatments.",
-  //   icon: "leaf-outline",
-  //   color: THEME.colors.background
-  // },
-  // {
-  //   id: "clinic",
-  //   title: "Medical Clinic",
-  //   description: "Specialized healthcare and consultation services.",
-  //   icon: "medical-outline",
-  //   color: THEME.colors.background
-  // },
-  // {
-  //   id: "fitness",
-  //   title: "Fitness & Gym",
-  //   description: "Personal training, yoga, and workout sessions.",
-  //   icon: "barbell-outline",
-  //   color: THEME.colors.primary
-  // }
 ];
 
 export default function CustomerCategoriesScreen() {
@@ -56,21 +35,14 @@ export default function CustomerCategoriesScreen() {
           contentContainerClassName="px-luxury pb-12 pt-4"
           showsVerticalScrollIndicator={false}
         >
-          <AnimatedSection direction="down" className="mb-8">
-            <View className="flex-row items-center mb-6">
-              <Pressable
-                onPress={() => router.back()}
-                className="w-10 h-10 rounded-full  items-center justify-center mr-4"
-              >
-                <Ionicons name="arrow-back" size={20} color={THEME.colors.text} />
-              </Pressable>
-              <Text className="text-primary text-sm font-bold tracking-[6px] uppercase">
+          <AnimatedSection direction="down" className="mb-4">
+            <View className="flex-row items-center mb-2">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-1">
                 Explore
               </Text>
             </View>
-            <Text className="text-text text-5xl font-bold tracking-tighter leading-[48px]">
-              Find Your{'\n'}
-              <Text className="text-primary">Experience</Text>.
+            <Text className="text-text text-4xl font-bold tracking-tighter leading-[48px]">
+              Find Your <Text className="text-primary">Experience</Text>.
             </Text>
           </AnimatedSection>
 
@@ -78,7 +50,7 @@ export default function CustomerCategoriesScreen() {
             {SERVICE_CATEGORIES.map((cat, index) => (
               <AnimatedSection key={cat.id} delay={index * 100} direction="up">
                 <Pressable onPress={() => onSelectCategory(cat.id)}>
-                  <GlassCard className="p-8 overflow-hidden bg-card shadow-sm">
+                  <GlassCard className="p-2 overflow-hidden bg-card shadow-sm">
                     <View className="flex-row items-center justify-between mb-6">
                       <View className="w-16 h-16 rounded-2xl items-center justify-center">
                         <Ionicons name={cat.icon as any} size={32} color={cat.color} />
@@ -90,13 +62,6 @@ export default function CustomerCategoriesScreen() {
                     <Text className="text-textSecondary text-sm leading-5 font-medium">
                       {cat.description}
                     </Text>
-
-                    <View className="mt-6 flex-row items-center">
-                      <Text className="text-primary text-xs font-black uppercase tracking-widest mr-2">
-                        Browse Hubs
-                      </Text>
-                      <View className="h-[1px] flex-1 bg-primary/20" />
-                    </View>
                   </GlassCard>
                 </Pressable>
               </AnimatedSection>

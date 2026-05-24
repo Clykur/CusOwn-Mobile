@@ -178,87 +178,63 @@ export default function CustomerBrowseScreen() {
       <SafeAreaView className="flex-1" edges={['top']}>
         <View className="px-luxury pt-5 pb-2">
           <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
-            Explore Salons
+            Discover Salons
           </Text>
           <Text className="text-text text-3xl font-black tracking-tight">
-            Discover Your Next <Text className="text-primary">Experience</Text>
+            Explore Premium <Text className="text-primary">Services</Text>
           </Text>
         </View>
         {/* Search + Location */}
-        <View className="px-luxury pt-4 pb-3">
-          {/* Search Bar */}
-          <View className="bg-card  rounded-2xl px-4 py-3 shadow-sm">
-            {/* Top Row */}
-            <View className="flex-row items-center">
-              <Ionicons name="search" size={20} color={THEME.colors.textSecondary} />
+        <View className="px-luxury pt-2 pb-3">
+          <View className="bg-card rounded-2xl h-14 px-4 flex-row items-center">
+            {/* Search Icon */}
+            <Ionicons name="search" size={20} color={THEME.colors.textSecondary} />
 
-              <TextInput
-                className="flex-1 text-text text-base ml-3"
-                placeholder="Search businesses, salons..."
-                placeholderTextColor={THEME.colors.textSecondary}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
+            {/* Input */}
+            <TextInput
+              className="flex-1 text-text text-base mx-3 -mt-2"
+              placeholder="Search services, salons..."
+              placeholderTextColor={THEME.colors.textSecondary}
+              value={useCurrentLocation ? userLocation?.city || '' : searchQuery}
+              onChangeText={(val) => {
+                if (useCurrentLocation) {
+                  setUseCurrentLocation(false);
+                }
 
-              {searchQuery ? (
-                <Pressable onPress={() => setSearchQuery('')}>
-                  <Ionicons name="close-circle" size={20} color={THEME.colors.textSecondary} />
-                </Pressable>
-              ) : null}
-            </View>
+                setSearchQuery(val);
+              }}
+            />
 
-            {/* Divider */}
-            <View className="h-[1px] bg-border my-3" />
-
-            {/* Location Row */}
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <Ionicons name="location-outline" size={18} color={THEME.colors.primary} />
-
-                <View className="ml-2 flex-1">
-                  <Text className="text-textSecondary text-xs font-semibold mb-1">LOCATION</Text>
-
-                  <TextInput
-                    value={
-                      useCurrentLocation
-                        ? userLocation?.city || 'Detecting location...'
-                        : manualLocation
-                    }
-                    onChangeText={(val) => {
-                      if (useCurrentLocation) {
-                        setUseCurrentLocation(false);
-                      }
-                      setManualLocation(val);
-                    }}
-                    placeholder="All Locations (tap target for current)"
-                    placeholderTextColor={THEME.colors.textSecondary}
-                    className="text-text font-semibold text-sm py-0"
-                  />
-                </View>
-              </View>
-
-              {/* Target Button */}
-              <Pressable
-                onPress={() => {
-                  if (useCurrentLocation) {
-                    setUseCurrentLocation(false);
-                    setManualLocation('');
-                  } else {
-                    setUseCurrentLocation(true);
-                    getUserLocation();
-                  }
-                }}
-                className={`w-10 h-10 rounded-full items-center justify-center ml-3 ${
-                  useCurrentLocation ? '' : ''
-                }`}
-              >
-                {locationLoading ? (
-                  <ActivityIndicator size="small" color={THEME.colors.textSecondary} />
-                ) : (
-                  <Ionicons name="locate" size={18} color={THEME.colors.primary} />
-                )}
+            {/* Clear Button */}
+            {searchQuery && !useCurrentLocation ? (
+              <Pressable onPress={() => setSearchQuery('')} className="mr-2">
+                <Ionicons name="close-circle" size={18} color={THEME.colors.textSecondary} />
               </Pressable>
-            </View>
+            ) : null}
+
+            {/* Target Button */}
+            <Pressable
+              onPress={() => {
+                if (useCurrentLocation) {
+                  setUseCurrentLocation(false);
+                  setSearchQuery('');
+                } else {
+                  setUseCurrentLocation(true);
+                  getUserLocation();
+                }
+              }}
+              className="items-center justify-center"
+            >
+              {locationLoading ? (
+                <ActivityIndicator size="small" color={THEME.colors.primary} />
+              ) : (
+                <Ionicons
+                  name={useCurrentLocation ? 'locate' : 'locate-outline'}
+                  size={20}
+                  color={THEME.colors.primary}
+                />
+              )}
+            </Pressable>
           </View>
         </View>
 

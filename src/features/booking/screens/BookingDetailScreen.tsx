@@ -302,7 +302,6 @@ export default function BookingDetailScreen() {
                   userId={booking.customer_user_id}
                   name={booking.customer_name || 'Client'}
                   size={48}
-                  className="border border-border"
                 />
 
                 <View className="flex-1">
@@ -347,7 +346,6 @@ export default function BookingDetailScreen() {
                   userId={booking.business?.owner_user_id}
                   name={booking.business?.salon_name || 'CusOwn Salon'}
                   size={48}
-                  className="border border-border"
                 />
 
                 <View className="flex-1">

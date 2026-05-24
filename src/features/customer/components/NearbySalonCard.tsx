@@ -1,29 +1,35 @@
-import { THEME } from '@/theme/theme';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+import { THEME } from '@/theme/theme';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Avatar } from '@/components/ui/Avatar';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Business } from '@/types/business.types';
 import { getShopStatus } from '@/utils/time';
 
-interface BrowseSalonCardProps {
-  item: Business;
+export interface NearbySalon extends Business {
+  distance_km?: number;
+  next_available_time?: string;
+  starting_price?: number;
+}
+
+interface NearbySalonCardProps {
+  item: NearbySalon;
   index?: number;
   onPress?: () => void;
 }
 
-export function BusinessCard({ item, index = 0, onPress }: BrowseSalonCardProps) {
+export function NearbySalonCard({ item, index = 0, onPress }: NearbySalonCardProps) {
   const status = getShopStatus(item.opening_time, item.closing_time);
 
   return (
     <AnimatedSection delay={index * 100} direction="right" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-[220px] p-2 bg-card shadow-sm rounded-[28px] items-center relative">
-          {/* Open / Closed Badge */}
+        <GlassCard className="w-[220px] h-[240px] p-2 bg-card shadow-sm rounded-[28px] relative">
           {/* Top Right Status */}
-          <View className="absolute top-3 right-3 flex-row items-center z-10">
+          <View className="absolute top-1 right-4 flex-row items-center z-10">
             {/* Pulse Circle */}
             <View className="relative mr-1.5 items-center justify-center">
               {/* Outer Wave */}
@@ -48,20 +54,20 @@ export function BusinessCard({ item, index = 0, onPress }: BrowseSalonCardProps)
               {status.isOpen ? 'Open' : 'Closed'}
             </Text>
           </View>
-
           {/* Profile Image */}
-          <View className="items-center justify-center mb-4">
-            <Avatar
-              userId={item.owner_user_id}
-              name={item.salon_name}
-              size={110}
-              type="business"
-              className="w-[110px] h-[110px] rounded-full"
-            />
+          <View className="items-center justify-center mb-2">
+            <View className="w-[100px] h-[100px] rounded-full overflow-hidden items-center justify-center">
+              <Avatar
+                userId={item.owner_user_id}
+                name={item.salon_name}
+                size={100}
+                type="business"
+              />
+            </View>
           </View>
 
           {/* Content */}
-          <View className="w-full items-center">
+          <View className="w-full items-center mt-2 px-2">
             {/* Name */}
             <Text
               className="text-text text-lg font-black tracking-tight text-center"
@@ -70,13 +76,14 @@ export function BusinessCard({ item, index = 0, onPress }: BrowseSalonCardProps)
               {item.salon_name}
             </Text>
 
-            {/* Address */}
-            <Text
-              className="text-textSecondary text-xs leading-5 text-center px-2 min-h-[40px]"
-              numberOfLines={2}
-            >
-              {item.address}
-            </Text>
+            {/* Distance */}
+            <View className="flex-row items-center min-h-[24px] mt-1">
+              <Ionicons name="location-outline" size={12} color={THEME.colors.primary} />
+
+              <Text className="text-textSecondary text-xs ml-1 font-medium">
+                {item.distance_km ? `${item.distance_km.toFixed(1)} km away` : 'Nearby'}
+              </Text>
+            </View>
 
             {/* Rating */}
             <View className="flex-row items-center justify-center mt-1">

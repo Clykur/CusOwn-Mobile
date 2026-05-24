@@ -6,8 +6,6 @@ import { router } from 'expo-router';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Business } from '@/types/business.types';
 import { Avatar } from '@/components/ui/Avatar';
-import { isValidImageUrl } from '@/utils/image';
-
 import { getShopStatus } from '@/utils/time';
 
 interface Props {
@@ -21,35 +19,48 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
   return (
     <AnimatedSection delay={index * 50} direction="up" className="mb-4">
       <Pressable onPress={() => router.push(`/(customer)/browse/salons/${item.id}`)}>
-        <View className="flex-row bg-card rounded-[28px] p-4 shadow-sm">
-          {/* Profile/Business Image */}
-          <View className="relative">
+        <View className="flex-row items-center bg-card rounded-[28px] p-4">
+          {/* Business Image */}
+          <View className="mr-4">
             <Avatar
               userId={item.owner_user_id}
               name={item.salon_name}
-              size={80}
-              className="w-[80px] h-[80px] rounded-full"
+              size={76}
+              type="business"
+              className="w-[76px] h-[76px] rounded-full"
             />
           </View>
 
-          {/* Right Content */}
-          <View className="flex-1 ml-4 justify-center">
-            <Text className="text-text text-xl font-bold" numberOfLines={1}>
+          {/* Content */}
+          <View className="flex-1 min-w-0 justify-center">
+            {/* Salon Name */}
+            <Text
+              className="text-text text-[22px] font-extrabold tracking-tight"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {item.salon_name}
             </Text>
 
-            <Text className="text-textSecondary text-sm mt-1 leading-5" numberOfLines={2}>
-              {item.address}
+            {/* Address */}
+            <Text
+              className="text-textSecondary text-sm mt-1 leading-5"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {item.address || 'Location unavailable'}
             </Text>
 
-            <View className="flex-row items-center mt-3">
+            {/* Meta */}
+            <View className="flex-row items-center flex-wrap mt-3">
+              {/* Rating */}
               <View className="flex-row items-center">
                 <Ionicons
                   name={item.rating_avg && Number(item.rating_avg) > 0 ? 'star' : 'star-outline'}
                   size={14}
                   color={
                     item.rating_avg && Number(item.rating_avg) > 0
-                      ? THEME.colors.warning
+                      ? THEME.colors.gold
                       : THEME.colors.textSecondary
                   }
                 />
@@ -61,19 +72,14 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
                 </Text>
               </View>
 
-              {item.review_count > 0 && (
-                <>
-                  <View className="w-1 h-1 rounded-full bg-border mx-2" />
-                  <Text className="text-textSecondary text-xs font-bold uppercase tracking-wide">
-                    {item.review_count} Reviews
-                  </Text>
-                </>
-              )}
-
+              {/* Divider */}
               <View className="w-1 h-1 rounded-full bg-border mx-2" />
 
+              {/* Status */}
               <Text
-                className={`${status.isOpen ? 'text-success' : 'text-error'} text-xs font-bold uppercase tracking-wide`}
+                className={`${
+                  status.isOpen ? 'text-success' : 'text-error'
+                } text-xs font-black uppercase tracking-wide`}
               >
                 {status.isOpen ? 'Open Now' : 'Closed'}
               </Text>

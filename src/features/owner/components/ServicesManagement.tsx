@@ -153,36 +153,43 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
           </View>
         ) : (
           /* Services List */
-          <View className="space-y-3">
-            {services.map((s) => (
-              <View
-                key={s.id}
-                className="bg-input border border-border rounded-3xl p-4 flex-row justify-between items-center mb-3"
-              >
-                {/* Left */}
-                <View className="flex-1 mr-4">
-                  <Text className="text-text text-base font-extrabold">{s.name}</Text>
+          <View className="space-y-1">
+            {services.map((s, index) => (
+              <View key={s.id}>
+                <View className="p-4 flex-row justify-between items-center">
+                  {/* Left */}
+                  <View className="flex-1 mr-4">
+                    <Text className="text-text text-base font-extrabold">{s.name}</Text>
 
-                  <Text className="text-textSecondary text-xs mt-1 font-semibold">
-                    {s.duration} mins • ₹{s.price}
-                  </Text>
+                    <Text className="text-textSecondary text-xs mt-1 font-semibold">
+                      {s.duration} mins • ₹{s.price}
+                    </Text>
+                  </View>
+
+                  {/* Actions */}
+                  <View className="flex-row gap-x-1">
+                    {/* Edit */}
+                    <Pressable
+                      onPress={() => openEdit(s)}
+                      className="p-3 active:bg-card rounded-xl"
+                    >
+                      <Ionicons name="create-outline" size={16} color={THEME.colors.primary} />
+                    </Pressable>
+
+                    {/* Delete */}
+                    <Pressable
+                      onPress={() => handleDelete(s.id)}
+                      className="p-3 active:bg-card rounded-xl"
+                    >
+                      <Ionicons name="trash-outline" size={16} color={THEME.colors.error} />
+                    </Pressable>
+                  </View>
                 </View>
 
-                {/* Actions */}
-                <View className="flex-row gap-x-1">
-                  {/* Edit */}
-                  <Pressable onPress={() => openEdit(s)} className="p-3 active:bg-card rounded-xl">
-                    <Ionicons name="create-outline" size={16} color={THEME.colors.primary} />
-                  </Pressable>
-
-                  {/* Delete */}
-                  <Pressable
-                    onPress={() => handleDelete(s.id)}
-                    className="p-3 active:bg-card rounded-xl"
-                  >
-                    <Ionicons name="trash-outline" size={16} color={THEME.colors.error} />
-                  </Pressable>
-                </View>
+                {/* Divider */}
+                {index !== services.length - 1 && (
+                  <View className="h-px bg-border mx-4 opacity-60" />
+                )}
               </View>
             ))}
           </View>

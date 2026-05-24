@@ -8,7 +8,6 @@ import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { useOwnerBusinesses, useOwnerAnalytics } from '@/hooks/useOwner';
-import { router } from 'expo-router';
 import Svg, {
   Path,
   Circle,
@@ -382,10 +381,7 @@ export default function OwnerAnalyticsScreen() {
               {filterSummary}
             </Text>
           </View>
-          <Pressable
-            onPress={() => setShowFilter(true)}
-            className="bg-input p-3 rounded-2xl border border-border active:bg-card"
-          >
+          <Pressable onPress={() => setShowFilter(true)} className="p-3">
             <Ionicons name="funnel-outline" size={20} color={THEME.colors.primary} />
           </Pressable>
         </View>
@@ -402,23 +398,22 @@ export default function OwnerAnalyticsScreen() {
           }
         >
           {noData && !analyticsLoading ? (
-            <AnimatedSection className="px-luxury pt-12 items-center">
-              <GlassCard className="border border-border w-full p-8 items-center rounded-luxury">
-                <View className="w-20 h-20 rounded-full bg-input items-center justify-center mb-6">
-                  <Ionicons name="bar-chart-outline" size={40} color={THEME.colors.textSecondary} />
+            <AnimatedSection className="px-luxury pt-6 items-center">
+              <GlassCard className="border border-border w-full p-2 items-center justify-center rounded-luxury">
+                {/* Icon */}
+                <View className="items-center justify-center mb-6">
+                  <Ionicons name="analytics-outline" size={40} color={THEME.colors.text} />
                 </View>
-                <Text className="text-text text-xl font-bold mb-2">No Data Available</Text>
-                <Text className="text-textSecondary text-center px-6 text-sm font-medium leading-relaxed">
+
+                {/* Title */}
+                <Text className="text-text text-xl font-bold text-center mb-2">
+                  No Data Available
+                </Text>
+
+                {/* Description */}
+                <Text className="text-textSecondary text-center px-4 text-sm font-medium leading-relaxed">
                   There is no performance data for the selected period or business hub.
                 </Text>
-                <Pressable
-                  onPress={() => router.push('/(owner)/businesses')}
-                  className="mt-8 bg-primary py-4 px-10 rounded-full items-center justify-center active:opacity-80 w-full"
-                >
-                  <Text className="text-background font-extrabold text-sm uppercase tracking-widest">
-                    Launch Your Hub
-                  </Text>
-                </Pressable>
               </GlassCard>
             </AnimatedSection>
           ) : (
@@ -889,9 +884,9 @@ export default function OwnerAnalyticsScreen() {
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
-                {/* 1. Hub Selection */}
+                {/* 1. Business Selection */}
                 <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
-                  Select Hub
+                  Select Business
                 </Text>
 
                 <Pressable

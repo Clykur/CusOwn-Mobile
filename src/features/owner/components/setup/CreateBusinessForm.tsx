@@ -203,12 +203,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
 
       const result = await apiService.createBusiness(payload);
 
-      router.push({
-        pathname: '/(owner)/success',
-        params: {
-          businessId: result.id,
-        },
-      });
+      router.replace('/(owner)');
 
       if (onSuccess) {
         onSuccess(result);

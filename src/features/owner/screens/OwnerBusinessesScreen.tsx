@@ -102,58 +102,61 @@ export default function OwnerBusinessesScreen() {
           <View className="gap-y-4">
             {businesses?.map((b, index) => (
               <AnimatedSection key={b.id} delay={index * 100} direction="up">
-                <GlassCard className="p-2 border border-border rounded-luxury">
-                  <View className="flex-row justify-between items-start mb-6">
-                    <View className="flex-1 mr-4">
-                      <Text className="text-text text-xl font-extrabold mb-1">{b.salon_name}</Text>
-                      <View className="flex-row items-center opacity-70">
+                <Pressable onPress={() => onManageBusiness(b.id)}>
+                  <GlassCard className="p-2 border border-border rounded-luxury">
+                    <View className="flex-row justify-between items-start mb-6">
+                      <View className="flex-1 mr-4">
+                        <Text className="text-text text-xl font-extrabold mb-1">
+                          {b.salon_name}
+                        </Text>
+
+                        <View className="flex-row items-center opacity-70">
+                          <Ionicons
+                            name="location-outline"
+                            size={12}
+                            color={THEME.colors.textSecondary}
+                          />
+
+                          <Text className="text-textSecondary text-xs ml-1" numberOfLines={1}>
+                            {b.location || 'No location set'}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Chevron */}
+                      <View className="flex-row items-center">
                         <Ionicons
-                          name="location-outline"
-                          size={12}
+                          name="chevron-forward"
+                          size={18}
                           color={THEME.colors.textSecondary}
                         />
-                        <Text className="text-textSecondary text-xs ml-1" numberOfLines={1}>
-                          {b.location || 'No location set'}
+                      </View>
+                    </View>
+
+                    <View className="h-[0.5px] bg-border w-full mb-2" />
+
+                    <View className="flex-row justify-between items-center">
+                      <View>
+                        <Text className="text-textSecondary text-xs font-black uppercase tracking-widest mb-1">
+                          Operational Since
+                        </Text>
+
+                        <Text className="text-text text-xs font-semibold">
+                          {new Date(b.created_at).toLocaleDateString()}
+                        </Text>
+                      </View>
+
+                      {/* Active Status */}
+                      <View className="flex-row items-center">
+                        <View className="w-1.5 h-1.5 rounded-full bg-success mr-2" />
+
+                        <Text className="text-success text-xs font-bold uppercase tracking-[2px]">
+                          Active
                         </Text>
                       </View>
                     </View>
-                    <View className="flex-row items-center">
-                      <View className="w-1.5 h-1.5 rounded-full bg-success mr-2" />
-
-                      <Text className="text-success text-xs font-bold uppercase tracking-[2px]">
-                        Active
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View className="h-[0.5px] bg-border w-full mb-2" />
-
-                  <View className="flex-row justify-between items-center">
-                    <View>
-                      <Text className="text-textSecondary text-xs font-black uppercase tracking-widest mb-1">
-                        Operational Since
-                      </Text>
-                      <Text className="text-text text-xs font-semibold">
-                        {new Date(b.created_at).toLocaleDateString()}
-                      </Text>
-                    </View>
-                    <Pressable
-                      onPress={() => onManageBusiness(b.id)}
-                      className="flex-row items-center"
-                    >
-                      <Text className="text-primary text-xs font-black uppercase tracking-wider">
-                        Manage
-                      </Text>
-
-                      <Ionicons
-                        name="arrow-forward"
-                        size={16}
-                        color={THEME.colors.primary}
-                        style={{ marginLeft: 6 }}
-                      />
-                    </Pressable>
-                  </View>
-                </GlassCard>
+                  </GlassCard>
+                </Pressable>
               </AnimatedSection>
             ))}
 

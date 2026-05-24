@@ -19,6 +19,9 @@ export interface Service {
 }
 
 export interface Business {
+  profile_image_url: string;
+  avatar_url: any;
+  phone_number: string;
   cover_photo_url: string | undefined;
   created_at: string | number | Date;
   id: string;

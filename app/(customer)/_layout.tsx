@@ -1,7 +1,5 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
-import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { RatingPromptProvider } from '@/features/reviews/components/RatingPromptProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,28 +12,40 @@ export default function CustomerTabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          headerStyle: {
-            backgroundColor: '#000000', // pure black
+
+          sceneStyle: {
+            backgroundColor: '#000000',
           },
+
+          headerStyle: {
+            backgroundColor: '#000000',
+          },
+
           headerTitleStyle: {
             fontWeight: '800',
             fontSize: responsiveFontSize(18),
             letterSpacing: 0.5,
             color: '#F8FAFC',
           },
+
           headerTintColor: '#F8FAFC',
+
           headerShadowVisible: false,
+
           tabBarStyle: {
-            backgroundColor: '#000000', // pure black
-            borderTopColor: 'rgba(255,255,255,0.05)',
+            backgroundColor: '#000000',
+            borderTopWidth: 0,
             height: verticalScale(60) + insets.bottom,
             paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12),
             paddingTop: verticalScale(12),
             elevation: 0,
             shadowOpacity: 0,
           },
-          tabBarActiveTintColor: '#FFFFFF', // luxury gold
+
+          tabBarActiveTintColor: '#FFFFFF',
+
           tabBarInactiveTintColor: '#64748B',
+
           tabBarLabelStyle: {
             fontWeight: '700',
             fontSize: responsiveFontSize(10),
@@ -56,11 +66,11 @@ export default function CustomerTabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="browse"
+          name="categories"
           options={{
             title: 'Browse',
             headerTitle: 'DISCOVER',
-            tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+            tabBarIcon: ({ color }: { color: string; size: number }) => (
               <Ionicons name="search" size={22} color={color} />
             ),
           }}
@@ -94,6 +104,12 @@ export default function CustomerTabsLayout() {
         />
         <Tabs.Screen
           name="booking-success"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="browse"
           options={{
             href: null,
           }}
