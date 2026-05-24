@@ -1,5 +1,5 @@
 import { THEME } from '@/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
   Share,
   TextInput,
 } from 'react-native';
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system/legacy';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -70,6 +72,7 @@ export default function ManageHubScreen() {
   });
   const [loadingReviews, setLoadingReviews] = useState(false);
 
+  const qrRef = useRef<any>(null);
   useEffect(() => {
     fetchBusiness();
   }, [id]);
@@ -100,7 +103,30 @@ export default function ManageHubScreen() {
       setLoading(false);
     }
   };
+  const handleDownloadQR = async () => {
+    try {
+      const permission = await MediaLibrary.requestPermissionsAsync();
 
+      if (!permission.granted) {
+        Alert.alert('Permission Required', 'Please allow media access to save QR code.');
+        return;
+      }
+
+      qrRef.current?.toDataURL(async (data: string) => {
+        const fileUri = FileSystem.documentDirectory + `business-qr-${business?.id}.png`;
+
+        await FileSystem.writeAsStringAsync(fileUri, data, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        await MediaLibrary.saveToLibraryAsync(fileUri);
+
+        Alert.alert('Success', 'QR Code downloaded successfully.');
+      });
+    } catch (err) {
+      Alert.alert('Error', 'Failed to download QR code.');
+    }
+  };
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchBusiness();
@@ -392,7 +418,7 @@ export default function ManageHubScreen() {
       <PremiumBackground>
         <View className="flex-1 justify-center items-center p-10">
           <Ionicons name="alert-circle-outline" size={48} color={THEME.colors.textSecondary} />
-          <Text className="text-text text-xl font-black mt-4 mb-6">Hub Not Found</Text>
+          <Text className="text-text text-xl font-black mt-4 mb-6">Business Not Found</Text>
           <Pressable
             onPress={() => router.back()}
             className="bg-primary px-6 py-3.5 rounded-full active:opacity-80"
@@ -416,7 +442,7 @@ export default function ManageHubScreen() {
       <Ionicons
         name={icon}
         size={15}
-        color={activeTab === tab ? THEME.colors.text : THEME.colors.border}
+        color={activeTab === tab ? THEME.colors.text : THEME.colors.textSecondary}
         className="mr-2"
       />
       <Text
@@ -450,7 +476,6 @@ export default function ManageHubScreen() {
               </View>
               <View className="flex-row items-center">
                 <View className="flex-row items-center">
-                  {/* Edit */}
                   <Pressable
                     onPress={() =>
                       router.push({
@@ -458,17 +483,13 @@ export default function ManageHubScreen() {
                         params: { id },
                       })
                     }
-                    className="w-10 h-10 rounded-full items-center justify-center mr-2"
+                    className="items-center justify-center mr-3"
                   >
-                    <Ionicons name="create-outline" size={26} color={THEME.colors.primary} />
+                    <Ionicons name="create-outline" size={25} color={THEME.colors.primary} />
                   </Pressable>
-
                   {/* Delete */}
-                  <Pressable
-                    onPress={handleDeleteBusiness}
-                    className="w-10 h-10 rounded-full items-center justify-center"
-                  >
-                    <Ionicons name="trash-outline" size={24} color={THEME.colors.error} />
+                  <Pressable onPress={handleDeleteBusiness} className="items-center justify-center">
+                    <Ionicons name="trash-outline" size={25} color={THEME.colors.error} />
                   </Pressable>
                 </View>
               </View>
@@ -518,53 +539,162 @@ export default function ManageHubScreen() {
                   </View>
 
                   {/* QR Section */}
-                  <View className="w-full flex flex-col items-center justify-center">
-                    <View className="w-64 h-64 ml-5 border border-gray-300 rounded-[32px] items-center justify-center mb-8 left-4">
+                  <View className="w-full items-center justify-center">
+                    {/* QR Container */}
+                    <View className="items-center justify-center border border-text rounded-luxury mb-6 p-2">
                       <QRCode
                         value={`https://cusownapp.clykur.com/book/${business.id}`}
                         size={200}
                         color="black"
                         backgroundColor="white"
+                        getRef={(c) => {
+                          qrRef.current = c;
+                        }}
                       />
                     </View>
 
-                    {/* Share Button */}
-                    <Pressable
-                      onPress={handleShareLink}
-                      className="flex-row items-center justify-center border border-primary px-4 py-2 rounded-full active:bg-card left-7"
-                    >
-                      <Ionicons
-                        name="share-social-outline"
-                        size={14}
-                        color={THEME.colors.primary}
-                      />
+                    {/* Action Buttons */}
+                    <View className="flex-row items-center justify-center px-2">
+                      {/* Share */}
+                      <Pressable
+                        onPress={handleShareLink}
+                        className="flex-1 h-12 flex-row items-center justify-center border border-primary rounded-full mr-2 active:bg-card"
+                      >
+                        <Ionicons
+                          name="share-social-outline"
+                          size={16}
+                          color={THEME.colors.primary}
+                        />
 
-                      <Text className="ml-2 text-textSecondary font-black text-xs uppercase tracking-wider">
-                        Share Link
-                      </Text>
-                    </Pressable>
+                        <Text className="ml-2 text-primary font-black text-[11px] uppercase tracking-[2px]">
+                          Share
+                        </Text>
+                      </Pressable>
+
+                      {/* Download */}
+                      <Pressable
+                        onPress={handleDownloadQR}
+                        className="flex-1 h-12 flex-row items-center justify-center border border-border rounded-full ml-2 active:bg-card"
+                      >
+                        <Ionicons
+                          name="download-outline"
+                          size={16}
+                          color={THEME.colors.textSecondary}
+                        />
+
+                        <Text className="ml-2 text-textSecondary font-black text-[11px] uppercase tracking-[2px]">
+                          Download
+                        </Text>
+                      </Pressable>
+                    </View>
                   </View>
                 </GlassCard>
+                {/* Business Details Card */}
+                <GlassCard className="p-2 rounded-luxury border-border shadow-sm mt-6">
+                  {/* Header */}
+                  <View className="flex-row items-center justify-between mb-6">
+                    <View>
+                      <Text className="text-text text-lg font-extrabold">Business Details</Text>
 
-                {/* URL Card */}
-                <GlassCard className="p-6 rounded-luxury border-border shadow-sm items-center">
-                  <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-4 text-center">
-                    Direct Booking URL
-                  </Text>
+                      <Text className="text-textSecondary text-xs font-semibold mt-1">
+                        Manage your public business information
+                      </Text>
+                    </View>
+                  </View>
 
-                  <Pressable
-                    onPress={handleShareLink}
-                    className="w-full bg-input border border-border rounded-2xl p-4 flex-row items-center justify-between active:bg-card"
-                  >
-                    <Text
-                      className="flex-1 text-textSecondary text-xs font-semibold text-center"
-                      numberOfLines={1}
-                    >
-                      {`https://cusownapp.clykur.com/book/${business.id}`}
-                    </Text>
+                  {/* Details */}
+                  <View>
+                    {/* Salon Name */}
+                    <View className="flex-row justify-between items-center py-4 border-b border-border">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                        Salon
+                      </Text>
 
-                    <Ionicons name="share-outline" size={18} color={THEME.colors.primary} />
-                  </Pressable>
+                      <Text
+                        className="text-text text-sm font-bold text-right flex-1 ml-4"
+                        numberOfLines={1}
+                      >
+                        {business.salon_name}
+                      </Text>
+                    </View>
+                    {/* Owner Name */}
+                    <View className="flex-row justify-between items-center py-4 border-b border-border">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                        Owner
+                      </Text>
+
+                      <Text
+                        className="text-text text-sm font-bold text-right flex-1 ml-4"
+                        numberOfLines={1}
+                      >
+                        {business.owner_name || 'Not set'}
+                      </Text>
+                    </View>
+
+                    {/* Phone Number */}
+                    <View className="flex-row justify-between items-center py-4 border-b border-border">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                        Phone
+                      </Text>
+
+                      <Text
+                        className="text-text text-sm font-bold text-right flex-1 ml-4"
+                        numberOfLines={1}
+                      >
+                        {business.whatsapp_number || business.phone_number || 'Not added'}
+                      </Text>
+                    </View>
+
+                    {/* Address */}
+                    <View className="flex-row justify-between items-start py-4 border-b border-border">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                        Address
+                      </Text>
+
+                      <Text className="text-text text-sm font-bold text-right flex-1 ml-4">
+                        {business.address || business.location || 'No address added'}
+                      </Text>
+                    </View>
+
+                    {/* City */}
+                    <View className="flex-row justify-between items-center py-4 border-b border-border">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                        City
+                      </Text>
+
+                      <Text className="text-text text-sm font-bold text-right flex-1 ml-4">
+                        {business.city || 'Not set'}
+                      </Text>
+                    </View>
+
+                    {/* Working Hours */}
+                    <View className="flex-row justify-between items-center py-4 border-b border-border">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                        Hours
+                      </Text>
+
+                      <Text className="text-text text-sm font-bold text-right flex-1 ml-4">
+                        {business.opening_time && business.closing_time
+                          ? `${business.opening_time} - ${business.closing_time}`
+                          : 'Not configured'}
+                      </Text>
+                    </View>
+
+                    {/* Created */}
+                    <View className="flex-row justify-between items-center py-4">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                        Created
+                      </Text>
+
+                      <Text className="text-text text-sm font-bold text-right flex-1 ml-4">
+                        {new Date(business.created_at).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </Text>
+                    </View>
+                  </View>
                 </GlassCard>
               </AnimatedSection>
             )}
@@ -578,8 +708,8 @@ export default function ManageHubScreen() {
             {activeTab === 'photos' && (
               <AnimatedSection direction="up">
                 <GlassCard className="p-2 rounded-luxury border-border shadow-sm mb-6">
-                  <View className="flex-row justify-between items-center mb-6 border-b border-border pb-4">
-                    <Text className="text-text font-extrabold text-xl">Shop Portfolio</Text>
+                  <View className="flex-row justify-between items-center mb-6 border-b border-border pb-2">
+                    <Text className="text-text font-extrabold text-xl">Shop Photos</Text>
                     <Pressable
                       onPress={handleAddPhoto}
                       disabled={uploadingPhoto}
@@ -618,9 +748,9 @@ export default function ManageHubScreen() {
                           />
                           <Pressable
                             onPress={() => handleDeletePhoto(item.id)}
-                            className="absolute top-2 right-2 bg-error w-8 h-8 rounded-full items-center justify-center shadow active:opacity-80"
+                            className="absolute top-2 right-2 items-center justify-center shadow active:opacity-80"
                           >
-                            <Ionicons name="trash-outline" size={14} color={THEME.colors.text} />
+                            <Ionicons name="trash-outline" size={24} color={THEME.colors.error} />
                           </Pressable>
                         </View>
                       ))}
@@ -640,7 +770,7 @@ export default function ManageHubScreen() {
                   </Text>
 
                   {/* Add Holiday Form */}
-                  <View className="bg-input border border-border p-4 rounded-2xl mb-6">
+                  <View className="p-2 mb-3">
                     <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
                       Schedule a Holiday
                     </Text>
@@ -717,7 +847,7 @@ export default function ManageHubScreen() {
                   </Text>
 
                   {/* Add Closure Form */}
-                  <View className="bg-input border border-border p-4 rounded-2xl mb-6">
+                  <View className="p-2 mb-3">
                     <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
                       Add Specific Closure
                     </Text>
@@ -799,7 +929,7 @@ export default function ManageHubScreen() {
 
             {activeTab === 'reviews' && (
               <AnimatedSection direction="up">
-                <GlassCard className="p-6 rounded-luxury border-border shadow-sm">
+                <GlassCard className="p-2 rounded-luxury border-border shadow-sm">
                   <View className="mb-6 border-b border-border pb-4">
                     <Text className="text-text font-extrabold text-xl">Customer Reviews</Text>
                     {loadingReviews ? (
@@ -824,9 +954,22 @@ export default function ManageHubScreen() {
                     <ActivityIndicator color={THEME.colors.textSecondary} className="my-8" />
                   ) : reviewData.reviews.length === 0 ? (
                     <View className="items-center py-12">
-                      <Ionicons name="chatbubbles-outline" size={48} color={THEME.colors.border} />
-                      <Text className="text-textSecondary font-semibold mt-4">
-                        No reviews yet for this hub
+                      {/* Stars */}
+                      <View className="flex-row items-center">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <Ionicons
+                            key={index}
+                            name="star-outline"
+                            size={30}
+                            color={THEME.colors.border}
+                            style={{ marginHorizontal: 2 }}
+                          />
+                        ))}
+                      </View>
+
+                      {/* Text */}
+                      <Text className="text-textSecondary font-semibold mt-4 text-center">
+                        No reviews yet for this business
                       </Text>
                     </View>
                   ) : (
@@ -836,15 +979,21 @@ export default function ManageHubScreen() {
                           key={rev.id || idx}
                           className="bg-input border border-border rounded-2xl p-4 mb-3"
                         >
-                          <View className="flex-row justify-between items-center mb-2">
-                            <Text className="text-text font-extrabold text-sm">
-                              {rev?.customer_name || 'Customer'}
-                            </Text>
+                          <View className="flex-row justify-between items-center mb-3">
                             <View className="flex-row items-center">
                               {Array.from({ length: rev.rating }).map((_, starIdx) => (
-                                <Ionicons key={starIdx} name="star" size={12} color="#FFB800" />
+                                <Ionicons
+                                  key={starIdx}
+                                  name="star"
+                                  size={12}
+                                  color="#FFB800"
+                                  style={{ marginRight: 2 }}
+                                />
                               ))}
                             </View>
+                            <Text className="text-textSecondary text-xs font-semibold">
+                              {rev.created_at ? new Date(rev.created_at).toLocaleDateString() : ''}
+                            </Text>
                           </View>
                           {rev.comment ? (
                             <Text className="text-textSecondary text-xs font-medium leading-relaxed">
@@ -855,9 +1004,6 @@ export default function ManageHubScreen() {
                               No comment provided
                             </Text>
                           )}
-                          <Text className="text-textSecondary text-xs font-semibold mt-2.5">
-                            {rev.created_at ? new Date(rev.created_at).toLocaleDateString() : ''}
-                          </Text>
                         </View>
                       ))}
                     </View>

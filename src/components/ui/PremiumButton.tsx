@@ -40,7 +40,8 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
       case 'outline':
         return 'premium-button-outline';
       case 'secondary':
-        return 'bg-white/10 h-14 rounded-premium items-center justify-center';
+      case 'secondary':
+        return 'border border-border bg-input h-14 rounded-premium items-center justify-center';
       default:
         return 'premium-button';
     }
@@ -52,7 +53,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
       onPressOut={onPressOut}
       style={animatedStyle}
       disabled={loading || props.disabled}
-      className={`${getButtonClass()} ${className} ${loading ? 'opacity-70' : ''}`}
+      className={`w-full ${getButtonClass()} ${className} ${loading ? 'opacity-70' : ''}`}
       {...props}
     >
       <View className="flex-row items-center justify-center">

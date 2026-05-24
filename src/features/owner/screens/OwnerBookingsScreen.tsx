@@ -259,10 +259,7 @@ export default function OwnerBookingsScreen() {
               {filterSummary}
             </Text>
           </View>
-          <Pressable
-            onPress={() => setShowFilter(true)}
-            className="bg-input p-3 rounded-2xl border border-border active:bg-card"
-          >
+          <Pressable onPress={() => setShowFilter(true)} className="p-3 rounded-2xl">
             <Ionicons name="funnel-outline" size={20} color={THEME.colors.primary} />
           </Pressable>
         </View>
@@ -320,7 +317,7 @@ export default function OwnerBookingsScreen() {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <AnimatedSection direction="up" className="items-center justify-center pt-24">
-                <View className="w-20 h-20 rounded-full bg-input items-center justify-center mb-6 border border-border">
+                <View className="w-20 h-20 items-center justify-center mb-6">
                   <Ionicons
                     name="calendar-clear-outline"
                     size={36}
@@ -359,9 +356,9 @@ export default function OwnerBookingsScreen() {
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
-                {/* 1. Hub Selection */}
+                {/* 1. Business Selection */}
                 <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
-                  Select Hub
+                  Select Business
                 </Text>
 
                 <Pressable

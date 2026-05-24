@@ -390,9 +390,8 @@ export async function enrichBusinessesWithImages(businesses: Business[]): Promis
     }
 
     for (const biz of businesses) {
-      // Prioritize the user's profile picture for the main business image
-      const firstMedia =
-        (biz.owner_user_id ? profileMediaMap[biz.owner_user_id] : null) || bizMediaMap[biz.id];
+      // Prioritize the business's own media for the main business image
+      const firstMedia = bizMediaMap[biz.id];
       if (firstMedia) {
         try {
           const publicUrl = supabase.storage

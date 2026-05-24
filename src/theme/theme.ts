@@ -13,6 +13,7 @@ export const BASE_COLORS = {
   transparent: 'transparent',
   white: '#FFFFFF',
   black: '#000000',
+  yellow: '#FACC15',
 };
 
 export const THEME = {
@@ -33,6 +34,7 @@ export const THEME = {
     gradientStart: BASE_COLORS.vibrantMint,
     gradientEnd: BASE_COLORS.forestGreen,
     transparent: BASE_COLORS.transparent,
+    gold: BASE_COLORS.yellow,
     // Convenience aliases
     accentPremium: BASE_COLORS.vibrantMint,
     surface: BASE_COLORS.elevatedSurface,

@@ -98,6 +98,7 @@ export default function CustomerBookingsScreen() {
                   userId={item.business?.owner_user_id || item.salon?.owner_user_id}
                   name={salonName}
                   size={70}
+                  type="business"
                   className="w-[70px] h-[70px] rounded-full"
                 />
               </View>
@@ -265,7 +266,7 @@ export default function CustomerBookingsScreen() {
             }
             ListEmptyComponent={
               <AnimatedSection direction="up" className="items-center justify-center pt-24">
-                <View className="w-20 h-20 rounded-full bg-border items-center justify-center mb-6  ">
+                <View className="w-20 h-20 rounded-full items-center justify-center mb-6  ">
                   <Ionicons
                     name="calendar-clear-outline"
                     size={36}

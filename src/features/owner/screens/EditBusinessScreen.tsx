@@ -51,7 +51,7 @@ export default function EditBusinessScreen() {
               Business Not Found
             </Text>
             <Text className="text-textSecondary text-center mb-6 font-medium text-sm leading-6">
-              We couldn't locate the hub details you're trying to edit.
+              We couldn't locate the business details you're trying to edit.
             </Text>
             <Pressable onPress={() => router.back()} className="bg-primary px-8 py-3 rounded-full">
               <Text className="text-background font-bold">Go Back</Text>

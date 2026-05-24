@@ -1,12 +1,16 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, FlatList, useWindowDimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
+
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
+import Animated, { SlideInRight, SlideOutLeft } from 'react-native-reanimated';
+
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { PremiumButton } from '@/components/ui/PremiumButton';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { GlassCard } from '@/components/ui/GlassCard';
+
+import card1 from '../../../../assets/Everything-in-one-place-1.svg';
+import card2 from '../../../../assets/Everything-in-one-place-2.svg';
+import card3 from '../../../../assets/Everything-in-one-place-3.svg';
 
 import { useOnboardingStore } from '@/store/onboarding.store';
 import { THEME } from '@/theme/theme';
@@ -15,20 +19,20 @@ const SLIDES = [
   {
     id: '1',
     title: 'Smart Scheduling',
-    description: 'Manage appointments effortlessly with a premium booking experience.',
-    icon: 'calendar-clear-outline' as const,
+    subtitle: 'Effortless booking and schedule management.',
+    image: card1,
   },
   {
     id: '2',
     title: 'Seamless Experiences',
-    description: 'Everything flows through one elegant and modern platform.',
-    icon: 'sparkles-outline' as const,
+    subtitle: `Modern workflows built for premium\nservices.`,
+    image: card2,
   },
   {
     id: '3',
     title: 'Built To Scale',
-    description: 'Designed for multiple industries, premium services, and future growth.',
-    icon: 'trending-up-outline' as const,
+    subtitle: 'Flexible infrastructure for growing businesses.',
+    image: card3,
   },
 ];
 
@@ -37,164 +41,135 @@ export default function OnboardingScreen() {
 
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const flatListRef = useRef<FlatList>(null);
-
   const setOnboardingCompleted = useOnboardingStore((state) => state.setOnboardingCompleted);
+
+  const currentSlide = SLIDES[activeIndex];
+
+  const completeFlow = () => {
+    setOnboardingCompleted(true);
+
+    router.push('/(public)/role-selection');
+  };
 
   const handleNext = () => {
     if (activeIndex < SLIDES.length - 1) {
-      flatListRef.current?.scrollToIndex({
-        index: activeIndex + 1,
-      });
-
-      setActiveIndex(activeIndex + 1);
+      setActiveIndex((prev) => prev + 1);
     } else {
-      setOnboardingCompleted(true);
-
-      router.push('/(public)/role-selection');
+      completeFlow();
     }
-  };
-
-  const onScroll = (event: any) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-
-    const index = Math.round(offsetX / width);
-
-    setActiveIndex(index);
   };
 
   return (
     <PremiumBackground>
-      <View className="flex-1 pt-24 pb-12">
-        {/* Header */}
-        <AnimatedSection direction="down">
-          <View className="px-7 mb-8">
-            <Text
-              className="uppercase font-semibold mb-5"
-              style={{
-                letterSpacing: 5,
-                fontSize: 11,
-                color: '#D97706',
-              }}
-            >
-              Premium Experience
-            </Text>
-
-            <Text
-              style={{
-                fontSize: 52,
-                fontWeight: '900',
-                color: THEME.colors.primary,
-                lineHeight: 58,
-                letterSpacing: -2,
-              }}
-            >
-              Everything{'\n'}In One Place
-            </Text>
-          </View>
-        </AnimatedSection>
-
-        {/* Slides */}
-        <FlatList
-          ref={flatListRef}
-          data={SLIDES}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
-          onScroll={onScroll}
-          scrollEventThrottle={16}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                width,
-                paddingHorizontal: 28,
-                justifyContent: 'center',
-              }}
-            >
-              <AnimatedSection direction="up">
-                <GlassCard className="rounded-[34px] border border-border p-8">
-                  <View
-                    style={{
-                      width: 84,
-                      height: 84,
-                      borderRadius: 999,
-                      backgroundColor: THEME.colors.primary,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginBottom: 30,
-                    }}
-                  >
-                    <Ionicons name={item.icon} size={38} color={THEME.colors.text} />
-                  </View>
-
-                  <Text
-                    style={{
-                      fontSize: 34,
-                      fontWeight: '900',
-                      lineHeight: 40,
-                      color: THEME.colors.primary,
-                      marginBottom: 18,
-                    }}
-                  >
-                    {item.title}
-                  </Text>
-
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      lineHeight: 30,
-                      color: THEME.colors.textSecondary,
-                    }}
-                  >
-                    {item.description}
-                  </Text>
-                </GlassCard>
-              </AnimatedSection>
-            </View>
-          )}
-        />
-
-        {/* Footer */}
-        <AnimatedSection delay={400} direction="up">
-          <View className="px-7 mt-10">
-            {/* Indicators */}
-            <View className="flex-row justify-center mb-10">
-              {SLIDES.map((_, index) => (
-                <View
-                  key={index}
-                  style={{
-                    width: index === activeIndex ? 38 : 8,
-                    height: 8,
-                    borderRadius: 999,
-                    marginHorizontal: 4,
-                    backgroundColor:
-                      index === activeIndex ? THEME.colors.primary : THEME.colors.border,
-                  }}
-                />
-              ))}
-            </View>
-
-            <PremiumButton
-              title={activeIndex === SLIDES.length - 1 ? 'Get Started' : 'Continue'}
-              onPress={handleNext}
-              className="w-full"
-            />
-
-            <View className="items-center mt-6">
-              <Text
+      <View className="flex-1 px-7 pt-20 pb-12">
+        {/* Slide */}
+        <View className="flex-1 justify-center overflow-hidden">
+          <Animated.View
+            key={currentSlide.id}
+            entering={SlideInRight.duration(650).springify().damping(20).stiffness(120)}
+            exiting={SlideOutLeft.duration(320)}
+            style={{
+              transform: [{ translateX: 0 }],
+            }}
+          >
+            <View className="items-center">
+              {/* SVG */}
+              <View
                 style={{
-                  fontSize: 10,
-                  letterSpacing: 4,
-                  textTransform: 'uppercase',
-                  color: THEME.colors.textSecondary,
+                  width: width * 0.74,
+                  height: width * 0.74,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: 50,
                 }}
               >
-                Designed For Modern Businesses
+                <currentSlide.image width="100%" height="100%" />
+              </View>
+
+              {/* Title */}
+              <Text
+                style={{
+                  fontSize: 34,
+                  fontWeight: '900',
+                  color: THEME.colors.primary,
+                  textAlign: 'center',
+                  marginBottom: 18,
+                }}
+              >
+                {currentSlide.title}
+              </Text>
+
+              {/* Subtitle */}
+              <Text
+                style={{
+                  fontSize: 16,
+                  lineHeight: 30,
+                  color: THEME.colors.textSecondary,
+                  textAlign: 'center',
+                  paddingHorizontal: 10,
+                }}
+              >
+                {currentSlide.subtitle}
               </Text>
             </View>
-          </View>
-        </AnimatedSection>
+          </Animated.View>
+        </View>
+
+        {/* Indicators */}
+        <View className="flex-row justify-center mb-10">
+          {SLIDES.map((_, index) => (
+            <View
+              key={index}
+              style={{
+                width: index === activeIndex ? 34 : 8,
+                height: 8,
+                borderRadius: 999,
+                marginHorizontal: 4,
+                backgroundColor: index === activeIndex ? THEME.colors.primary : THEME.colors.border,
+              }}
+            />
+          ))}
+        </View>
+
+        {/* Bottom Buttons */}
+        <View className="flex-row justify-between items-center">
+          {/* Skip */}
+          <TouchableOpacity onPress={completeFlow}>
+            <Text
+              style={{
+                color: THEME.colors.textSecondary,
+                fontSize: 15,
+                fontWeight: '700',
+                letterSpacing: 1,
+              }}
+            >
+              SKIP
+            </Text>
+          </TouchableOpacity>
+
+          {/* Next */}
+          <TouchableOpacity
+            onPress={handleNext}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <Text
+              style={{
+                color: THEME.colors.primary,
+                fontSize: 15,
+                fontWeight: '700',
+                letterSpacing: 1,
+                marginRight: 4,
+              }}
+            >
+              {activeIndex === SLIDES.length - 1 ? 'START' : 'NEXT'}
+            </Text>
+
+            <Ionicons name="chevron-forward" size={18} color={THEME.colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
     </PremiumBackground>
   );

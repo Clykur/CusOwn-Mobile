@@ -1,16 +1,7 @@
 import { THEME } from '@/theme/theme';
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  Linking,
-  ActivityIndicator,
-  Image,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking, ActivityIndicator, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
@@ -24,6 +15,7 @@ import { Service } from '@/types/business.types';
 import { apiService } from '@/services/api.service';
 import { getShopStatus } from '@/utils/time';
 import { isValidImageUrl } from '@/utils/image';
+import { useProfileMedia } from '@/hooks/useProfileMedia';
 
 export default function SalonDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -36,7 +28,7 @@ export default function SalonDetailsScreen() {
   const [reviewsData, setReviewsData] = useState<any>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [loadingExtra, setLoadingExtra] = useState(false);
-
+  const { data: ownerImage } = useProfileMedia(business?.owner_user_id ?? null);
   useEffect(() => {
     if (!business?.id) return;
 
@@ -231,12 +223,26 @@ export default function SalonDetailsScreen() {
       >
         {/* Hero Header */}
         <View className="h-[360px] w-full relative">
-          <Avatar
-            userId={business.owner_user_id}
-            name={business.salon_name}
-            size={400}
-            className="w-full h-full"
-          />
+          {ownerImage ? (
+            <Image
+              source={{ uri: ownerImage }}
+              style={{
+                width: '100%',
+                height: '100%',
+              }}
+              contentFit="cover"
+              transition={300}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <Avatar
+              userId={business.owner_user_id}
+              name={business.salon_name}
+              size={400}
+              type="business"
+              className="w-full h-full"
+            />
+          )}
           <View className="absolute inset-0 bg-black/30" />
 
           <Pressable
@@ -249,7 +255,7 @@ export default function SalonDetailsScreen() {
 
         <View className="px-luxury -mt-10">
           <AnimatedSection direction="up">
-            <GlassCard className="p-6  bg-card shadow-sm rounded-3xl">
+            <GlassCard className="p-2 bg-card shadow-sm rounded-3xl">
               {/* Name and Rating */}
               <View className="flex-row justify-between items-start mb-4">
                 <View className="flex-1 mr-4">
@@ -268,20 +274,32 @@ export default function SalonDetailsScreen() {
                   </View>
                 </View>
                 <View className="items-end bg-border px-3 py-1.5 rounded-xl flex-row items-center shadow-sm">
-                  <Ionicons
-                    name={
-                      business.rating_avg && Number(business.rating_avg) > 0
-                        ? 'star'
-                        : 'star-outline'
-                    }
-                    size={14}
-                    color={
-                      business.rating_avg && Number(business.rating_avg) > 0
-                        ? THEME.colors.warning
-                        : THEME.colors.textSecondary
-                    }
-                  />
-                  <Text className="text-text font-bold ml-1 text-sm">{displayRatingAvg}</Text>
+                  <View className="flex-row items-center">
+                    <Ionicons
+                      name={
+                        business.rating_avg && Number(business.rating_avg) > 0
+                          ? 'star'
+                          : 'star-outline'
+                      }
+                      size={16}
+                      color={
+                        business.rating_avg && Number(business.rating_avg) > 0
+                          ? THEME.colors.gold
+                          : THEME.colors.textSecondary
+                      }
+                      style={{ marginRight: 4 }}
+                    />
+
+                    <Text
+                      style={{
+                        color: THEME.colors.text,
+                        fontSize: 14,
+                        fontWeight: '600',
+                      }}
+                    >
+                      {business.rating_avg ? Number(business.rating_avg).toFixed(1) : '0.0'}
+                    </Text>
+                  </View>
                   {displayReviewCount > 0 ? (
                     <Text className="text-textSecondary text-xs ml-1">({displayReviewCount})</Text>
                   ) : null}
@@ -321,7 +339,8 @@ export default function SalonDetailsScreen() {
                       userId={business.owner_user_id}
                       name={business.owner_name || 'Owner'}
                       size={42}
-                      className="w-[42px] h-[42px] rounded-full mr-3  shadow-sm"
+                      type="business"
+                      className="w-[42px] h-[42px] rounded-full mr-3 shadow-sm"
                     />
                     <View>
                       <Text className="text-text font-bold text-base">
@@ -450,16 +469,7 @@ export default function SalonDetailsScreen() {
             {reviewsList.length > 0 ? (
               reviewsList.map((rev: any) => (
                 <View key={rev.id} className="bg-card  rounded-3xl p-5 shadow-sm">
-                  <View className="flex-row justify-between items-center mb-3">
-                    <View className="flex-row items-center flex-1 gap-x-3">
-                      <Avatar userId={rev.user_id} name={rev.name} size={36} className="" />
-                      <Text className="text-text font-bold text-sm flex-1" numberOfLines={1}>
-                        {rev.name}
-                      </Text>
-                    </View>
-                    <Text className="text-textSecondary text-xs ml-2">{rev.date}</Text>
-                  </View>
-                  <View className="flex-row items-center mb-2">
+                  <View className="flex-row justify-between items-center mb-2">
                     <View className="flex-row items-center">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Ionicons
@@ -470,14 +480,14 @@ export default function SalonDetailsScreen() {
                           style={{ marginRight: 2 }}
                         />
                       ))}
+                      <Text className="text-text font-extrabold text-xs ml-2">
+                        {Number.isFinite(rev.rating) ? rev.rating.toFixed(1) : '0.0'}
+                      </Text>
                     </View>
-
-                    <Text className="text-warning font-extrabold text-xs ml-2">
-                      {Number.isFinite(rev.rating) ? rev.rating.toFixed(1) : '0.0'}
-                    </Text>
+                    <Text className="text-textSecondary text-xs">{rev.date}</Text>
                   </View>
                   {rev.comment ? (
-                    <Text className="text-textSecondary text-sm leading-relaxed">
+                    <Text className="text-textSecondary text-sm leading-relaxed mt-2 font-medium">
                       {rev.comment}
                     </Text>
                   ) : null}
@@ -485,11 +495,7 @@ export default function SalonDetailsScreen() {
               ))
             ) : (
               <View className="bg-card  rounded-3xl p-6 items-center">
-                <Ionicons
-                  name="chatbox-ellipses-outline"
-                  size={32}
-                  color={THEME.colors.textSecondary}
-                />
+                <Ionicons name="star-outline" size={32} color={THEME.colors.textSecondary} />
                 <Text className="text-textSecondary text-sm mt-2 text-center font-medium">
                   No reviews or ratings yet.
                 </Text>
@@ -500,7 +506,7 @@ export default function SalonDetailsScreen() {
       </ScrollView>
 
       {/* Sticky Bottom Booking Button */}
-      <View className="absolute bottom-0 left-0 right-0 bg-card border-t border-border px-6 pt-4 pb-10 flex-row justify-between items-center shadow-lg">
+      <View className="absolute bottom-0 left-0 right-0 bg-card border-t border-border px-6 pt-6 pb-6 flex-row justify-between items-center shadow-lg">
         <View className="flex-1 mr-4">
           <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider">
             {localSelectedServices.length > 0
@@ -519,17 +525,13 @@ export default function SalonDetailsScreen() {
                 / {totalSelectedDuration}m
               </Text>
             </Text>
-          ) : (
-            <Text className="text-textSecondary font-bold text-xs">
-              First service selected by default
-            </Text>
-          )}
+          ) : null}
         </View>
 
         <PremiumButton
           title={localSelectedServices.length > 0 ? 'Book Slot' : 'Reserve Slot'}
           onPress={handleBookNow}
-          className="flex-1 h-14 bg-primary rounded-2xl"
+          className="flex-1 h-10 rounded-2xl"
         />
       </View>
     </PremiumBackground>

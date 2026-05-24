@@ -1,7 +1,9 @@
 import { THEME } from '@/theme/theme';
 import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, ActivityIndicator, TextInput } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
+
 import { apiService } from '@/services/api.service';
 import { logger, LogTag } from '@/utils/logger';
 
@@ -9,11 +11,15 @@ interface RatingPromptModalProps {
   visible: boolean;
   booking: {
     id: string;
+    booking_id?: string;
     salon_name?: string;
     business_name?: string;
     service_name?: string | string[];
     service_date?: string;
     service_time?: string;
+    services?: any[];
+    service?: any;
+    [key: string]: any;
   };
   onClose: () => void;
   onSuccess: () => void;
@@ -35,13 +41,76 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
 
   const [error, setError] = useState<string | null>(null);
 
-  const salonName = booking.salon_name || booking.business_name || 'Signature Salon';
+  const [fullBooking, setFullBooking] = useState<any>(booking);
 
-  const serviceName = Array.isArray(booking.service_name)
-    ? booking.service_name.join(', ')
-    : typeof booking.service_name === 'string'
-      ? booking.service_name
-      : 'Premium Service';
+  React.useEffect(() => {
+    let isMounted = true;
+    if (booking) {
+      setFullBooking(booking); // Set immediately
+
+      // If the booking is missing service details, fetch the full booking
+      if (!booking.service_name && !booking.services && !booking.service) {
+        const fetchId = booking.id; // Use UUID for supabase queries
+        if (fetchId) {
+          apiService
+            .getBookingById(fetchId)
+            .then((b) => {
+              if (isMounted) {
+                setFullBooking({ ...booking, ...b });
+              }
+            })
+            .catch((e) => {
+              logger.warn(LogTag.API, 'Failed to fetch full booking for rating', e);
+            });
+        }
+      }
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [booking]);
+
+  const salonName =
+    fullBooking.salon_name ||
+    fullBooking.business_name ||
+    fullBooking.business?.salon_name ||
+    'Premium Studio';
+
+  const getServiceName = (b: any): string => {
+    const fallback =
+      b?.service_date && b?.service_time
+        ? `Booking on ${b.service_date} at ${b.service_time.substring(0, 5)}`
+        : 'Service Experience';
+
+    if (!b) return fallback;
+    if (typeof b.service_name === 'string') return b.service_name;
+    if (Array.isArray(b.service_name) && b.service_name.length > 0) {
+      if (typeof b.service_name[0] === 'string') return b.service_name.join(', ');
+      return (
+        b.service_name
+          .map((s: any) => s?.name || s?.service_name || '')
+          .filter(Boolean)
+          .join(', ') || fallback
+      );
+    }
+    if (b.service_name && typeof b.service_name === 'object') {
+      return b.service_name.name || b.service_name.service_name || fallback;
+    }
+    if (Array.isArray(b.services) && b.services.length > 0) {
+      return (
+        b.services
+          .map((s: any) => s?.name || s?.service_name || '')
+          .filter(Boolean)
+          .join(', ') || fallback
+      );
+    }
+    if (b.service && typeof b.service === 'object') {
+      return b.service.name || b.service.service_name || fallback;
+    }
+    return fallback;
+  };
+
+  const serviceName = getServiceName(fullBooking);
 
   const handleSubmit = async () => {
     if (!rating) {
@@ -89,14 +158,41 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
       <View className="flex-1 justify-center items-center bg-black/80 px-6">
-        <View className="w-full max-w-[340px] bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-          <View className="absolute top-0 left-0 right-0 h-[3px] bg-amber-500" />
-
-          <View className="flex-row justify-between items-start mb-4">
+        <View
+          style={{
+            width: '100%',
+            maxWidth: 340,
+            borderRadius: 34,
+            overflow: 'hidden',
+            backgroundColor: '#0B0B0B',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.05)',
+            padding: 24,
+          }}
+        >
+          {/* Header */}
+          <View className="flex-row justify-between items-start mb-8">
             <View className="flex-1 pr-3">
-              <Text className="text-xl font-black text-white tracking-tight">Rate Experience</Text>
+              <Text
+                style={{
+                  fontSize: 26,
+                  fontWeight: '900',
+                  color: THEME.colors.primary,
+                  letterSpacing: -1,
+                  marginBottom: 6,
+                }}
+              >
+                Rate Experience
+              </Text>
 
-              <Text className="text-amber-400 text-xs font-bold uppercase tracking-widest mt-1">
+              <Text
+                style={{
+                  color: THEME.colors.textSecondary,
+                  fontSize: 13,
+                  letterSpacing: 2,
+                  textTransform: 'uppercase',
+                }}
+              >
                 {salonName}
               </Text>
             </View>
@@ -104,38 +200,64 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
             <Pressable
               onPress={onClose}
               disabled={isLoading}
-              className="p-1 rounded-full bg-slate-800 border border-slate-700"
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 999,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255,255,255,0.04)',
+              }}
             >
-              <Ionicons name="close" size={16} color={THEME.colors.textSecondary} />
+              <Ionicons name="close" size={18} color={THEME.colors.textSecondary} />
             </Pressable>
           </View>
 
-          <View className="bg-slate-950 border border-slate-800/80 rounded-2xl p-3 mb-5">
-            <Text className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-              Booking Details
-            </Text>
-
-            <Text className="text-white text-sm font-semibold mt-1" numberOfLines={1}>
+          {/* Service Name */}
+          <View className="mb-8">
+            <Text
+              style={{
+                fontSize: 30,
+                fontWeight: '900',
+                color: THEME.colors.text,
+                lineHeight: 36,
+                letterSpacing: -1.2,
+              }}
+            >
               {serviceName}
             </Text>
 
             {booking.service_date && (
-              <View className="flex-row items-center mt-2">
-                <Ionicons name="calendar-outline" size={12} color={THEME.colors.primary} />
+              <View className="flex-row items-center mt-4">
+                <Ionicons name="calendar-outline" size={14} color={THEME.colors.primary} />
 
-                <Text className="text-slate-400 text-xs font-medium ml-1">
+                <Text
+                  style={{
+                    color: THEME.colors.textSecondary,
+                    marginLeft: 8,
+                    fontSize: 13,
+                    fontWeight: '600',
+                  }}
+                >
                   {booking.service_date} • {booking.service_time || ''}
                 </Text>
               </View>
             )}
           </View>
 
-          <View className="items-center py-2 mb-4">
-            <Text className="text-slate-400 text-xs font-medium mb-3">
-              How would you rate this reservation?
+          {/* Rating */}
+          <View className="items-center mb-8">
+            <Text
+              style={{
+                color: THEME.colors.textSecondary,
+                fontSize: 13,
+                marginBottom: 18,
+              }}
+            >
+              How was your experience?
             </Text>
 
-            <View className="flex-row justify-center">
+            <View className="flex-row">
               {[1, 2, 3, 4, 5].map((star) => {
                 const active = rating !== null && star <= rating;
 
@@ -147,89 +269,99 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
                       setError(null);
                     }}
                     disabled={isLoading}
-                    className="p-1.5 active:scale-95"
+                    className="mx-1"
                   >
                     <Ionicons
                       name={active ? 'star' : 'star-outline'}
-                      size={32}
-                      color={active ? THEME.colors.warning : THEME.colors.border}
+                      size={34}
+                      color={active ? THEME.colors.primary : 'rgba(255,255,255,0.18)'}
                     />
                   </Pressable>
                 );
               })}
             </View>
-
-            {rating !== null && (
-              <Text className="text-amber-400 font-bold text-xs tracking-wider mt-3">
-                {rating === 5
-                  ? 'EXCELLENT'
-                  : rating === 4
-                    ? 'VERY GOOD'
-                    : rating === 3
-                      ? 'GOOD'
-                      : rating === 2
-                        ? 'FAIR'
-                        : 'POOR'}
-              </Text>
-            )}
           </View>
 
-          {/* Optional Review Comment */}
-          <View className="mb-4">
-            <Text className="text-slate-400 text-xs font-medium mb-2">
-              Write a review (optional)
-            </Text>
-
+          {/* Review */}
+          <View className="mb-6">
             <TextInput
               value={comment}
               onChangeText={setComment}
-              placeholder="Share your experience..."
+              placeholder="Share your feedback..."
               placeholderTextColor={THEME.colors.textSecondary}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
               editable={!isLoading}
-              className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white min-h-[100px]"
+              style={{
+                minHeight: 110,
+                borderRadius: 24,
+                paddingHorizontal: 18,
+                paddingVertical: 16,
+                backgroundColor: 'rgba(255,255,255,0.03)',
+                color: THEME.colors.text,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.05)',
+              }}
             />
           </View>
 
+          {/* Error */}
           {error && (
-            <Text className="text-rose-500 text-center text-xs font-semibold mb-4 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20">
+            <Text
+              style={{
+                color: '#ff6b6b',
+                marginBottom: 18,
+                textAlign: 'center',
+                fontSize: 13,
+              }}
+            >
               {error}
             </Text>
           )}
 
-          <View className="space-y-2.5">
+          {/* Actions */}
+          <View>
             <Pressable
               onPress={handleSubmit}
               disabled={isLoading || !rating}
-              className={`h-12 w-full rounded-2xl items-center justify-center flex-row ${
-                rating ? 'bg-amber-500' : 'bg-slate-800'
-              }`}
+              style={{
+                height: 54,
+                borderRadius: 999,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: rating ? THEME.colors.primary : 'rgba(255,255,255,0.08)',
+              }}
             >
               {isLoading && actionType === 'submit' ? (
-                <ActivityIndicator size="small" color={THEME.colors.text} />
+                <ActivityIndicator size="small" color="#000" />
               ) : (
                 <Text
-                  className={`font-black text-sm tracking-wider uppercase ${
-                    rating ? 'text-black' : 'text-slate-500'
-                  }`}
+                  style={{
+                    color: rating ? '#000' : THEME.colors.textSecondary,
+                    fontWeight: '900',
+                    letterSpacing: 1,
+                    fontSize: 14,
+                  }}
                 >
-                  Submit Review
+                  SUBMIT REVIEW
                 </Text>
               )}
             </Pressable>
 
-            <Pressable
-              onPress={handleIgnore}
-              disabled={isLoading}
-              className="h-12 w-full rounded-2xl items-center justify-center border border-slate-800 bg-transparent"
-            >
+            <Pressable onPress={handleIgnore} disabled={isLoading} className="items-center mt-5">
               {isLoading && actionType === 'ignore' ? (
-                <ActivityIndicator size="small" color={THEME.colors.text} />
+                <ActivityIndicator size="small" color={THEME.colors.textSecondary} />
               ) : (
-                <Text className="text-slate-400 font-black text-sm tracking-wider uppercase">
-                  Ignore
+                <Text
+                  style={{
+                    color: THEME.colors.textSecondary,
+                    fontWeight: '700',
+                    letterSpacing: 1,
+                    fontSize: 13,
+                  }}
+                >
+                  MAYBE LATER
                 </Text>
               )}
             </Pressable>

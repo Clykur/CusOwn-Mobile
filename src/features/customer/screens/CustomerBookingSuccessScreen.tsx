@@ -106,6 +106,7 @@ function BookingSuccessScreenInner() {
                       userId={ownerUserId}
                       name={String(salonName || 'Salon')}
                       size={44}
+                      type="business"
                       className="mr-3"
                     />
 

@@ -1,5 +1,5 @@
 import { THEME } from '@/theme/theme';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -7,35 +7,209 @@ import dayjs from 'dayjs';
 import { useAuthStore } from '@/store/auth.store';
 import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
 import { useBookings } from '@/hooks/useBookings';
-import { useBookingStore } from '@/store/booking.store';
+import { useDashboard } from '@/hooks/useDashboard';
+import { useLocation } from '@/hooks/useLocation';
 import { Business, BusinessCategory } from '@/types/business.types';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { Avatar } from '@/components/ui/Avatar';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { BusinessCard } from '@/features/customer/components/BusinessCard';
 import { Ionicons } from '@expo/vector-icons';
 
+// New Components
+import { HomeSearchBar } from '@/features/customer/components/HomeSearchBar';
+import { NearbySalonCard } from '@/features/customer/components/NearbySalonCard';
+import { TrendingServiceCard } from '@/features/customer/components/TrendingServiceCard';
+import { DealCard } from '@/features/customer/components/DealCard';
+import { BusinessCard } from '@/features/customer/components/BusinessCard';
+
+const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
+  const R = 6371; // km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 export default function CustomerHomeScreen() {
-  const { user, profile, profileImageUrl } = useAuthStore();
-  const { data: businesses, isLoading, isError, refetch } = useBusinesses();
+  const { user, profile } = useAuthStore();
+  const { data: businesses, refetch } = useBusinesses();
   const { data: categories } = useCategories();
   const {
     data: bookings,
     isLoading: bookingsLoading,
     refetch: refetchBookings,
   } = useBookings('Customer');
-  const { setBusiness } = useBookingStore();
+
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const {
+    userLocation,
+    locationLoading,
+    useCurrentLocation,
+    setUseCurrentLocation,
+    getUserLocation,
+  } = useLocation();
+
+  // New Dashboard Hook using real coordinates if available
+  const {
+    nearbySalons,
+    isLoadingNearby,
+    refetchNearby,
+    trendingServices,
+    isLoadingTrending,
+    flashDeals,
+    isLoadingDeals,
+  } = useDashboard(
+    useCurrentLocation ? userLocation?.latitude : null,
+    useCurrentLocation ? userLocation?.longitude : null,
+  );
+
+  const filteredNearbySalons = useMemo(() => {
+    let list = nearbySalons;
+
+    if (useCurrentLocation && userLocation) {
+      list = list.filter((salon) => {
+        if (salon.distance_km !== undefined) return salon.distance_km <= 10;
+        const b = businesses?.find((b) => b.id === salon.id);
+        if (!b?.latitude || !b?.longitude) return false;
+        return (
+          calculateDistanceKm(
+            userLocation.latitude,
+            userLocation.longitude,
+            b.latitude,
+            b.longitude,
+          ) <= 10
+        );
+      });
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      list = list.filter(
+        (salon) =>
+          salon.salon_name?.toLowerCase().includes(query) ||
+          salon.address?.toLowerCase().includes(query),
+      );
+    }
+    return list;
+  }, [nearbySalons, searchQuery, useCurrentLocation, userLocation, businesses]);
+
+  const enrichedTrendingServices = useMemo(() => {
+    if (!trendingServices) return [];
+    return trendingServices.map((service: any) => {
+      const business = businesses?.find((b) => b.id === service.business_id);
+      return {
+        ...service,
+        business: business || service.business || null,
+        salon_name: business?.salon_name || service.salon_name,
+        rating_avg: business?.rating_avg || service.rating_avg,
+      };
+    });
+  }, [trendingServices, businesses]);
+
+  const filteredTrendingServices = useMemo(() => {
+    let list = enrichedTrendingServices;
+
+    if (useCurrentLocation && userLocation) {
+      list = list.filter((service) => {
+        const b = service.business;
+        if (!b?.latitude || !b?.longitude) return false;
+        return (
+          calculateDistanceKm(
+            userLocation.latitude,
+            userLocation.longitude,
+            b.latitude,
+            b.longitude,
+          ) <= 10
+        );
+      });
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      list = list.filter(
+        (service) =>
+          service.name?.toLowerCase().includes(query) ||
+          service.salon_name?.toLowerCase().includes(query),
+      );
+    }
+    return list.sort((a, b) => {
+      const ratingA = a.rating_avg ? Number(a.rating_avg) : 0;
+      const ratingB = b.rating_avg ? Number(b.rating_avg) : 0;
+      return ratingB - ratingA;
+    });
+  }, [enrichedTrendingServices, searchQuery, useCurrentLocation, userLocation]);
+
+  const enrichedFlashDeals = useMemo(() => {
+    if (!flashDeals) return [];
+    return flashDeals.map((deal: any) => {
+      const business = businesses?.find((b) => b.id === deal.business_id);
+      return {
+        ...deal,
+        business: business || deal.business || null,
+        salon_name: business?.salon_name || deal.salon_name,
+      };
+    });
+  }, [flashDeals, businesses]);
+
+  const filteredFlashDeals = useMemo(() => {
+    let list = enrichedFlashDeals;
+
+    if (useCurrentLocation && userLocation) {
+      list = list.filter((deal) => {
+        const b = deal.business;
+        if (!b?.latitude || !b?.longitude) return false;
+        return (
+          calculateDistanceKm(
+            userLocation.latitude,
+            userLocation.longitude,
+            b.latitude,
+            b.longitude,
+          ) <= 10
+        );
+      });
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      list = list.filter(
+        (deal) =>
+          deal.title?.toLowerCase().includes(query) ||
+          deal.salon_name?.toLowerCase().includes(query),
+      );
+    }
+    return list;
+  }, [enrichedFlashDeals, searchQuery, useCurrentLocation, userLocation]);
 
   useFocusEffect(
     useCallback(() => {
       refetchBookings();
       refetch();
-    }, [refetchBookings, refetch]),
+      refetchNearby();
+    }, [refetchBookings, refetch, refetchNearby]),
   );
 
-  // Compute dynamic counts based on the same normalized booking status logic as bookings.tsx
+  useEffect(() => {
+    // Auto-fetch location only once when home screen mounts
+    if (!useCurrentLocation && !userLocation) {
+      const fetchInitialLocation = async () => {
+        const success = await getUserLocation(true); // silent fetch
+        if (success) {
+          setUseCurrentLocation(true);
+        }
+      };
+      fetchInitialLocation();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const normalizedBookings = useMemo(() => {
     if (!bookings) return [];
     const now = dayjs();
@@ -44,36 +218,29 @@ export default function CustomerHomeScreen() {
       const bookingDateTime = dayjs(`${b.date} ${b.time}`);
       const bookingEndTime = bookingDateTime.add(b.duration || 60, 'minutes');
 
-      // Auto-categorize based on time
       if (now.isAfter(bookingEndTime)) {
-        if (status === 'confirmed') {
-          status = 'completed';
-        } else if (status === 'pending') {
-          status = 'cancelled';
-        }
+        if (status === 'confirmed') status = 'completed';
+        else if (status === 'pending') status = 'cancelled';
+      }
+      if (status === 'confirmed' && bookingEndTime.isBefore(now)) {
+        status = 'completed';
       }
 
-      // Check for expired confirmed bookings
-      if (status === 'confirmed') {
-        if (bookingEndTime.isBefore(now)) {
-          status = 'completed';
-        }
-      }
-
-      return {
-        ...b,
-        normalizedStatus: status,
-      };
+      return { ...b, normalizedStatus: status };
     });
   }, [bookings]);
 
+  const upcomingBooking = useMemo(() => {
+    return normalizedBookings.find(
+      (b: any) => b.normalizedStatus === 'pending' || b.normalizedStatus === 'confirmed',
+    );
+  }, [normalizedBookings]);
+
   const favouriteSalons = useMemo(() => {
     if (!normalizedBookings || !businesses) return [];
-
     const completedBookings = normalizedBookings.filter(
       (b: any) => b.normalizedStatus === 'completed',
     );
-
     const sortedBookings = [...completedBookings].sort((a: any, b: any) => {
       const dateA = dayjs(`${a.date} ${a.time}`);
       const dateB = dayjs(`${b.date} ${b.time}`);
@@ -83,249 +250,245 @@ export default function CustomerHomeScreen() {
     const visitedBusinessIds = Array.from(
       new Set(sortedBookings.map((b: any) => b.business_id || b.business?.id).filter(Boolean)),
     );
-
     return visitedBusinessIds
       .map((id) => businesses.find((b) => b.id === id))
       .filter((b): b is Business => Boolean(b) && b!.suspended !== true && b!.deleted_at == null);
   }, [normalizedBookings, businesses]);
 
-  const totalCount = normalizedBookings.length;
-  const upcomingCount = normalizedBookings.filter(
-    (b: any) => b.normalizedStatus === 'pending' || b.normalizedStatus === 'confirmed',
-  ).length;
-  const completedCount = normalizedBookings.filter(
-    (b: any) =>
-      b.normalizedStatus === 'completed' ||
-      b.normalizedStatus === 'cancelled' ||
-      b.normalizedStatus === 'rejected',
-  ).length;
+  const filteredFavouriteSalons = useMemo(() => {
+    let list = favouriteSalons;
 
-  const handleBusinessPress = (business: Business) => {
-    router.push(`/(customer)/browse/salons/${business.id}`);
-  };
+    if (useCurrentLocation && userLocation) {
+      list = list.filter((salon) => {
+        if (!salon?.latitude || !salon?.longitude) return false;
+        return (
+          calculateDistanceKm(
+            userLocation.latitude,
+            userLocation.longitude,
+            salon.latitude,
+            salon.longitude,
+          ) <= 10
+        );
+      });
+    }
 
-  const renderCategoryItem = ({ item, index }: { item: BusinessCategory; index: number }) => {
-    const iconName = typeof item.icon === 'string' && item.icon.length > 0 ? item.icon : 'business';
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      list = list.filter(
+        (salon) =>
+          salon.salon_name?.toLowerCase().includes(query) ||
+          salon.address?.toLowerCase().includes(query),
+      );
+    }
+    return list;
+  }, [favouriteSalons, searchQuery, useCurrentLocation, userLocation]);
 
-    return (
-      <AnimatedSection delay={index * 50} direction="up">
-        <Pressable
-          className="w-[110px] rounded-[28px]  bg-card items-center justify-center py-5 px-3"
-          style={{
-            shadowColor: THEME.colors.background,
-            shadowOpacity: 0.05,
-            shadowRadius: 10,
-            elevation: 3,
-          }}
-          onPress={() =>
-            router.push({
-              pathname: '/(customer)/browse',
-              params: {
-                categoryId: item.value,
-              },
-            })
-          }
-        >
-          <View className="w-14 h-14 rounded-full items-center justify-center mb-3 border border-primary/20 bg-primary/10">
-            <Ionicons name="cut-outline" size={24} color={THEME.colors.primary} />
-          </View>
-
-          <Text
-            numberOfLines={2}
-            className="text-text text-xs font-black text-center uppercase tracking-wide"
-          >
-            {item.label}
-          </Text>
-        </Pressable>
-      </AnimatedSection>
-    );
+  const handleBusinessPress = (id: string) => {
+    router.push(`/(customer)/browse/salons/${id}`);
   };
 
   return (
     <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['top']}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="pb-12">
-          {/* Header Banner */}
+          {/* 1. GREETING + SEARCH */}
           <AnimatedSection
             direction="down"
-            className="px-luxury pt-4 pb-6 flex-row justify-between items-center"
+            className="px-luxury pt-4 pb-2 flex-row justify-between items-center"
           >
             <View>
-              <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
-                Welcome to CusOwn
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-1">
+                {dayjs().hour() < 12
+                  ? 'Good Morning'
+                  : dayjs().hour() < 18
+                    ? 'Good Afternoon'
+                    : 'Good Evening'}
               </Text>
-
-              <Text className="text-primary text-4xl font-bold tracking-tight">
+              <Text className="text-primary text-3xl font-bold tracking-tight">
                 {(profile?.full_name || user?.user_metadata?.full_name)?.split(' ')[0] ||
-                  'Curated Client'}
+                  user?.email?.split('@')[0] ||
+                  'User'}
               </Text>
             </View>
-            <Pressable onPress={() => router.push('/(customer)/profile')}>
-              <Avatar
-                userId={user?.id}
-                name={profile?.full_name || user?.user_metadata?.full_name || 'User'}
-                size={50}
-                className="border-2 border-primary/30"
-              />
-            </Pressable>
-          </AnimatedSection>
-
-          {/* Bookings Metrics Cards */}
-          <AnimatedSection delay={50} direction="up" className="px-luxury mb-8">
-            <View className="flex-row justify-between">
-              {/* Total */}
-              <GlassCard className="w-[31%] h-[110px]  bg-card shadow-sm items-center justify-center">
-                <View className="flex-1 items-center justify-center">
-                  <Text className="text-textSecondary text-xs font-black uppercase tracking-base mb-2 text-center">
-                    Total
-                  </Text>
-
-                  {bookingsLoading ? (
-                    <LoadingSkeleton height={24} width={40} borderRadius={8} />
-                  ) : (
-                    <Text className="text-text text-2xl font-black text-center">{totalCount}</Text>
-                  )}
-                </View>
-              </GlassCard>
-
-              {/* Upcoming */}
-              <GlassCard className="w-[31%] h-[110px]  bg-card shadow-sm items-center justify-center">
-                <View className="flex-1 items-center justify-center">
-                  <Text className="text-textSecondary text-xs font-black uppercase tracking-base mb-2 text-center">
-                    Upcoming
-                  </Text>
-
-                  {bookingsLoading ? (
-                    <LoadingSkeleton height={24} width={40} borderRadius={8} />
-                  ) : (
-                    <Text className="text-text text-2xl font-black text-center">
-                      {upcomingCount}
-                    </Text>
-                  )}
-                </View>
-              </GlassCard>
-
-              {/* Completed */}
-              <GlassCard className="w-[31%] h-[110px]  bg-card shadow-sm items-center justify-center">
-                <View className="flex-1 items-center justify-center">
-                  <Text className="text-textSecondary text-xs font-black uppercase tracking-base mb-2 text-center">
-                    Finished
-                  </Text>
-
-                  {bookingsLoading ? (
-                    <LoadingSkeleton height={24} width={40} borderRadius={8} />
-                  ) : (
-                    <Text className="text-text text-2xl font-black text-center">
-                      {completedCount}
-                    </Text>
-                  )}
-                </View>
-              </GlassCard>
+            <View className="items-center justify-center">
+              <Ionicons name="notifications-outline" size={20} color={THEME.colors.text} />
             </View>
           </AnimatedSection>
 
-          {/* Categories Section */}
-          {categories && categories.length > 0 && (
-            <View className="mb-10">
-              <View className="flex-row justify-between items-center px-luxury mb-5">
-                <Text className="text-text text-lg font-bold tracking-tight uppercase">
-                  Categories
-                </Text>
-                <Pressable onPress={() => router.push('/(customer)/browse/categories')}>
-                  <Text className="text-primary font-bold text-sm">See All</Text>
-                </Pressable>
-              </View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 24, gap: 16 }}
-              >
-                {categories
-                  .filter(
-                    (item) =>
-                      item.label?.toLowerCase() === 'salon' ||
-                      item.value?.toLowerCase() === 'salon',
-                  )
-                  .map((item, index) => (
-                    <View key={item.value || `cat-${index}`}>
-                      {renderCategoryItem({ item, index })}
-                    </View>
-                  ))}
-              </ScrollView>
+          <HomeSearchBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            useCurrentLocation={useCurrentLocation}
+            setUseCurrentLocation={setUseCurrentLocation}
+            userLocation={userLocation}
+            locationLoading={locationLoading}
+            onLocate={getUserLocation}
+          />
+          {/* 2. LIMITED-TIME DEALS */}
+          <View className="mb-8">
+            <View className="flex-row justify-between items-center px-luxury mb-4">
+              <Text className="text-text text-lg font-bold tracking-tight uppercase">
+                Limited-Time Deals
+              </Text>
             </View>
-          )}
-          {/* Featured Businesses Section */}
-          <View>
-            <View className="flex-row justify-between items-center px-luxury mb-6">
-              <View className="flex-row items-center">
-                <View className="border-b-2 border-primary">
-                  <Text className="text-text text-xl font-bold tracking-tight uppercase">
-                    Recently Booked{' '}
-                  </Text>
-                </View>
-                <Text className="text-text text-xl font-bold tracking-tight uppercase">Salons</Text>
-              </View>
-              <Pressable onPress={() => router.push('/(customer)/browse')}>
-                <Text className="text-primary font-bold text-sm">Browse All</Text>
-              </Pressable>
-            </View>
-
-            {isLoading || bookingsLoading ? (
+            {isLoadingDeals ? (
               <View className="px-luxury flex-row">
-                <LoadingSkeleton width={280} height={260} borderRadius={24} className="mr-4" />
-                <LoadingSkeleton width={280} height={260} borderRadius={24} />
+                <LoadingSkeleton width={280} height={120} borderRadius={24} className="mr-4" />
+                <LoadingSkeleton width={280} height={120} borderRadius={24} />
               </View>
-            ) : isError ? (
-              <View className="px-luxury">
-                <GlassCard className="items-center bg-card ">
-                  <Text className="text-error font-medium mb-4">Failed to load salons</Text>
-                  <Pressable onPress={() => refetch()} className="bg-card px-6 py-2 rounded-full ">
-                    <Text className="text-text font-bold">Retry</Text>
-                  </Pressable>
-                </GlassCard>
-              </View>
-            ) : favouriteSalons.length > 0 ? (
+            ) : filteredFlashDeals.length > 0 ? (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16, gap: 16 }}
+                contentContainerStyle={{ paddingHorizontal: 24 }}
               >
-                {favouriteSalons.map((item, index) => (
-                  <View key={item.id || `fav-${index}`}>
-                    <BusinessCard
-                      item={item}
-                      index={index}
-                      onPress={() => handleBusinessPress(item)}
-                    />
-                  </View>
+                {filteredFlashDeals.map((deal, index) => (
+                  <DealCard
+                    key={deal.id}
+                    item={deal as any}
+                    index={index}
+                    onPress={() => handleBusinessPress(deal.business_id)}
+                  />
                 ))}
               </ScrollView>
             ) : (
-              <View className="px-luxury items-center">
-                <GlassCard className="w-full p-6 bg-card shadow-sm items-center justify-center">
-                  <Ionicons
-                    name="calendar-outline"
-                    size={36}
-                    color={THEME.colors.textSecondary}
-                    className="mb-2"
-                  />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 24 }}
+              >
+                {useCurrentLocation ? (
+                  <Text className="text-textSecondary text-sm my-4">No nearby deals found.</Text>
+                ) : (
+                  (businesses && businesses.length > 0 ? businesses.slice(0, 3) : []).map(
+                    (business, index) => {
+                      const dummyTitles = [
+                        '50% Off Premium Haircut',
+                        'Flat ₹500 Off on Facials',
+                        'Buy 1 Get 1 Beard Trim',
+                      ];
+                      const dummyDiscounts = ['50% OFF', '₹500 OFF', 'BOGO'];
+                      return (
+                        <DealCard
+                          key={`dummy-${business.id}`}
+                          item={
+                            {
+                              id: `dummy-${business.id}`,
+                              business_id: business.id,
+                              salon_name: business.salon_name,
+                              title: dummyTitles[index] || 'Special Discount',
+                              discount_text: dummyDiscounts[index] || 'OFFER',
+                              expires_at: dayjs().add(24, 'hours').toISOString(),
+                            } as any
+                          }
+                          index={index}
+                          onPress={() => handleBusinessPress(business.id)}
+                        />
+                      );
+                    },
+                  )
+                )}
+              </ScrollView>
+            )}
+          </View>
 
-                  <Text className="text-text font-extrabold text-sm text-center">
-                    No Salons Visited Yet
-                  </Text>
-
-                  <Text className="text-textSecondary text-xs text-center mt-1 mb-4 px-4">
-                    Your recently visited salons will show up here. Let's find your first salon!
-                  </Text>
-
-                  <Pressable
-                    onPress={() => router.push('/(customer)/browse')}
-                    className="bg-primary py-2.5 px-5 rounded-2xl items-center justify-center"
-                  >
-                    <Text className="text-success font-extrabold text-xs">Explore Salons</Text>
-                  </Pressable>
-                </GlassCard>
+          {/* 3. NEARBY AVAILABLE NOW */}
+          <View className="mb-8">
+            <View className="flex-row justify-between items-center px-luxury mb-4">
+              <Text className="text-text text-lg font-bold tracking-tight uppercase">
+                Available Nearby Now
+              </Text>
+              <Pressable onPress={() => router.push('/(customer)/browse')}>
+                <Text className="text-primary font-bold text-sm">See All</Text>
+              </Pressable>
+            </View>
+            {isLoadingNearby ? (
+              <View className="px-luxury flex-row">
+                <LoadingSkeleton width={260} height={150} borderRadius={28} className="mr-4" />
+                <LoadingSkeleton width={260} height={150} borderRadius={28} />
               </View>
+            ) : filteredNearbySalons.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 24 }}
+              >
+                {filteredNearbySalons.map((salon, index) => (
+                  <NearbySalonCard
+                    key={salon.id}
+                    item={salon}
+                    index={index}
+                    onPress={() => handleBusinessPress(salon.id)}
+                  />
+                ))}
+              </ScrollView>
+            ) : (
+              <Text className="text-textSecondary px-luxury text-sm">
+                {useCurrentLocation ? 'No nearby salons found.' : 'No available salons nearby.'}
+              </Text>
+            )}
+          </View>
+
+          {/* 4. RECENTLY BOOKED */}
+          {filteredFavouriteSalons.length > 0 && (
+            <View className="mb-8">
+              <View className="flex-row justify-between items-center px-luxury mb-4">
+                <Text className="text-text text-lg font-bold tracking-tight uppercase">
+                  Recently Booked
+                </Text>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 24 }}
+              >
+                {filteredFavouriteSalons.map((item, index) => (
+                  <BusinessCard
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    onPress={() => handleBusinessPress(item.id)}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* 5. TRENDING SERVICES */}
+          <View className="mb-8">
+            <View className="flex-row justify-between items-center px-luxury mb-4">
+              <Text className="text-text text-lg font-bold tracking-tight uppercase">
+                Trending Services
+              </Text>
+            </View>
+            {isLoadingTrending ? (
+              <View className="px-luxury flex-row">
+                <LoadingSkeleton width={180} height={140} borderRadius={24} className="mr-4" />
+                <LoadingSkeleton width={180} height={140} borderRadius={24} />
+              </View>
+            ) : filteredTrendingServices.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 24 }}
+              >
+                {filteredTrendingServices.map((service, index) => (
+                  <TrendingServiceCard
+                    key={service.id}
+                    item={service}
+                    index={index}
+                    onPress={() =>
+                      service.business_id ? handleBusinessPress(service.business_id) : {}
+                    }
+                  />
+                ))}
+              </ScrollView>
+            ) : (
+              <Text className="text-textSecondary px-luxury text-sm">
+                {useCurrentLocation
+                  ? 'No nearby trending services.'
+                  : 'Trending services will appear here.'}
+              </Text>
             )}
           </View>
         </ScrollView>

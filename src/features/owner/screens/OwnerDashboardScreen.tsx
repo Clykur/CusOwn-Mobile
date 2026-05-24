@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
   Image,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -204,6 +205,7 @@ export default function OwnerDashboardScreen() {
                 userId={user?.id}
                 name={profile?.full_name || user?.user_metadata?.full_name || 'Owner'}
                 size={50}
+                type="business"
                 className="border-2 border-primary/30"
               />
             </Pressable>
@@ -231,38 +233,56 @@ export default function OwnerDashboardScreen() {
                 )}
               </View>
 
-              {/* Filter Menu Button */}
-              <View className="relative z-50">
-                <Pressable
-                  onPress={() => setShowBusinessMenu(!showBusinessMenu)}
-                  className="flex-row items-center bg-input border border-border rounded-2xl px-4 py-3.5"
-                >
-                  <Ionicons name="options-outline" size={20} color={THEME.colors.textSecondary} />
-                </Pressable>
+              {/* Filter Button */}
+              <Pressable
+                onPress={() => setShowBusinessMenu(true)}
+                className="flex-row items-center bg-input border border-border rounded-2xl px-4 py-3.5"
+              >
+                <Ionicons name="options-outline" size={20} color={THEME.colors.textSecondary} />
+              </Pressable>
 
-                {/* Dropdown Menu */}
-                {showBusinessMenu && (
+              {/* Bottom Sheet Modal */}
+              <Modal
+                visible={showBusinessMenu}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setShowBusinessMenu(false)}
+              >
+                <View className="flex-1 justify-end">
+                  {/* Backdrop */}
+                  <Pressable
+                    className="absolute inset-0"
+                    onPress={() => setShowBusinessMenu(false)}
+                  />
+
+                  {/* Sheet */}
                   <View
-                    className="absolute top-14 right-0 w-64 bg-card border border-border rounded-3xl p-2 z-[999]"
+                    className="bg-card rounded-t-[32px] px-5 pt-4 pb-10 border-t border-border"
                     style={{
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 8 },
-                      shadowOpacity: 0.4,
-                      shadowRadius: 20,
-                      elevation: 12,
+                      minHeight: 320,
                     }}
                   >
+                    {/* Handle */}
+                    <View className="items-center mb-6">
+                      <View className="w-14 h-1.5 rounded-full bg-border" />
+                    </View>
+
+                    {/* Header */}
+                    <Text className="text-text text-xl font-black tracking-tight mb-6">
+                      Select Business
+                    </Text>
+
                     {/* All Businesses */}
                     <Pressable
                       onPress={() => {
                         setSelectedBusinessId(null);
                         setShowBusinessMenu(false);
                       }}
-                      className="flex-row items-center px-4 py-4"
+                      className="flex-row items-center px-2 py-4"
                     >
                       <Ionicons
                         name="business-outline"
-                        size={18}
+                        size={20}
                         color={
                           selectedBusinessId === null
                             ? THEME.colors.primary
@@ -271,62 +291,116 @@ export default function OwnerDashboardScreen() {
                       />
 
                       <Text
-                        className={`ml-3 flex-1 text-[12px] font-black uppercase tracking-wider ${
+                        className={`ml-4 flex-1 text-sm font-black uppercase tracking-wider ${
                           selectedBusinessId === null ? 'text-primary' : 'text-textSecondary'
                         }`}
-                        numberOfLines={1}
                       >
                         All Businesses
                       </Text>
 
                       {selectedBusinessId === null && (
-                        <Ionicons name="checkmark" size={18} color={THEME.colors.primary} />
+                        <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
                       )}
                     </Pressable>
-                    <View className="h-px bg-border mx-4" />
+
+                    <View className="h-px bg-border my-1" />
 
                     {/* Businesses */}
-                    {businesses &&
-                      businesses.length > 1 &&
-                      businesses.map((biz, index) => (
-                        <View key={biz.id}>
+                    {businesses?.length === 1 ? (
+                      <Pressable
+                        onPress={() => {
+                          setSelectedBusinessId(businesses[0].id);
+                          setShowBusinessMenu(false);
+                        }}
+                        className="flex-row items-center px-2 py-4"
+                      >
+                        <Ionicons name="business-outline" size={20} color={THEME.colors.primary} />
+
+                        <View className="flex-1 ml-4">
+                          <Text
+                            className="text-sm font-black uppercase tracking-wider text-primary"
+                            numberOfLines={1}
+                          >
+                            {businesses[0].salon_name}
+                          </Text>
+                        </View>
+
+                        <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
+                      </Pressable>
+                    ) : (
+                      <>
+                        {/* All Businesses */}
+                        <Pressable
+                          onPress={() => {
+                            setSelectedBusinessId(null);
+                            setShowBusinessMenu(false);
+                          }}
+                          className="flex-row items-center px-2 py-4"
+                        >
+                          <Ionicons
+                            name="business-outline"
+                            size={20}
+                            color={
+                              selectedBusinessId === null
+                                ? THEME.colors.primary
+                                : THEME.colors.textSecondary
+                            }
+                          />
+
+                          <Text
+                            className={`ml-4 flex-1 text-sm font-black uppercase tracking-wider ${
+                              selectedBusinessId === null ? 'text-primary' : 'text-textSecondary'
+                            }`}
+                          >
+                            All Businesses
+                          </Text>
+
+                          {selectedBusinessId === null && (
+                            <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
+                          )}
+                        </Pressable>
+
+                        <View className="h-px bg-border my-1" />
+
+                        {/* Business List */}
+                        {businesses?.map((biz) => (
                           <Pressable
+                            key={biz.id}
                             onPress={() => {
                               setSelectedBusinessId(biz.id);
                               setShowBusinessMenu(false);
                             }}
-                            className="flex-row items-center px-4 py-4"
+                            className="flex-row items-center px-2 py-4"
                           >
                             <Avatar
                               userId={biz.owner_user_id}
                               name={biz.owner_name || biz.salon_name || 'Owner'}
-                              size={32}
+                              size={38}
                             />
 
-                            <Text
-                              className={`ml-3 flex-1 text-[12px] font-black uppercase tracking-wider ${
-                                selectedBusinessId === biz.id
-                                  ? 'text-primary'
-                                  : 'text-textSecondary'
-                              }`}
-                              numberOfLines={1}
-                            >
-                              {biz.salon_name}
-                            </Text>
+                            <View className="flex-1 ml-4">
+                              <Text
+                                className={`text-sm font-black uppercase tracking-wider ${
+                                  selectedBusinessId === biz.id
+                                    ? 'text-primary'
+                                    : 'text-textSecondary'
+                                }`}
+                                numberOfLines={1}
+                              >
+                                {biz.salon_name}
+                              </Text>
+                            </View>
 
                             {selectedBusinessId === biz.id && (
-                              <Ionicons name="checkmark" size={18} color={THEME.colors.primary} />
+                              <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
                             )}
                           </Pressable>
-
-                          {index !== businesses.length - 1 && (
-                            <View className="h-px bg-border mx-4" />
-                          )}
-                        </View>
-                      ))}
+                        ))}
+                      </>
+                    )}
                   </View>
-                )}
-              </View>
+                </View>
+              </Modal>
             </View>
           </AnimatedSection>
 
@@ -472,7 +546,7 @@ export default function OwnerDashboardScreen() {
                   <View className="w-full items-center justify-center py-16">
                     <AnimatedSection direction="up" className="w-full items-center justify-center">
                       <GlassCard className="w-full h-[420px] p-10 items-center justify-center border-dashed border-border">
-                        <View className="w-20 h-20 rounded-full bg-input items-center justify-center mb-6">
+                        <View className="items-center justify-center mb-6">
                           <Ionicons
                             name="calendar-clear-outline"
                             size={48}
