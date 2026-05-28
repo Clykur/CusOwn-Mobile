@@ -1,9 +1,10 @@
 import { THEME } from '@/theme/theme';
 import React, { useCallback, useState } from 'react';
 
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
+import { useModal } from '@/hooks/useModal';
 
 import { apiService } from '@/services/api.service';
 
@@ -15,44 +16,48 @@ interface NoShowButtonProps {
 
 export default function NoShowButton({ bookingId, onMarked }: NoShowButtonProps) {
   const [loading, setLoading] = useState(false);
+  const { showModal } = useModal();
 
   const [marked, setMarked] = useState(false);
 
   const handleMarkNoShow = useCallback(async () => {
     if (loading || marked) return;
 
-    Alert.alert('Mark No-Show', 'Mark this booking as no-show?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-
-      {
-        text: 'Confirm',
-
-        style: 'destructive',
-
-        onPress: async () => {
-          try {
-            setLoading(true);
-
-            await apiService.markNoShow(bookingId);
-
-            setMarked(true);
-
-            Alert.alert('Success', 'Booking marked as no-show');
-
-            if (onMarked) {
-              onMarked();
+    showModal({
+      variant: 'delete',
+      title: 'Mark No-Show',
+      description: 'Mark this booking as no-show?',
+      dismissible: true,
+      actions: [
+        {
+          label: 'Confirm',
+          variant: 'danger',
+          onPress: async () => {
+            try {
+              setLoading(true);
+              await apiService.markNoShow(bookingId);
+              setMarked(true);
+              showModal({
+                variant: 'success',
+                title: 'Success',
+                description: 'Booking marked as no-show',
+              });
+              if (onMarked) {
+                onMarked();
+              }
+            } catch (error: any) {
+              showModal({
+                variant: 'error',
+                title: 'Error',
+                description: error?.message || 'Failed to mark no-show',
+              });
+            } finally {
+              setLoading(false);
             }
-          } catch (error: any) {
-            Alert.alert('Error', error?.message || 'Failed to mark no-show');
-          } finally {
-            setLoading(false);
-          }
+          },
         },
-      },
-    ]);
+      ],
+    });
   }, [bookingId, loading, marked, onMarked]);
 
   if (marked) {

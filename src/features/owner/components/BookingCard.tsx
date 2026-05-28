@@ -39,7 +39,14 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   onUndoReject,
   onNoShow,
 }) => {
+  const isPast = React.useMemo(() => {
+    if (!item.date || !item.time) return false;
+    const slotDateTime = new Date(`${item.date}T${item.time}`);
+    return slotDateTime.getTime() < Date.now();
+  }, [item.date, item.time]);
+
   const canUndo = React.useMemo(() => {
+    if (isPast) return false;
     if (item.status !== 'confirmed' && item.status !== 'rejected') {
       return false;
     }
@@ -53,7 +60,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
     const updatedAt = new Date(item.updated_at || item.created_at || Date.now()).getTime();
 
     return !isNaN(updatedAt) && Date.now() - updatedAt < windowMs;
-  }, [item.status, item.updated_at, item.created_at, item.undo_used_at]);
+  }, [isPast, item.status, item.updated_at, item.created_at, item.undo_used_at]);
 
   return (
     <AnimatedSection delay={index * 50} direction="up" className="mb-4">
@@ -74,7 +81,6 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 userId={item.customer_user_id}
                 name={item.customer_name || 'Client Direct'}
                 size={48}
-                className="border border-accent-premium/20"
               />
 
               {/* Booking Info */}
@@ -142,9 +148,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({
               )}
 
               {/* Confirmed */}
-              {item.status === 'confirmed' && onUndoAccept && canUndo && (
+              {item.status === 'confirmed' && onUndoAccept && canUndo && !isPast && (
                 <View className="flex-row gap-x-2">
-                  {onNoShow && !item.no_show && (
+                  {onNoShow && !item.no_show && !isPast && (
                     <Pressable
                       onPress={() => onNoShow(item.id)}
                       className="w-8 h-8 rounded-full bg-warning/20 items-center justify-center border border-warning/30"

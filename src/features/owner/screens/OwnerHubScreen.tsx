@@ -12,6 +12,7 @@ import {
   Share,
   TextInput,
 } from 'react-native';
+import { useModal } from '@/hooks/useModal';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
 import QRCode from 'react-native-qrcode-svg';
@@ -34,6 +35,7 @@ export default function ManageHubScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const { showModal } = useModal();
 
   // QR Code State
   const [qrCode, setQrCode] = useState<string>('');
@@ -108,7 +110,11 @@ export default function ManageHubScreen() {
       const permission = await MediaLibrary.requestPermissionsAsync();
 
       if (!permission.granted) {
-        Alert.alert('Permission Required', 'Please allow media access to save QR code.');
+        showModal({
+          variant: 'error',
+          title: 'Permission Required',
+          description: 'Please allow media access to save QR code.',
+        });
         return;
       }
 
@@ -121,10 +127,18 @@ export default function ManageHubScreen() {
 
         await MediaLibrary.saveToLibraryAsync(fileUri);
 
-        Alert.alert('Success', 'QR Code downloaded successfully.');
+        showModal({
+          variant: 'success',
+          title: 'Success',
+          description: 'QR Code downloaded successfully.',
+        });
       });
     } catch (err) {
-      Alert.alert('Error', 'Failed to download QR code.');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Failed to download QR code.',
+      });
     }
   };
   const onRefresh = async () => {
@@ -175,7 +189,11 @@ export default function ManageHubScreen() {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert('Permission Denied', 'Permission to access photos is required.');
+        showModal({
+          variant: 'error',
+          title: 'Permission Denied',
+          description: 'Permission to access photos is required.',
+        });
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -198,10 +216,18 @@ export default function ManageHubScreen() {
         type,
       });
 
-      Alert.alert('Success', 'Photo added to portfolio');
+      showModal({
+        variant: 'success',
+        title: 'Success',
+        description: 'Photo added to portfolio',
+      });
       fetchPhotos();
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to upload image');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: err.message || 'Failed to upload image',
+      });
     } finally {
       setUploadingPhoto(false);
     }
@@ -209,22 +235,35 @@ export default function ManageHubScreen() {
 
   // Delete Photo
   const handleDeletePhoto = (mediaId: string) => {
-    Alert.alert('Remove Photo', 'Are you sure you want to remove this image from portfolio?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await apiService.deleteMedia(mediaId);
-            setPhotos((prev) => prev.filter((p) => p.id !== mediaId));
-            Alert.alert('Success', 'Photo removed successfully');
-          } catch (err: any) {
-            Alert.alert('Error', err.message || 'Failed to delete image');
-          }
+    showModal({
+      variant: 'delete',
+      title: 'Remove Photo',
+      description: 'Are you sure you want to remove this image from portfolio?',
+      dismissible: true,
+      actions: [
+        {
+          label: 'Delete',
+          variant: 'danger',
+          onPress: async () => {
+            try {
+              await apiService.deleteMedia(mediaId);
+              setPhotos((prev) => prev.filter((p) => p.id !== mediaId));
+              showModal({
+                variant: 'success',
+                title: 'Success',
+                description: 'Photo removed successfully',
+              });
+            } catch (err: any) {
+              showModal({
+                variant: 'error',
+                title: 'Error',
+                description: err.message || 'Failed to delete image',
+              });
+            }
+          },
         },
-      },
-    ]);
+      ],
+    });
   };
 
   // 3. Fetch Downtime
@@ -249,7 +288,11 @@ export default function ManageHubScreen() {
   const handleAddHoliday = async () => {
     if (!business) return;
     if (!holidayDate) {
-      Alert.alert('Error', 'Please enter a holiday date');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Please enter a holiday date',
+      });
       return;
     }
     setSubmittingHoliday(true);
@@ -260,10 +303,18 @@ export default function ManageHubScreen() {
       });
       setHolidayDate('');
       setHolidayName('');
-      Alert.alert('Success', 'Holiday added successfully');
+      showModal({
+        variant: 'success',
+        title: 'Success',
+        description: 'Holiday added successfully',
+      });
       fetchDowntime();
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to add holiday');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: err.message || 'Failed to add holiday',
+      });
     } finally {
       setSubmittingHoliday(false);
     }
@@ -272,29 +323,46 @@ export default function ManageHubScreen() {
   // Delete Holiday
   const handleDeleteHoliday = (holidayId: string) => {
     if (!business) return;
-    Alert.alert('Remove Holiday', 'Are you sure you want to delete this holiday?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await apiService.deleteBusinessHoliday(business.id, holidayId);
-            setHolidays((prev) => prev.filter((h) => h.id !== holidayId));
-            Alert.alert('Success', 'Holiday deleted');
-          } catch (err: any) {
-            Alert.alert('Error', err.message || 'Failed to delete holiday');
-          }
+    showModal({
+      variant: 'delete',
+      title: 'Remove Holiday',
+      description: 'Are you sure you want to delete this holiday?',
+      dismissible: true,
+      actions: [
+        {
+          label: 'Delete',
+          variant: 'danger',
+          onPress: async () => {
+            try {
+              await apiService.deleteBusinessHoliday(business.id, holidayId);
+              setHolidays((prev) => prev.filter((h) => h.id !== holidayId));
+              showModal({
+                variant: 'success',
+                title: 'Success',
+                description: 'Holiday deleted',
+              });
+            } catch (err: any) {
+              showModal({
+                variant: 'error',
+                title: 'Error',
+                description: err.message || 'Failed to delete holiday',
+              });
+            }
+          },
         },
-      },
-    ]);
+      ],
+    });
   };
 
   // Add Closure
   const handleAddClosure = async () => {
     if (!business) return;
     if (!closureStart || !closureEnd) {
-      Alert.alert('Error', 'Please enter start and end dates');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Please enter start and end dates',
+      });
       return;
     }
     setSubmittingClosure(true);
@@ -307,10 +375,18 @@ export default function ManageHubScreen() {
       setClosureStart('');
       setClosureEnd('');
       setClosureReason('');
-      Alert.alert('Success', 'Downtime closure added successfully');
+      showModal({
+        variant: 'success',
+        title: 'Success',
+        description: 'Downtime closure added successfully',
+      });
       fetchDowntime();
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to add closure');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: err.message || 'Failed to add closure',
+      });
     } finally {
       setSubmittingClosure(false);
     }
@@ -319,22 +395,35 @@ export default function ManageHubScreen() {
   // Delete Closure
   const handleDeleteClosure = (closureId: string) => {
     if (!business) return;
-    Alert.alert('Remove Closure', 'Are you sure you want to delete this downtime closure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await apiService.deleteBusinessClosure(business.id, closureId);
-            setClosures((prev) => prev.filter((c) => c.id !== closureId));
-            Alert.alert('Success', 'Closure deleted');
-          } catch (err: any) {
-            Alert.alert('Error', err.message || 'Failed to delete closure');
-          }
+    showModal({
+      variant: 'delete',
+      title: 'Remove Closure',
+      description: 'Are you sure you want to delete this downtime closure?',
+      dismissible: true,
+      actions: [
+        {
+          label: 'Delete',
+          variant: 'danger',
+          onPress: async () => {
+            try {
+              await apiService.deleteBusinessClosure(business.id, closureId);
+              setClosures((prev) => prev.filter((c) => c.id !== closureId));
+              showModal({
+                variant: 'success',
+                title: 'Success',
+                description: 'Closure deleted',
+              });
+            } catch (err: any) {
+              showModal({
+                variant: 'error',
+                title: 'Error',
+                description: err.message || 'Failed to delete closure',
+              });
+            }
+          },
         },
-      },
-    ]);
+      ],
+    });
   };
 
   // 4. Fetch Reviews
@@ -369,38 +458,42 @@ export default function ManageHubScreen() {
   const handleDeleteBusiness = () => {
     if (!business) return;
 
-    Alert.alert(
-      'Delete Business',
-      `• "${business.salon_name}" will be deactivated immediately.\n• It will be scheduled for permanent deletion after 30 days.\n• During this period, you may be able to recover your business account.`,
-      [
+    showModal({
+      variant: 'delete',
+      title: 'Delete Business',
+      description: `• "${business.salon_name}" will be deactivated immediately.\n• It will be scheduled for permanent deletion after 30 days.\n• During this period, you may be able to recover your business account.`,
+      dismissible: true,
+      actions: [
         {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
+          label: 'Delete',
+          variant: 'danger',
           onPress: async () => {
             try {
               setLoading(true);
 
               await apiService.deleteBusiness(business.id);
 
-              Alert.alert(
-                'Business Deleted',
-                'Business is deleted successfully and will be permanently removed after 30 days.',
-              );
+              showModal({
+                variant: 'success',
+                title: 'Business Deleted',
+                description:
+                  'Business is deleted successfully and will be permanently removed after 30 days.',
+              });
 
               router.replace('/(owner)');
             } catch (err: any) {
-              Alert.alert('Error', err.message || 'Failed to delete business.');
+              showModal({
+                variant: 'error',
+                title: 'Error',
+                description: err.message || 'Failed to delete business.',
+              });
             } finally {
               setLoading(false);
             }
           },
         },
       ],
-    );
+    });
   };
 
   if (loading && !refreshing) {

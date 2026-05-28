@@ -4,6 +4,7 @@ import { Alert, Text, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 
 import RescheduleButton from '@/features/booking/components/reschedule-button';
+import { useModal } from '@/hooks/useModal';
 
 import { Slot } from '@/types/slot.types';
 import { useOptimisticMutation } from '@/hooks/useOptimisticMutation';
@@ -40,6 +41,8 @@ function BookingActionsComponent({
   onRescheduled,
 }: BookingActionsProps) {
   const [optimisticStatus, setOptimisticStatus] = useState<string | null>(null);
+  const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+  const { showModal } = useModal();
 
   const canCancelByStatus = booking.status === 'confirmed' || booking.status === 'pending';
 
@@ -87,10 +90,11 @@ function BookingActionsComponent({
     },
     onError: (error: any) => {
       setOptimisticStatus(null);
-      Alert.alert(
-        'Cancellation Failed',
-        error.message || 'An error occurred while cancelling your booking.',
-      );
+      showModal({
+        variant: 'error',
+        title: 'Cancellation Failed',
+        description: error.message || 'An error occurred while cancelling your booking.',
+      });
     },
   });
 
@@ -98,19 +102,7 @@ function BookingActionsComponent({
     if (cancelMutation.isPending) return;
     if (isCancellationTooLate) return;
 
-    Alert.alert('Cancel Booking', 'Are you sure you want to cancel this booking?', [
-      {
-        text: 'No',
-        style: 'cancel',
-      },
-      {
-        text: 'Yes',
-        style: 'destructive',
-        onPress: () => {
-          cancelMutation.mutate(undefined);
-        },
-      },
-    ]);
+    setIsConfirmingCancel(true);
   }, [cancelMutation, isCancellationTooLate]);
 
   const handleRebook = useCallback(() => {
@@ -147,20 +139,45 @@ function BookingActionsComponent({
       {/* Active Actions */}
       {canCancelByStatus && !showCancelled && (
         <View className="space-y-3">
-          {/* Cancel Button */}
-          <Pressable
-            onPress={handleCancel}
-            disabled={cancelMutation.isPending || isActionDisabled}
-            className={`w-full rounded-2xl py-4 px-6 items-center mb-3 border ${
-              isActionDisabled
-                ? 'bg-error/10 border-error/20 opacity-50'
-                : 'bg-error/10 border-error/30 active:bg-error/20'
-            }`}
-          >
-            <Text className="text-error font-bold">
-              {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Booking'}
-            </Text>
-          </Pressable>
+          {/* Cancel Button / Confirmation */}
+          {isConfirmingCancel ? (
+            <View className="bg-card border border-border p-4 rounded-2xl mb-3">
+              <Text className="text-text font-bold mb-1">Are you sure?</Text>
+              <Text className="text-textSecondary text-xs mb-4">This action cannot be undone.</Text>
+              <View className="flex-row gap-x-3">
+                <Pressable
+                  onPress={() => setIsConfirmingCancel(false)}
+                  disabled={cancelMutation.isPending}
+                  className="flex-1 bg-border/50 py-3 rounded-xl items-center"
+                >
+                  <Text className="text-text font-semibold">Keep it</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => cancelMutation.mutate(undefined)}
+                  disabled={cancelMutation.isPending}
+                  className={`flex-1 py-3 rounded-xl items-center ${
+                    cancelMutation.isPending ? 'bg-error/50' : 'bg-error'
+                  }`}
+                >
+                  <Text className="text-background font-bold">
+                    {cancelMutation.isPending ? 'Cancelling...' : 'Yes, Cancel'}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Pressable
+              onPress={handleCancel}
+              disabled={cancelMutation.isPending || isActionDisabled}
+              className={`w-full rounded-2xl py-4 px-6 items-center mb-3 border ${
+                isActionDisabled
+                  ? 'bg-error/10 border-error/20 opacity-50'
+                  : 'bg-error/10 border-error/30 active:bg-error/20'
+              }`}
+            >
+              <Text className="text-error font-bold">Cancel Booking</Text>
+            </Pressable>
+          )}
 
           {/* Too-Late Warning */}
           {isActionDisabled && (

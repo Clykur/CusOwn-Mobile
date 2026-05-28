@@ -209,12 +209,7 @@ export const useAuth = () => {
             user_type: role.toLowerCase(),
           });
 
-          // Route based on selected role
-          if (role === 'Owner') {
-            router.replace('/(owner)');
-          } else {
-            router.replace('/(customer)');
-          }
+          // RootLayout will automatically route based on role and profile status
         }
       } else if (result.type === 'cancel') {
         logger.info(LogTag.AUTH, '⏹️ Sign-in cancelled by user');

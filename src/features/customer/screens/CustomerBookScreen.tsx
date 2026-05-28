@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useBusinessDetail } from '@/hooks/useBusinesses';
 import { useBookingStore } from '@/store/booking.store';
 import { useSlots } from '@/hooks/useSlots';
+import { useModal } from '@/hooks/useModal';
 import { useAuthStore } from '@/store/auth.store';
 import { apiService } from '@/services/api.service';
 import { Service } from '@/types/business.types';
@@ -59,6 +60,7 @@ function BookingScreenInner(): JSX.Element {
   const { data: business, isLoading: businessLoading } = useBusinessDetail(id as string);
   const { selectedService, selectedServices: storeSelectedServices } = useBookingStore();
   const { user, profile } = useAuthStore();
+  const { showModal } = useModal();
 
   const { data: existingBooking, isLoading: existingBookingLoading } = useBookingDetail(
     bookingId as string,
@@ -217,7 +219,11 @@ function BookingScreenInner(): JSX.Element {
       if (selectedServices.length > 1) {
         setSelectedServices(selectedServices.filter((s) => s.id !== srv.id));
       } else {
-        Alert.alert('Selection Required', 'You must keep at least one service selected.');
+        showModal({
+          variant: 'warning',
+          title: 'Selection Required',
+          description: 'You must keep at least one service selected.',
+        });
       }
     } else {
       setSelectedServices([...selectedServices, srv]);
@@ -302,12 +308,29 @@ function BookingScreenInner(): JSX.Element {
   // ─── Booking submission ───────────────────────────────────────────────────────
   const handleCreateOrRescheduleBooking = async () => {
     if (!business || selectedServices.length === 0 || !selectedSlot) {
-      Alert.alert('Error', 'Please select a date, time, and service.');
+      showModal({
+        variant: 'error',
+        title: 'Missing Details',
+        description: 'Please select a date, time, and service.',
+      });
       return;
     }
 
     if (!customerName.trim()) {
-      Alert.alert('Error', 'Please enter your name.');
+      showModal({
+        variant: 'error',
+        title: 'Name Required',
+        description: 'Please enter your full name.',
+      });
+      return;
+    }
+
+    if (!customerPhone.trim()) {
+      showModal({
+        variant: 'error',
+        title: 'Phone Required',
+        description: 'Please enter your phone number to confirm the booking.',
+      });
       return;
     }
 
@@ -362,12 +385,14 @@ function BookingScreenInner(): JSX.Element {
         });
       }
     } catch (err: any) {
-      Alert.alert(
-        isRescheduling ? 'Rescheduling Failed' : 'Booking Failed',
-        err.response?.data?.message ||
+      showModal({
+        variant: 'error',
+        title: isRescheduling ? 'Rescheduling Failed' : 'Booking Failed',
+        description:
+          err.response?.data?.message ||
           err.message ||
           'An error occurred while reserving your slot. Please try again.',
-      );
+      });
     } finally {
       setIsSubmitting(false);
     }

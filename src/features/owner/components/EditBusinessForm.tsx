@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Alert } from 'react-native';
 import * as Location from 'expo-location';
 import { apiService } from '@/services/api.service';
+import { useModal } from '@/hooks/useModal';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { Business, BusinessCategory } from '@/types/business.types';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,6 +37,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
+  const { showModal } = useModal();
 
   const [formData, setFormData] = useState({
     salon_name: business.salon_name,
@@ -79,7 +81,11 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Allow location access to use this feature.');
+        showModal({
+          variant: 'error',
+          title: 'Permission Denied',
+          description: 'Allow location access to use this feature.',
+        });
         return;
       }
       let location = await Location.getCurrentPositionAsync({});
@@ -97,7 +103,11 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
         }));
       }
     } catch (err) {
-      Alert.alert('Error', 'Could not get location.');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Could not get location.',
+      });
     } finally {
       setLoading(false);
     }

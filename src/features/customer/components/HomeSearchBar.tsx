@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, TextInput, Pressable, ActivityIndicator, Keyboard } from 'react-native';
+import { View, TextInput, Pressable, ActivityIndicator, Keyboard, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '@/theme/theme';
-import { router } from 'expo-router';
 
 interface HomeSearchBarProps {
   searchQuery: string;
@@ -23,33 +22,91 @@ export function HomeSearchBar({
   locationLoading,
   onLocate,
 }: HomeSearchBarProps) {
-  return (
-    <View className="px-luxury mb-6 mt-2">
-      <View className="flex-row items-center bg-card/60 backdrop-blur-xl border border-primary/20 rounded-3xl px-4 py-3 h-14">
-        <Ionicons name="search-outline" size={20} color={THEME.colors.textSecondary} />
+  const displayValue = useCurrentLocation ? userLocation?.city || '' : searchQuery;
 
+  return (
+    <View className="px-5 mb-5 mt-2">
+      <View
+        className="
+          flex-row
+          items-center
+          rounded-[24px]
+          border
+          px-4
+        "
+        style={{
+          minHeight: 58,
+          backgroundColor: 'rgba(18,18,18,0.92)',
+          borderColor: 'rgba(0,230,118,0.14)',
+          shadowColor: '#000',
+          shadowOpacity: 0.25,
+          shadowRadius: 12,
+          shadowOffset: {
+            width: 0,
+            height: 6,
+          },
+          elevation: 10,
+        }}
+      >
+        {/* Search Icon */}
+        <View
+          style={{
+            width: 22,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Ionicons name="search-outline" size={20} color={THEME.colors.textSecondary} />
+        </View>
+
+        {/* Input */}
         <TextInput
-          className="flex-1 text-text font-medium text-base ml-3 -mt-2"
+          value={displayValue}
           placeholder="Search salons, services..."
           placeholderTextColor={THEME.colors.textSecondary}
-          value={useCurrentLocation ? userLocation?.city || '' : searchQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
+          onSubmitEditing={() => Keyboard.dismiss()}
           onChangeText={(val) => {
             if (useCurrentLocation) {
               setUseCurrentLocation(false);
             }
+
             setSearchQuery(val);
           }}
-          onSubmitEditing={() => Keyboard.dismiss()}
-          returnKeyType="search"
+          style={{
+            flex: 1,
+            color: THEME.colors.text,
+            fontSize: 16,
+            fontWeight: '500',
+
+            paddingVertical: Platform.OS === 'ios' ? 16 : 12,
+            paddingHorizontal: 14,
+
+            includeFontPadding: false,
+            textAlignVertical: 'center',
+          }}
         />
 
-        {searchQuery && !useCurrentLocation ? (
-          <Pressable onPress={() => setSearchQuery('')} className="mr-2">
+        {/* Clear Button */}
+        {searchQuery?.length > 0 && !useCurrentLocation && (
+          <Pressable
+            hitSlop={12}
+            onPress={() => setSearchQuery('')}
+            style={{
+              marginRight: 8,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Ionicons name="close-circle" size={18} color={THEME.colors.textSecondary} />
           </Pressable>
-        ) : null}
+        )}
 
+        {/* Location Button */}
         <Pressable
+          hitSlop={12}
           onPress={() => {
             if (useCurrentLocation) {
               setUseCurrentLocation(false);
@@ -59,7 +116,14 @@ export function HomeSearchBar({
               onLocate();
             }
           }}
-          className="items-center justify-center pl-2"
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 17,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: useCurrentLocation ? 'rgba(0,230,118,0.12)' : 'transparent',
+          }}
         >
           {locationLoading ? (
             <ActivityIndicator size="small" color={THEME.colors.primary} />

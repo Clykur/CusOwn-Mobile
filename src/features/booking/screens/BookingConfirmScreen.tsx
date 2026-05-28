@@ -1,16 +1,9 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  useColorScheme,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useColorScheme } from 'react-native';
 import { router } from 'expo-router';
 import { useBookingStore } from '@/store/booking.store';
 import { useCreateBooking } from '@/hooks/useBookings';
+import { useModal } from '@/hooks/useModal';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { THEME } from '@/constants/theme';
@@ -19,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function ConfirmBookingScreen() {
   const { selectedBusiness, selectedService, selectedSlot, resetBooking } = useBookingStore();
   const { mutateAsync: createBooking, isPending } = useCreateBooking();
+  const { showModal } = useModal();
 
   const colorScheme = useColorScheme() || 'light';
   const isDark = colorScheme === 'dark';
@@ -52,7 +46,11 @@ export default function ConfirmBookingScreen() {
       resetBooking();
       router.replace('/booking/success');
     } catch (err: any) {
-      Alert.alert('Booking Error', err.message || 'Failed to finalize your reservation.');
+      showModal({
+        variant: 'error',
+        title: 'Booking Error',
+        description: err.message || 'Failed to finalize your reservation.',
+      });
     }
   };
 

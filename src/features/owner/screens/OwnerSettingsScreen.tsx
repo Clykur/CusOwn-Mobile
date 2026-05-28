@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useProfileImage } from '@/features/shared/hooks/useProfileImage';
 import { useProfileMedia } from '@/hooks/useProfileMedia';
 import { isValidImageUrl } from '@/utils/image';
+import { useModal } from '@/hooks/useModal';
 // New UI Components
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -32,6 +33,7 @@ export default function OwnerProfileScreen() {
   const { user, profile, profileImageUrl } = useAuthStore();
   const { pickAndUpload, uploading } = useProfileImage();
   const { data: mediaUrl } = useProfileMedia(user?.id);
+  const { showModal } = useModal();
 
   const [loading, setLoading] = useState(!profile);
   const [updating, setUpdating] = useState(false);
@@ -72,7 +74,11 @@ export default function OwnerProfileScreen() {
 
   const handleUpdateProfile = async () => {
     if (!formData.full_name.trim()) {
-      Alert.alert('Error', 'Full name is required');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Full name is required',
+      });
       return;
     }
 
@@ -84,11 +90,19 @@ export default function OwnerProfileScreen() {
         phone_number: formData.phone_number,
       });
 
-      Alert.alert('Success', 'Profile updated successfully');
+      showModal({
+        variant: 'success',
+        title: 'Success',
+        description: 'Profile updated successfully',
+      });
       setEditMode(false);
       fetchProfile();
     } catch (err: any) {
-      Alert.alert('Update Failed', err.message || 'Could not update profile');
+      showModal({
+        variant: 'error',
+        title: 'Update Failed',
+        description: err.message || 'Could not update profile',
+      });
     } finally {
       setUpdating(false);
     }
@@ -103,42 +117,47 @@ export default function OwnerProfileScreen() {
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'This action is permanent and will remove all your data after 30 days. Are you absolutely sure?',
-      [
+    showModal({
+      variant: 'delete',
+      title: 'Delete Account',
+      description:
+        'This action is permanent and will remove all your data after 30 days. Are you absolutely sure?',
+      dismissible: true,
+      actions: [
         {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete Permanently',
-          style: 'destructive',
+          label: 'Delete Permanently',
+          variant: 'danger',
           onPress: async () => {
             try {
               await apiService.deleteAccount('User requested deletion via mobile app');
               signOut();
             } catch (err: any) {
-              Alert.alert('Error', 'Failed to delete account. Please try again.');
+              showModal({
+                variant: 'error',
+                title: 'Error',
+                description: 'Failed to delete account. Please try again.',
+              });
             }
           },
         },
       ],
-    );
+    });
   };
 
   const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to exit?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Sign Out',
-        style: 'destructive',
-        onPress: signOut,
-      },
-    ]);
+    showModal({
+      variant: 'signout',
+      title: 'Sign Out',
+      description: 'Are you sure you want to exit?',
+      dismissible: true,
+      actions: [
+        {
+          label: 'Sign Out',
+          variant: 'primary',
+          onPress: () => signOut(),
+        },
+      ],
+    });
   };
 
   const formatDate = (date: string) => {

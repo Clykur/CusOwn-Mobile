@@ -4,6 +4,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator, Alert } from 'reac
 import * as Location from 'expo-location';
 import { apiService } from '@/services/api.service';
 import { useAuthStore } from '@/store/auth.store';
+import { useModal } from '@/hooks/useModal';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { ServiceRow } from './ServiceRow';
 import { BusinessCategory } from '@/types/business.types';
@@ -52,6 +53,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
   const [fetchingCategories, setFetchingCategories] = useState(false);
+  const { showModal } = useModal();
 
   const [formData, setFormData] = useState({
     salon_name: '',
@@ -121,7 +123,11 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Allow location access to use this feature.');
+        showModal({
+          variant: 'error',
+          title: 'Permission Denied',
+          description: 'Allow location access to use this feature.',
+        });
         return;
       }
 
@@ -146,7 +152,11 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       }
     } catch (err) {
       console.error('Location error:', err);
-      Alert.alert('Error', 'Could not get your location.');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Could not get your location.',
+      });
     } finally {
       setLoading(false);
     }
