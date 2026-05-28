@@ -28,7 +28,7 @@ export function DealCard({ item, index = 0, onPress }: DealCardProps) {
   return (
     <AnimatedSection delay={index * 100} direction="up" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-[280px] p-0 rounded-[24px] border border-primary/20">
+        <GlassCard className="w-[250px] p-0 rounded-[24px] border border-primary/20">
           <View className="px-4 py-3 flex-row justify-between items-center">
             <View className="flex-row items-center">
               <Ionicons name="pricetag-outline" size={16} color={THEME.colors.primary} />

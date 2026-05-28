@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Booking } from '@/types/booking.types';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { useModal } from '@/hooks/useModal';
 import { getBookingPrice } from '@/services/api.service';
 import { supabase } from '@/lib/supabase';
 import { CONFIG } from '@/constants/config';
@@ -40,12 +41,19 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
   onUndoReject,
   onNoShow,
 }) => {
+  const { showModal } = useModal();
   if (!booking) return null;
 
   // Cast to any for accessing dynamically populated backend fields safely
   const b = booking as any;
 
   const price = getBookingPrice(b);
+
+  const isPast = React.useMemo(() => {
+    if (!b.date || !b.time) return false;
+    const slotDateTime = new Date(`${b.date}T${b.time}`);
+    return slotDateTime.getTime() < Date.now();
+  }, [b.date, b.time]);
 
   // Determine if confirmation can be undone based on updated_at
   const canUndo = React.useMemo(() => {
@@ -58,13 +66,17 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
     const windowMs = (CONFIG.UNDO_WINDOW_MINUTES || 15) * 60 * 1000;
     const updatedAt = new Date(b.updated_at || Date.now()).getTime();
     return Date.now() - updatedAt < windowMs;
-  }, [b.status, b.updated_at, b.undo_used_at]);
+  }, [isPast, b.status, b.updated_at, b.undo_used_at]);
 
   const handleCall = () => {
     const phone = b.customer_phone || b.customer_profile?.phone;
     if (!phone) return;
     Linking.openURL(`tel:${phone}`).catch(() => {
-      Alert.alert('Error', 'Unable to open phone dialer.');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Unable to open phone dialer.',
+      });
     });
   };
 
@@ -75,7 +87,11 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
     const formattedPhone =
       cleanPhone.startsWith('91') || cleanPhone.length > 10 ? cleanPhone : `91${cleanPhone}`;
     Linking.openURL(`https://wa.me/${formattedPhone}`).catch(() => {
-      Alert.alert('Error', 'Unable to open WhatsApp.');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Unable to open WhatsApp.',
+      });
     });
   };
 
@@ -155,7 +171,6 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                   userId={b.customer_user_id}
                   name={b.customer_name || 'Client Direct'}
                   size={52}
-                  className="border border-border"
                 />
 
                 <View className="flex-1">
@@ -314,9 +329,18 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                         onNoShow(b.id);
                         onClose();
                       }}
-                      className="w-full h-12 rounded-xl bg-input border border-border items-center justify-center active:bg-card"
+                      disabled={isPast}
+                      className={`w-full h-12 rounded-xl items-center justify-center flex-row gap-x-2 ${
+                        isPast
+                          ? 'bg-border/30 border border-border/50 opacity-50'
+                          : 'bg-input border border-border active:bg-card'
+                      }`}
                     >
-                      <Text className="text-textSecondary font-black text-xs uppercase tracking-widest">
+                      <Text
+                        className={`font-black text-xs uppercase tracking-widest ${
+                          isPast ? 'text-textSecondary/50' : 'text-textSecondary'
+                        }`}
+                      >
                         Mark as No-Show
                       </Text>
                     </TouchableOpacity>
@@ -328,14 +352,25 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                         onUndoAccept(b.id);
                         onClose();
                       }}
-                      className="w-full h-12 rounded-xl border border-border bg-input items-center justify-center active:bg-card flex-row gap-x-2"
+                      disabled={isPast}
+                      className={`w-full h-12 rounded-xl items-center justify-center flex-row gap-x-2 ${
+                        isPast
+                          ? 'bg-border/30 border border-border/50 opacity-50'
+                          : 'border border-border bg-input active:bg-card'
+                      }`}
                     >
                       <Ionicons
                         name="refresh-outline"
                         size={16}
-                        color={THEME.colors.textSecondary}
+                        color={
+                          isPast ? THEME.colors.textSecondary + '80' : THEME.colors.textSecondary
+                        }
                       />
-                      <Text className="text-textSecondary font-black text-xs uppercase tracking-widest">
+                      <Text
+                        className={`font-black text-xs uppercase tracking-widest ${
+                          isPast ? 'text-textSecondary/50' : 'text-textSecondary'
+                        }`}
+                      >
                         Undo Confirmation
                       </Text>
                     </TouchableOpacity>

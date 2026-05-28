@@ -8,10 +8,10 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
+import { useModal } from '@/hooks/useModal';
 import { apiService } from '@/services/api.service';
 import { useSlots } from '@/hooks/useSlots';
 import dayjs from 'dayjs';
@@ -50,6 +50,7 @@ export default function RescheduleButton({
   );
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showModal: showGlobalModal } = useModal();
 
   // 14-day rolling date list
   const datesList = useMemo(() => {
@@ -103,10 +104,18 @@ export default function RescheduleButton({
       });
 
       setShowModal(false);
-      Alert.alert('Success', 'Booking rescheduled successfully');
+      showGlobalModal({
+        variant: 'success',
+        title: 'Success',
+        description: 'Booking rescheduled successfully',
+      });
       onRescheduled?.();
     } catch (error: any) {
-      Alert.alert('Reschedule Failed', error?.message || 'Failed to reschedule booking');
+      showGlobalModal({
+        variant: 'error',
+        title: 'Reschedule Failed',
+        description: error?.message || 'Failed to reschedule booking',
+      });
     } finally {
       setLoading(false);
     }

@@ -11,19 +11,22 @@ import { resolveMediaPublicUrl } from '@/services/supabase/storage';
 import { useAuthStore } from '@/store/auth.store';
 import { logger, LogTag } from '@/utils/logger';
 import { queryClient } from '@/lib/queryClient';
+import { useModal } from '@/hooks/useModal';
 
 export const useProfileImage = () => {
   const [uploading, setUploading] = useState(false);
   const { refreshProfile } = useAuthStore();
+  const { showModal } = useModal();
 
   const pickAndUpload = async (): Promise<string | null> => {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
-          'Permission Required',
-          'Please allow access to your photo library to update your profile picture.',
-        );
+        showModal({
+          variant: 'error',
+          title: 'Permission Required',
+          description: 'Please allow access to your photo library to update your profile picture.',
+        });
         return null;
       }
     }
@@ -71,10 +74,11 @@ export const useProfileImage = () => {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Upload failed';
       logger.error(LogTag.API, '[ProfileImage] Upload failed:', message);
-      Alert.alert(
-        'Upload Failed',
-        message || 'Could not upload your profile picture. Please try again.',
-      );
+      showModal({
+        variant: 'error',
+        title: 'Upload Failed',
+        description: message || 'Could not upload your profile picture. Please try again.',
+      });
       return null;
     } finally {
       setUploading(false);

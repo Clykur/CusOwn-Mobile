@@ -71,18 +71,6 @@ export async function getProfilePayload(): Promise<ProfileApiPayload> {
     };
   }
 
-  if (profile.deleted_at) {
-    logger.info(LogTag.AUTH, 'Soft deleted account detected on login. Recovering account...', {
-      userId: user.id,
-    });
-    try {
-      await recoverUserAccount();
-      profile.deleted_at = null;
-    } catch (err) {
-      logger.error(LogTag.AUTH, 'Failed to recover soft deleted account', err);
-    }
-  }
-
   const enrichedProfile: UserProfile = {
     ...profile,
     email: user.email,

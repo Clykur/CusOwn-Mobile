@@ -88,8 +88,8 @@ export default function CustomerBookingsScreen() {
 
     return (
       <AnimatedSection delay={index * 30} direction="up" className="mb-3">
-        <Pressable onPress={() => router.push(`/booking-detail/${item.id}`)}>
-          <GlassCard className="bg-card   rounded-[22px] p-1 shadow-sm">
+        <GlassCard className="bg-card rounded-[22px] p-1 shadow-sm overflow-hidden">
+          <Pressable onPress={() => router.push(`/booking-detail/${item.id}`)}>
             {/* Top */}
             <View className="flex-row items-center">
               {/* Avatar */}
@@ -147,49 +147,52 @@ export default function CustomerBookingsScreen() {
                 </Text>
               </View>
             </View>
+          </Pressable>
 
-            {/* Bottom */}
-            <View className="flex-row items-center justify-between pt-2 border-t border-border">
-              {/* Date & Time */}
-              <View className="flex-row items-center flex-1 mr-3">
-                <Ionicons name="calendar-outline" size={15} color={THEME.colors.textSecondary} />
+          {/* Bottom */}
+          <View className="flex-row items-center justify-between pt-2 border-t border-border">
+            {/* Date & Time */}
+            <Pressable
+              className="flex-row items-center flex-1 mr-3"
+              onPress={() => router.push(`/booking-detail/${item.id}`)}
+            >
+              <Ionicons name="calendar-outline" size={15} color={THEME.colors.textSecondary} />
 
-                <Text className="text-textSecondary text-sm font-semibold ml-1">
-                  {formatBookingDate(item.date)} • {formatBookingTime(item.time)}
+              <Text className="text-textSecondary text-sm font-semibold ml-1">
+                {formatBookingDate(item.date)} • {formatBookingTime(item.time)}
+              </Text>
+            </Pressable>
+
+            {/* Rebook */}
+            {(item.status === 'confirmed' ||
+              item.status === 'completed' ||
+              item.status === 'cancelled' ||
+              item.status === 'rejected' ||
+              item.status === 'no_show') && (
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation();
+
+                  const serviceIds =
+                    item.services?.map((s: any) => s.id).join(',') || item.service?.id || '';
+
+                  router.push({
+                    pathname: '/(customer)/book/[id]',
+                    params: {
+                      id: item.business_id || item.business?.id || item.salon?.id || '',
+                      serviceIds,
+                    },
+                  });
+                }}
+                className="px-4 py-2 rounded-full border border-text"
+              >
+                <Text className="text-text text-xs font-black uppercase tracking-[1.5px]">
+                  Rebook
                 </Text>
-              </View>
-
-              {/* Rebook */}
-              {(item.status === 'confirmed' ||
-                item.status === 'completed' ||
-                item.status === 'cancelled' ||
-                item.status === 'rejected' ||
-                item.status === 'no_show') && (
-                <Pressable
-                  onPress={(e) => {
-                    e.stopPropagation();
-
-                    const serviceIds =
-                      item.services?.map((s: any) => s.id).join(',') || item.service?.id || '';
-
-                    router.push({
-                      pathname: '/(customer)/book/[id]',
-                      params: {
-                        id: item.business_id || item.business?.id || item.salon?.id || '',
-                        serviceIds,
-                      },
-                    });
-                  }}
-                  className="px-4 py-2 rounded-full border border-text"
-                >
-                  <Text className="text-text text-xs font-black uppercase tracking-[1.5px]">
-                    Rebook
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-          </GlassCard>
-        </Pressable>
+              </Pressable>
+            )}
+          </View>
+        </GlassCard>
       </AnimatedSection>
     );
   };

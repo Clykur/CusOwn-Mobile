@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
 import { Business, BusinessCategory } from '@/types/business.types';
+import { useModal } from '@/hooks/useModal';
 
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
@@ -22,6 +23,7 @@ export default function CustomerBrowseScreen() {
   }>();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const { showModal } = useModal();
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     categoryId || category || null,
@@ -39,9 +41,7 @@ export default function CustomerBrowseScreen() {
   } = useBusinesses(selectedCategoryId || undefined);
 
   const { data: categories } = useCategories();
-  useEffect(() => {
-    getUserLocation();
-  }, []);
+
   const [manualLocation, setManualLocation] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const getUserLocation = async () => {
@@ -51,7 +51,11 @@ export default function CustomerBrowseScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== 'granted') {
-        Alert.alert('Location Permission', 'Location permission denied');
+        showModal({
+          variant: 'error',
+          title: 'Location Permission',
+          description: 'Location permission denied',
+        });
         return;
       }
 
@@ -80,7 +84,11 @@ export default function CustomerBrowseScreen() {
       const { logger, LogTag } = require('@/utils/logger');
       logger.error(LogTag.API, 'Location Error:', error);
 
-      Alert.alert('Location Error', 'Failed to fetch your current location');
+      showModal({
+        variant: 'error',
+        title: 'Location Error',
+        description: 'Failed to fetch your current location',
+      });
     } finally {
       setLocationLoading(false);
     }

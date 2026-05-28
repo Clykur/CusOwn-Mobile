@@ -10,6 +10,7 @@ import { useAuthStore, Role } from '@/store/auth.store';
 import { useOnboardingStore } from '@/store/onboarding.store';
 import { supabase } from '@/lib/supabase';
 import { logger, LogTag } from '@/utils/logger';
+import { ModalProvider } from '@/providers/ModalProvider';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -145,7 +146,7 @@ export default function RootLayout() {
       logger.info(LogTag.AUTH, 'ℹ️ RootLayout: Onboarding not completed, redirecting...');
       router.replace('/(public)/welcome');
     }
-  }, [session, role, isLoading, segments, onboardingCompleted, isNavigationReady]);
+  }, [session, profile, role, isLoading, segments, onboardingCompleted, isNavigationReady]);
 
   const registerForPushNotificationsAsync = async () => {
     if (!Notifications) return;
@@ -193,19 +194,21 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(public)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(customer)" options={{ headerShown: false }} />
-        <Stack.Screen name="(owner)" options={{ headerShown: false }} />
-        <Stack.Screen name="setup" options={{ headerShown: false }} />
-        <Stack.Screen name="booking" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="booking-detail/[id]"
-          options={{ presentation: 'modal', headerShown: false }}
-        />
-      </Stack>
+      <ModalProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(public)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(customer)" options={{ headerShown: false }} />
+          <Stack.Screen name="(owner)" options={{ headerShown: false }} />
+          <Stack.Screen name="setup" options={{ headerShown: false }} />
+          <Stack.Screen name="booking" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="booking-detail/[id]"
+            options={{ presentation: 'modal', headerShown: false }}
+          />
+        </Stack>
+      </ModalProvider>
     </QueryClientProvider>
   );
 }

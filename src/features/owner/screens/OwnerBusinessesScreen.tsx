@@ -15,7 +15,7 @@ import {
 } from '@/hooks/useOwner';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert } from 'react-native';
+import { useModal } from '@/hooks/useModal';
 
 export default function OwnerBusinessesScreen() {
   const { data: businesses, isLoading, isError, refetch } = useOwnerBusinesses();
@@ -23,6 +23,7 @@ export default function OwnerBusinessesScreen() {
   const restoreMutation = useRestoreBusiness();
   const hardDeleteMutation = useHardDeleteBusiness();
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const { showModal } = useModal();
 
   const onAddBusiness = () => {
     router.push('/setup/create');
@@ -205,6 +206,7 @@ export default function OwnerBusinessesScreen() {
                           <Text className="text-text text-xl font-extrabold mb-1">
                             {b.salon_name}
                           </Text>
+
                           <Text className="text-error text-xs font-bold uppercase tracking-[1px]">
                             {daysRemaining} Days until permanent deletion
                           </Text>
@@ -214,58 +216,79 @@ export default function OwnerBusinessesScreen() {
                       <View className="h-[0.5px] bg-border w-full mb-2" />
 
                       <View className="flex-row justify-between items-center mt-2">
+                        {/* Delete Left */}
+                        <Pressable
+                          disabled={processingId === b.id}
+                          onPress={() => {
+                            showModal({
+                              variant: 'delete',
+                              title: 'Permanent Deletion',
+                              description: `Are you sure you want to permanently delete ${b.salon_name} now? This cannot be undone.`,
+                              dismissible: true,
+                              actions: [
+                                {
+                                  label: 'Delete Permanently',
+                                  variant: 'danger',
+                                  onPress: () => {
+                                    setProcessingId(b.id);
+
+                                    hardDeleteMutation.mutate(b.id, {
+                                      onSettled: () => setProcessingId(null),
+
+                                      onSuccess: () =>
+                                        showModal({
+                                          variant: 'success',
+                                          title: 'Deleted',
+                                          description: `${b.salon_name} has been permanently deleted.`,
+                                        }),
+
+                                      onError: (err) =>
+                                        showModal({
+                                          variant: 'error',
+                                          title: 'Deletion Failed',
+                                          description: err.message,
+                                        }),
+                                    });
+                                  },
+                                },
+                              ],
+                            });
+                          }}
+                          className="px-4 py-2"
+                        >
+                          <Text className="text-error text-xs font-black uppercase tracking-wider">
+                            Delete Now
+                          </Text>
+                        </Pressable>
+
+                        {/* Restore Right */}
                         <Pressable
                           disabled={processingId === b.id}
                           onPress={() => {
                             setProcessingId(b.id);
+
                             restoreMutation.mutate(b.id, {
                               onSettled: () => setProcessingId(null),
+
                               onSuccess: () =>
-                                Alert.alert(
-                                  'Restored',
-                                  `${b.salon_name} has been restored successfully.`,
-                                ),
-                              onError: (err) => Alert.alert('Restore Failed', err.message),
+                                showModal({
+                                  variant: 'success',
+                                  title: 'Restored',
+                                  description: `${b.salon_name} has been restored successfully.`,
+                                }),
+
+                              onError: (err) =>
+                                showModal({
+                                  variant: 'error',
+                                  title: 'Restore Failed',
+                                  description: err.message,
+                                }),
                             });
                           }}
                           className="bg-primary px-4 py-2 rounded-full"
                         >
                           <Text className="text-background text-xs font-black uppercase tracking-wider">
                             {processingId === b.id ? 'Restoring...' : 'Restore'}
-                          </Text>
-                        </Pressable>
-
-                        <Pressable
-                          disabled={processingId === b.id}
-                          onPress={() => {
-                            Alert.alert(
-                              'Permanent Deletion',
-                              `Are you sure you want to permanently delete ${b.salon_name} now? This cannot be undone.`,
-                              [
-                                { text: 'Cancel', style: 'cancel' },
-                                {
-                                  text: 'Delete Permanently',
-                                  style: 'destructive',
-                                  onPress: () => {
-                                    setProcessingId(b.id);
-                                    hardDeleteMutation.mutate(b.id, {
-                                      onSettled: () => setProcessingId(null),
-                                      onSuccess: () =>
-                                        Alert.alert(
-                                          'Deleted',
-                                          `${b.salon_name} has been permanently deleted.`,
-                                        ),
-                                      onError: (err) => Alert.alert('Deletion Failed', err.message),
-                                    });
-                                  },
-                                },
-                              ],
-                            );
-                          }}
-                          className="px-4 py-2"
-                        >
-                          <Text className="text-error text-xs font-black uppercase tracking-wider">
-                            Delete Now
                           </Text>
                         </Pressable>
                       </View>

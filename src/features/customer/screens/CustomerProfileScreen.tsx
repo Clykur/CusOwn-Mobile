@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/auth.store';
+import { useModal } from '@/hooks/useModal';
 
 import { apiService } from '@/services/api.service';
 
@@ -37,6 +38,7 @@ import { Avatar } from '@/components/ui/Avatar';
 export default function CustomerProfileScreen() {
   const { user, profile, profileImageUrl, refreshProfile } = useAuthStore();
   const { signOut } = useAuth();
+  const { showModal } = useModal();
 
   const { pickAndUpload, uploading } = useProfileImage();
 
@@ -86,8 +88,11 @@ export default function CustomerProfileScreen() {
 
   const handleUpdateProfile = async () => {
     if (!formData.full_name.trim()) {
-      Alert.alert('Error', 'Full name is required');
-
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Full name is required',
+      });
       return;
     }
 
@@ -99,14 +104,22 @@ export default function CustomerProfileScreen() {
         phone_number: formData.phone_number,
       });
 
-      Alert.alert('Success', 'Profile updated successfully');
+      showModal({
+        variant: 'success',
+        title: 'Success',
+        description: 'Profile updated successfully',
+      });
 
       setEditMode(false);
 
       await fetchProfile();
       await refreshProfile();
     } catch (err: any) {
-      Alert.alert('Update Failed', err.message || 'Could not update profile');
+      showModal({
+        variant: 'error',
+        title: 'Update Failed',
+        description: err.message || 'Could not update profile',
+      });
     } finally {
       setUpdating(false);
     }
@@ -122,43 +135,49 @@ export default function CustomerProfileScreen() {
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'This action is permanent and will remove all your data after 30 days. Are you absolutely sure?',
-      [
+    showModal({
+      variant: 'delete',
+      title: 'Delete Account',
+      description:
+        'This action is permanent and will remove all your data after 30 days. Are you absolutely sure?',
+      dismissible: true,
+      actions: [
         {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete Permanently',
-          style: 'destructive',
+          label: 'Delete Permanently',
+          variant: 'danger',
           onPress: async () => {
             try {
               await apiService.deleteAccount('User requested deletion via mobile app');
-
               signOut();
             } catch (err: any) {
-              Alert.alert('Error', 'Failed to delete account. Please try again.');
+              showModal({
+                variant: 'error',
+                title: 'Error',
+                description: 'Failed to delete account. Please try again.',
+              });
             }
           },
         },
       ],
-    );
+    });
   };
 
   const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to exit?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Sign Out',
-        style: 'destructive',
-        onPress: signOut,
-      },
-    ]);
+    showModal({
+      variant: 'signout',
+      title: 'Sign Out',
+      description: 'Are you sure you want to exit?',
+      dismissible: true,
+      actions: [
+        {
+          label: 'Sign Out',
+          variant: 'primary',
+          onPress: () => {
+            signOut();
+          },
+        },
+      ],
+    });
   };
 
   const formatDate = (date: string) => {
@@ -361,21 +380,25 @@ export default function CustomerProfileScreen() {
               {/* Edit Actions */}
               {editMode && (
                 <AnimatedSection direction="up" delay={250}>
-                  <View className="flex-row gap-4 mb-6">
-                    <PremiumButton
-                      title={updating ? 'Saving...' : 'Save Changes'}
-                      onPress={handleUpdateProfile}
-                      disabled={updating}
-                      className="flex-1 h-14 bg-primary rounded-2xl"
-                    />
+                  <View className="flex-row items-center gap-4 mb-6">
+                    <View className="flex-1">
+                      <PremiumButton
+                        title={updating ? 'Saving...' : 'Save Changes'}
+                        onPress={handleUpdateProfile}
+                        disabled={updating}
+                        className="h-14 bg-primary rounded-2xl w-full"
+                      />
+                    </View>
 
-                    <PremiumButton
-                      title="Cancel"
-                      variant="secondary"
-                      onPress={handleCancel}
-                      className="flex-1 h-14 rounded-2xl border border-border bg-input"
-                      textClassName="text-textSecondary text-sm uppercase tracking-widest"
-                    />
+                    <View className="flex-1">
+                      <PremiumButton
+                        title="Cancel"
+                        variant="secondary"
+                        onPress={handleCancel}
+                        className="h-14 rounded-2xl border border-border bg-input w-full"
+                        textClassName="text-textSecondary text-sm uppercase tracking-widest"
+                      />
+                    </View>
                   </View>
                 </AnimatedSection>
               )}

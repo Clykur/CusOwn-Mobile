@@ -11,6 +11,7 @@ import {
   useMarkNoShow,
 } from '@/hooks/useBookings';
 import { useOwnerBusinesses } from '@/hooks/useOwner';
+import { useModal } from '@/hooks/useModal';
 import { Booking } from '@/types/booking.types';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
@@ -35,6 +36,7 @@ export default function OwnerBookingsScreen() {
 
   const { data: bookings, isLoading, isError, refetch } = useBookings('Owner');
   const { data: businessesData } = useOwnerBusinesses();
+  const { showModal } = useModal();
 
   // Synchronize selectedBooking with fresh data from the bookings list
   React.useEffect(() => {
@@ -53,38 +55,53 @@ export default function OwnerBookingsScreen() {
   const { mutate: markNoShow } = useMarkNoShow();
 
   const handleAccept = (id: string) => {
-    Alert.alert('Approve Booking', 'Are you sure you want to confirm this reservation?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Confirm', onPress: () => confirmBooking(id) },
-    ]);
+    showModal({
+      variant: 'confirmation',
+      title: 'Approve Booking',
+      description: 'Are you sure you want to confirm this reservation?',
+      dismissible: true,
+      actions: [{ label: 'Confirm', variant: 'primary', onPress: () => confirmBooking(id) }],
+    });
   };
 
   const handleReject = (id: string) => {
-    Alert.alert('Decline Booking', 'Are you sure you want to reject this reservation?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Reject', style: 'destructive', onPress: () => rejectBooking(id) },
-    ]);
+    showModal({
+      variant: 'delete',
+      title: 'Decline Booking',
+      description: 'Are you sure you want to reject this reservation?',
+      dismissible: true,
+      actions: [{ label: 'Reject', variant: 'danger', onPress: () => rejectBooking(id) }],
+    });
   };
 
   const handleUndoAccept = (id: string) => {
-    Alert.alert('Undo Approval', 'Revert this booking back to pending status?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Undo', onPress: () => undoConfirm(id) },
-    ]);
+    showModal({
+      variant: 'warning',
+      title: 'Undo Approval',
+      description: 'Revert this booking back to pending status?',
+      dismissible: true,
+      actions: [{ label: 'Undo', variant: 'primary', onPress: () => undoConfirm(id) }],
+    });
   };
 
   const handleUndoReject = (id: string) => {
-    Alert.alert('Undo Rejection', 'Revert this booking back to pending status?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Undo', onPress: () => undoReject(id) },
-    ]);
+    showModal({
+      variant: 'warning',
+      title: 'Undo Rejection',
+      description: 'Revert this booking back to pending status?',
+      dismissible: true,
+      actions: [{ label: 'Undo', variant: 'primary', onPress: () => undoReject(id) }],
+    });
   };
 
   const handleNoShow = (id: string) => {
-    Alert.alert('Mark No-Show', 'Mark this client as a no-show for their appointment?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Confirm', style: 'destructive', onPress: () => markNoShow(id) },
-    ]);
+    showModal({
+      variant: 'delete',
+      title: 'Mark No-Show',
+      description: 'Mark this client as a no-show for their appointment?',
+      dismissible: true,
+      actions: [{ label: 'Confirm', variant: 'danger', onPress: () => markNoShow(id) }],
+    });
   };
 
   const selectedBusinessName = React.useMemo(() => {

@@ -4,6 +4,7 @@ import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, Modal } fro
 
 import { apiService } from '@/services/api.service';
 import { Service } from '@/types/business.types';
+import { useModal } from '@/hooks/useModal';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassCard } from '@/components/ui/GlassCard';
 
@@ -14,6 +15,7 @@ interface ServicesManagementProps {
 export const ServicesManagement: React.FC<ServicesManagementProps> = ({ businessId }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showModal } = useModal();
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
@@ -69,7 +71,11 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
   const handleSave = async () => {
     if (!form.name || !form.duration || !form.price) {
-      Alert.alert('Error', 'Please fill all fields');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Please fill all fields',
+      });
       return;
     }
 
@@ -94,31 +100,41 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
       fetchServices();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to save service');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: e.message || 'Failed to save service',
+      });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    Alert.alert('Delete Service', 'Are you sure you want to delete this service?', [
-      { text: 'Cancel', style: 'cancel' },
-
-      {
-        text: 'Delete',
-        style: 'destructive',
-
-        onPress: async () => {
-          try {
-            await apiService.deleteService(id);
-
-            setServices((prev) => prev.filter((s) => s.id !== id));
-          } catch (e: any) {
-            Alert.alert('Error', e.message || 'Failed to delete service');
-          }
+    showModal({
+      variant: 'delete',
+      title: 'Delete Service',
+      description: 'Are you sure you want to delete this service?',
+      dismissible: true,
+      actions: [
+        {
+          label: 'Delete',
+          variant: 'danger',
+          onPress: async () => {
+            try {
+              await apiService.deleteService(id);
+              setServices((prev) => prev.filter((s) => s.id !== id));
+            } catch (e: any) {
+              showModal({
+                variant: 'error',
+                title: 'Error',
+                description: e.message || 'Failed to delete service',
+              });
+            }
+          },
         },
-      },
-    ]);
+      ],
+    });
   };
 
   return (

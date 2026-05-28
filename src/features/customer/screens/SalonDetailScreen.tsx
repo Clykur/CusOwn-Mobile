@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Ionicons } from '@expo/vector-icons';
 import { useBusinessDetail } from '@/hooks/useBusinesses';
 import { useBookingStore } from '@/store/booking.store';
+import { useModal } from '@/hooks/useModal';
 import { Service } from '@/types/business.types';
 import { apiService } from '@/services/api.service';
 import { getShopStatus } from '@/utils/time';
@@ -22,6 +23,7 @@ export default function SalonDetailsScreen() {
   const { data: business, isLoading: businessLoading, error } = useBusinessDetail(id as string);
   const { setBusiness, setSelectedServices } = useBookingStore();
   const [localSelectedServices, setLocalSelectedServices] = useState<Service[]>([]);
+  const { showModal } = useModal();
 
   // States for API fetched data
   const [services, setServices] = useState<any[]>([]);
@@ -147,7 +149,11 @@ export default function SalonDetailsScreen() {
     if (!phoneNumber) return;
 
     Linking.openURL(`tel:${phoneNumber}`).catch(() => {
-      Alert.alert('Error', 'Unable to open phone dialer.');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Unable to open phone dialer.',
+      });
     });
   };
 

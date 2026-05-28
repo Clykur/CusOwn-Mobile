@@ -4,6 +4,7 @@ import { View, Text, ScrollView, Pressable, Alert, Linking } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router';
 import { useBookingDetail, useUpdateBookingStatus } from '@/hooks/useBookings';
 import { getBookingPrice } from '@/services/api.service';
+import { useModal } from '@/hooks/useModal';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
@@ -80,6 +81,7 @@ function getStatusConfig(status: string) {
 
 export default function BookingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { showModal } = useModal();
 
   const { data: rawBooking, isLoading, isError } = useBookingDetail(id || '');
 
@@ -178,7 +180,11 @@ export default function BookingDetailScreen() {
     if (!phoneNumber) return;
 
     Linking.openURL(`tel:${phoneNumber}`).catch(() => {
-      Alert.alert('Error', 'Unable to open phone dialer.');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Unable to open phone dialer.',
+      });
     });
   };
 
@@ -186,13 +192,30 @@ export default function BookingDetailScreen() {
     if (!whatsappUrl) return;
 
     Linking.openURL(whatsappUrl).catch(() => {
-      Alert.alert('Error', 'Unable to open WhatsApp.');
+      showModal({
+        variant: 'error',
+        title: 'Error',
+        description: 'Unable to open WhatsApp.',
+      });
     });
   };
 
   const handleCancelled = () => {
-    Alert.alert('Success', 'Booking cancelled successfully');
-    router.replace('/(customer)/bookings');
+    showModal({
+      variant: 'success',
+      title: 'Success',
+      description: 'Booking cancelled successfully.',
+      hideCancel: true,
+      actions: [
+        {
+          label: 'OK',
+          variant: 'primary',
+          onPress: () => {
+            router.replace('/(customer)/bookings');
+          },
+        },
+      ],
+    });
   };
 
   const handleRescheduled = () => {

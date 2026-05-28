@@ -7,8 +7,7 @@ import {
   FlatList,
   RefreshControl,
   TextInput,
-  Alert,
-  Image,
+  Platform,
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,7 +15,6 @@ import { router } from 'expo-router';
 import { useAuthStore } from '@/store/auth.store';
 import { Avatar } from '@/components/ui/Avatar';
 import { useOwnerBusinesses, useOwnerDashboard } from '@/hooks/useOwner';
-import { apiService } from '@/services/api.service';
 import {
   useConfirmBooking,
   useRejectBooking,
@@ -25,6 +23,7 @@ import {
   useMarkNoShow,
 } from '@/hooks/useBookings';
 import { Booking } from '@/types/booking.types';
+import { useModal } from '@/hooks/useModal';
 import { BusinessStats } from '@/types/business.types';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
@@ -60,6 +59,7 @@ export default function OwnerDashboardScreen() {
     toDate: toDate || undefined,
   });
   const { data: businesses } = useOwnerBusinesses();
+  const { showModal } = useModal();
 
   const { mutate: confirmBooking } = useConfirmBooking();
   const { mutate: rejectBooking } = useRejectBooking();
@@ -118,38 +118,53 @@ export default function OwnerDashboardScreen() {
   }, [bookings, searchTerm, statusFilter, selectedBusinessId, fromDate, toDate]);
 
   const handleAccept = (id: string) => {
-    Alert.alert('Approve Booking', 'Are you sure you want to confirm this reservation?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Confirm', onPress: () => confirmBooking(id) },
-    ]);
+    showModal({
+      variant: 'confirmation',
+      title: 'Approve Booking',
+      description: 'Are you sure you want to confirm this reservation?',
+      dismissible: true,
+      actions: [{ label: 'Confirm', variant: 'primary', onPress: () => confirmBooking(id) }],
+    });
   };
 
   const handleReject = (id: string) => {
-    Alert.alert('Decline Booking', 'Are you sure you want to reject this reservation?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Reject', style: 'destructive', onPress: () => rejectBooking(id) },
-    ]);
+    showModal({
+      variant: 'delete',
+      title: 'Decline Booking',
+      description: 'Are you sure you want to reject this reservation?',
+      dismissible: true,
+      actions: [{ label: 'Reject', variant: 'danger', onPress: () => rejectBooking(id) }],
+    });
   };
 
   const handleUndoConfirm = (id: string) => {
-    Alert.alert('Undo Confirm', 'Are you sure you want to revert this to pending?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Undo', onPress: () => undoConfirm(id) },
-    ]);
+    showModal({
+      variant: 'warning',
+      title: 'Undo Confirm',
+      description: 'Are you sure you want to revert this to pending?',
+      dismissible: true,
+      actions: [{ label: 'Undo', variant: 'primary', onPress: () => undoConfirm(id) }],
+    });
   };
 
   const handleUndoReject = (id: string) => {
-    Alert.alert('Undo Reject', 'Are you sure you want to revert this to pending?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Undo', onPress: () => undoReject(id) },
-    ]);
+    showModal({
+      variant: 'warning',
+      title: 'Undo Reject',
+      description: 'Are you sure you want to revert this to pending?',
+      dismissible: true,
+      actions: [{ label: 'Undo', variant: 'primary', onPress: () => undoReject(id) }],
+    });
   };
 
   const handleNoShow = (id: string) => {
-    Alert.alert('Mark No-Show', 'Mark this client as a no-show for their appointment?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Confirm', style: 'destructive', onPress: () => markNoShow(id) },
-    ]);
+    showModal({
+      variant: 'delete',
+      title: 'Mark No-Show',
+      description: 'Mark this client as a no-show for their appointment?',
+      dismissible: true,
+      actions: [{ label: 'Confirm', variant: 'danger', onPress: () => markNoShow(id) }],
+    });
   };
 
   const renderBookingItem = ({ item, index }: { item: Booking; index: number }) => {
@@ -206,28 +221,89 @@ export default function OwnerDashboardScreen() {
                 name={profile?.full_name || user?.user_metadata?.full_name || 'Owner'}
                 size={50}
                 type="business"
-                className="border-2 border-primary/30"
               />
             </Pressable>
           </AnimatedSection>
 
           {/* Search & Filters */}
           <AnimatedSection delay={50} direction="up" className="px-luxury mb-8 z-50">
-            <View className="flex-row items-center gap-x-3">
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: '100%',
+                gap: 12,
+              }}
+            >
               {/* Search Bar */}
-              <View className="flex-1 flex-row items-center bg-input border border-border rounded-2xl px-4 py-3.5">
-                <Ionicons name="search-outline" size={20} color={THEME.colors.textSecondary} />
+              <View
+                style={{
+                  flex: 1,
+                  height: 58,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: 16,
+                  borderRadius: 22,
+                  backgroundColor: THEME.colors.input,
+                  borderWidth: 1,
+                  borderColor: THEME.colors.border,
 
+                  shadowColor: '#000',
+                  shadowOpacity: 0.08,
+                  shadowRadius: 8,
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  elevation: 3,
+                }}
+              >
+                {/* Search Icon */}
+                <View
+                  style={{
+                    width: 22,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Ionicons name="search-outline" size={20} color={THEME.colors.textSecondary} />
+                </View>
+
+                {/* Input */}
                 <TextInput
                   placeholder="Search clients or services..."
                   placeholderTextColor={THEME.colors.textSecondary}
                   value={searchTerm}
                   onChangeText={setSearchTerm}
-                  className="flex-1 ml-3 text-text text-sm font-semibold"
+                  returnKeyType="search"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={{
+                    flex: 1,
+                    marginLeft: 12,
+                    color: THEME.colors.text,
+                    fontSize: 14,
+                    fontWeight: '600',
+
+                    paddingVertical: Platform.OS === 'ios' ? 14 : 10,
+
+                    includeFontPadding: false,
+                    textAlignVertical: 'center',
+                  }}
                 />
 
+                {/* Clear Button */}
                 {searchTerm.length > 0 && (
-                  <Pressable onPress={() => setSearchTerm('')}>
+                  <Pressable
+                    hitSlop={12}
+                    onPress={() => setSearchTerm('')}
+                    style={{
+                      width: 26,
+                      height: 26,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <Ionicons name="close-circle" size={18} color={THEME.colors.textSecondary} />
                   </Pressable>
                 )}
@@ -235,8 +311,29 @@ export default function OwnerDashboardScreen() {
 
               {/* Filter Button */}
               <Pressable
+                hitSlop={12}
                 onPress={() => setShowBusinessMenu(true)}
-                className="flex-row items-center bg-input border border-border rounded-2xl px-4 py-3.5"
+                style={{
+                  width: 58,
+                  height: 58,
+                  borderRadius: 22,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+
+                  backgroundColor: THEME.colors.input,
+
+                  borderWidth: 1,
+                  borderColor: THEME.colors.border,
+
+                  shadowColor: '#000',
+                  shadowOpacity: 0.08,
+                  shadowRadius: 8,
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  elevation: 3,
+                }}
               >
                 <Ionicons name="options-outline" size={20} color={THEME.colors.textSecondary} />
               </Pressable>
@@ -246,29 +343,69 @@ export default function OwnerDashboardScreen() {
                 visible={showBusinessMenu}
                 transparent
                 animationType="slide"
+                statusBarTranslucent
                 onRequestClose={() => setShowBusinessMenu(false)}
               >
-                <View className="flex-1 justify-end">
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'flex-end',
+                    backgroundColor: 'rgba(0,0,0,0.45)',
+                  }}
+                >
                   {/* Backdrop */}
                   <Pressable
-                    className="absolute inset-0"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                    }}
                     onPress={() => setShowBusinessMenu(false)}
                   />
 
                   {/* Sheet */}
                   <View
-                    className="bg-card rounded-t-[32px] px-5 pt-4 pb-10 border-t border-border"
                     style={{
+                      backgroundColor: THEME.colors.card,
+                      borderTopLeftRadius: 32,
+                      borderTopRightRadius: 32,
+                      paddingHorizontal: 20,
+                      paddingTop: 14,
+                      paddingBottom: 42,
                       minHeight: 320,
+                      borderTopWidth: 1,
+                      borderColor: THEME.colors.border,
                     }}
                   >
                     {/* Handle */}
-                    <View className="items-center mb-6">
-                      <View className="w-14 h-1.5 rounded-full bg-border" />
+                    <View
+                      style={{
+                        alignItems: 'center',
+                        marginBottom: 24,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 56,
+                          height: 5,
+                          borderRadius: 999,
+                          backgroundColor: THEME.colors.border,
+                        }}
+                      />
                     </View>
 
                     {/* Header */}
-                    <Text className="text-text text-xl font-black tracking-tight mb-6">
+                    <Text
+                      style={{
+                        color: THEME.colors.text,
+                        fontSize: 22,
+                        fontWeight: '900',
+                        marginBottom: 24,
+                        letterSpacing: -0.5,
+                      }}
+                    >
                       Select Business
                     </Text>
 
@@ -278,7 +415,12 @@ export default function OwnerDashboardScreen() {
                         setSelectedBusinessId(null);
                         setShowBusinessMenu(false);
                       }}
-                      className="flex-row items-center px-2 py-4"
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingVertical: 16,
+                        paddingHorizontal: 4,
+                      }}
                     >
                       <Ionicons
                         name="business-outline"
@@ -291,9 +433,18 @@ export default function OwnerDashboardScreen() {
                       />
 
                       <Text
-                        className={`ml-4 flex-1 text-sm font-black uppercase tracking-wider ${
-                          selectedBusinessId === null ? 'text-primary' : 'text-textSecondary'
-                        }`}
+                        style={{
+                          flex: 1,
+                          marginLeft: 16,
+                          fontSize: 14,
+                          fontWeight: '900',
+                          letterSpacing: 1,
+                          textTransform: 'uppercase',
+                          color:
+                            selectedBusinessId === null
+                              ? THEME.colors.primary
+                              : THEME.colors.textSecondary,
+                        }}
                       >
                         All Businesses
                       </Text>
@@ -303,101 +454,64 @@ export default function OwnerDashboardScreen() {
                       )}
                     </Pressable>
 
-                    <View className="h-px bg-border my-1" />
+                    <View
+                      style={{
+                        height: 1,
+                        backgroundColor: THEME.colors.border,
+                        marginVertical: 4,
+                      }}
+                    />
 
-                    {/* Businesses */}
-                    {businesses?.length === 1 ? (
+                    {/* Business List */}
+                    {businesses?.map((biz) => (
                       <Pressable
+                        key={biz.id}
                         onPress={() => {
-                          setSelectedBusinessId(businesses[0].id);
+                          setSelectedBusinessId(biz.id);
                           setShowBusinessMenu(false);
                         }}
-                        className="flex-row items-center px-2 py-4"
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          paddingVertical: 16,
+                          paddingHorizontal: 4,
+                        }}
                       >
-                        <Ionicons name="business-outline" size={20} color={THEME.colors.primary} />
+                        <Avatar
+                          userId={biz.owner_user_id}
+                          name={biz.owner_name || biz.salon_name || 'Owner'}
+                          size={40}
+                        />
 
-                        <View className="flex-1 ml-4">
+                        <View
+                          style={{
+                            flex: 1,
+                            marginLeft: 16,
+                          }}
+                        >
                           <Text
-                            className="text-sm font-black uppercase tracking-wider text-primary"
                             numberOfLines={1}
+                            style={{
+                              fontSize: 14,
+                              fontWeight: '900',
+                              letterSpacing: 1,
+                              textTransform: 'uppercase',
+
+                              color:
+                                selectedBusinessId === biz.id
+                                  ? THEME.colors.primary
+                                  : THEME.colors.textSecondary,
+                            }}
                           >
-                            {businesses[0].salon_name}
+                            {biz.salon_name}
                           </Text>
                         </View>
 
-                        <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
+                        {selectedBusinessId === biz.id && (
+                          <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
+                        )}
                       </Pressable>
-                    ) : (
-                      <>
-                        {/* All Businesses */}
-                        <Pressable
-                          onPress={() => {
-                            setSelectedBusinessId(null);
-                            setShowBusinessMenu(false);
-                          }}
-                          className="flex-row items-center px-2 py-4"
-                        >
-                          <Ionicons
-                            name="business-outline"
-                            size={20}
-                            color={
-                              selectedBusinessId === null
-                                ? THEME.colors.primary
-                                : THEME.colors.textSecondary
-                            }
-                          />
-
-                          <Text
-                            className={`ml-4 flex-1 text-sm font-black uppercase tracking-wider ${
-                              selectedBusinessId === null ? 'text-primary' : 'text-textSecondary'
-                            }`}
-                          >
-                            All Businesses
-                          </Text>
-
-                          {selectedBusinessId === null && (
-                            <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
-                          )}
-                        </Pressable>
-
-                        <View className="h-px bg-border my-1" />
-
-                        {/* Business List */}
-                        {businesses?.map((biz) => (
-                          <Pressable
-                            key={biz.id}
-                            onPress={() => {
-                              setSelectedBusinessId(biz.id);
-                              setShowBusinessMenu(false);
-                            }}
-                            className="flex-row items-center px-2 py-4"
-                          >
-                            <Avatar
-                              userId={biz.owner_user_id}
-                              name={biz.owner_name || biz.salon_name || 'Owner'}
-                              size={38}
-                            />
-
-                            <View className="flex-1 ml-4">
-                              <Text
-                                className={`text-sm font-black uppercase tracking-wider ${
-                                  selectedBusinessId === biz.id
-                                    ? 'text-primary'
-                                    : 'text-textSecondary'
-                                }`}
-                                numberOfLines={1}
-                              >
-                                {biz.salon_name}
-                              </Text>
-                            </View>
-
-                            {selectedBusinessId === biz.id && (
-                              <Ionicons name="checkmark" size={20} color={THEME.colors.primary} />
-                            )}
-                          </Pressable>
-                        ))}
-                      </>
-                    )}
+                    ))}
                   </View>
                 </View>
               </Modal>
@@ -411,8 +525,6 @@ export default function OwnerDashboardScreen() {
               {/* Active Businesses */}
               <AnimatedSection delay={200} direction="left" className="flex-1">
                 <GlassCard className="p-5 border border-border rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
-                  <View className="absolute -top-5 -right-5 w-24 h-24 bg-input rounded-full opacity-60" />
-
                   <View className="flex-row items-center gap-1">
                     <Ionicons name="business-outline" size={22} color={THEME.colors.primary} />
 
@@ -434,8 +546,6 @@ export default function OwnerDashboardScreen() {
               {/* Total Bookings */}
               <AnimatedSection delay={300} direction="right" className="flex-1">
                 <GlassCard className="p-5 border border-border rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
-                  <View className="absolute -top-5 -right-5 w-24 h-24 bg-input rounded-full opacity-60" />
-
                   <View className="flex-row items-center gap-2">
                     <Ionicons name="calendar-outline" size={22} color={THEME.colors.primary} />
 
@@ -460,8 +570,6 @@ export default function OwnerDashboardScreen() {
               {/* Confirmed */}
               <AnimatedSection delay={400} direction="left" className="flex-1">
                 <GlassCard className="p-5 border border-border rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
-                  <View className="absolute -top-5 -right-5 w-24 h-24 bg-input rounded-full opacity-60" />
-
                   <View className="flex-row items-center gap-2">
                     <Ionicons
                       name="checkmark-circle-outline"
@@ -487,8 +595,6 @@ export default function OwnerDashboardScreen() {
               {/* Pending */}
               <AnimatedSection delay={500} direction="right" className="flex-1">
                 <GlassCard className="p-5 border border-border rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
-                  <View className="absolute -top-5 -right-5 w-24 h-24 bg-input rounded-full opacity-60" />
-
                   <View className="flex-row items-center gap-2">
                     <Ionicons name="time-outline" size={22} color={THEME.colors.warning} />
 
@@ -516,7 +622,6 @@ export default function OwnerDashboardScreen() {
                 <Text className="text-text text-xl font-black uppercase tracking-tight">
                   {statusFilter === 'all' ? 'Business Bookings' : `${statusFilter} Hub`}
                 </Text>
-                <View className="h-1 w-8 bg-primary rounded-full mt-1" />
               </View>
               <Pressable
                 onPress={() => router.push('/(owner)/bookings')}
