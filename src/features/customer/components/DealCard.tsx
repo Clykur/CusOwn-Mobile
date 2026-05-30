@@ -22,7 +22,7 @@ interface DealCardProps {
   onPress?: () => void;
 }
 
-export function DealCard({ item, index = 0, onPress }: DealCardProps) {
+function DealCardBase({ item, index = 0, onPress }: DealCardProps) {
   const isExpiringSoon = dayjs(item.expires_at).diff(dayjs(), 'hours') < 24;
 
   return (
@@ -67,3 +67,5 @@ export function DealCard({ item, index = 0, onPress }: DealCardProps) {
     </AnimatedSection>
   );
 }
+
+export const DealCard = React.memo(DealCardBase);

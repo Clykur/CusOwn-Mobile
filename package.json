@@ -76,12 +76,17 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
     "babel-preset-expo": "~54.0.10",
     "husky": "^9.1.7",
+    "jest": "^30.4.2",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.3",
     "react-native-svg-transformer": "^1.5.3",
+    "ts-jest": "^29.4.11",
     "typescript": "~5.9.2"
   },
   "expo": {

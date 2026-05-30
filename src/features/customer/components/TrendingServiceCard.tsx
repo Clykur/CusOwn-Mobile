@@ -24,7 +24,7 @@ interface TrendingServiceCardProps {
   onPress?: () => void;
 }
 
-export function TrendingServiceCard({ item, index = 0, onPress }: TrendingServiceCardProps) {
+function TrendingServiceCardBase({ item, index = 0, onPress }: TrendingServiceCardProps) {
   const salonName = item.business?.salon_name || item.salon_name;
   const rating = item.business?.rating_avg || item.rating_avg;
 
@@ -75,3 +75,5 @@ export function TrendingServiceCard({ item, index = 0, onPress }: TrendingServic
     </AnimatedSection>
   );
 }
+
+export const TrendingServiceCard = React.memo(TrendingServiceCardBase);

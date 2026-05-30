@@ -539,7 +539,7 @@ export default function OwnerAnalyticsScreen() {
                             )}
 
                             <View
-                              style={{ height: barHeight }}
+                              style={[{ height: barHeight }]}
                               className={`w-8 rounded-t-lg transition-colors ${
                                 isActive ? 'bg-primary' : 'bg-border'
                               }`}
@@ -567,19 +567,19 @@ export default function OwnerAnalyticsScreen() {
                     <View className="h-4 bg-input rounded-full flex-row overflow-hidden mb-6">
                       {statusSummary.confirmedPct > 0 && (
                         <View
-                          style={{ width: `${statusSummary.confirmedPct}%` }}
+                          style={[{ width: `${statusSummary.confirmedPct}%` }]}
                           className="bg-primary h-full"
                         />
                       )}
                       {statusSummary.rejectedPct > 0 && (
                         <View
-                          style={{ width: `${statusSummary.rejectedPct}%` }}
+                          style={[{ width: `${statusSummary.rejectedPct}%` }]}
                           className="bg-error h-full"
                         />
                       )}
                       {statusSummary.cancelledPct > 0 && (
                         <View
-                          style={{ width: `${statusSummary.cancelledPct}%` }}
+                          style={[{ width: `${statusSummary.cancelledPct}%` }]}
                           className="bg-disabled h-full"
                         />
                       )}
@@ -662,28 +662,30 @@ export default function OwnerAnalyticsScreen() {
                         return (
                           <View
                             className="w-full relative"
-                            style={{ height }}
+                            style={[{ height }]}
                             onLayout={(e) => setChartWidth(e.nativeEvent.layout.width || 300)}
                           >
                             {activeHourIndex !== null && peakHoursPoints[activeHourIndex] && (
                               <View
                                 className="absolute bg-background px-2 py-1 rounded-md"
-                                style={{
-                                  left: Math.max(
-                                    10,
-                                    Math.min(
-                                      chartWidth - 90,
-                                      peakHoursPoints[activeHourIndex].x - 40,
+                                style={[
+                                  {
+                                    left: Math.max(
+                                      10,
+                                      Math.min(
+                                        chartWidth - 90,
+                                        peakHoursPoints[activeHourIndex].x - 40,
+                                      ),
                                     ),
-                                  ),
-                                  top: Math.max(0, peakHoursPoints[activeHourIndex].y - 35),
-                                  zIndex: 10,
-                                  shadowColor: THEME.colors.background,
-                                  shadowOffset: { width: 0, height: 2 },
-                                  shadowOpacity: 0.25,
-                                  shadowRadius: 3.84,
-                                  elevation: 5,
-                                }}
+                                    top: Math.max(0, peakHoursPoints[activeHourIndex].y - 35),
+                                    zIndex: 10,
+                                    shadowColor: THEME.colors.background,
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 3.84,
+                                    elevation: 5,
+                                  },
+                                ]}
                               >
                                 <Text className="text-text text-xs font-bold">
                                   {peakHoursPoints[activeHourIndex].val}
@@ -837,7 +839,7 @@ export default function OwnerAnalyticsScreen() {
                             </View>
                             <View className="bg-input h-2.5 rounded-full overflow-hidden w-full">
                               <View
-                                style={{ width: `${widthPct}%` }}
+                                style={[{ width: `${widthPct}%` }]}
                                 className="bg-primary h-full rounded-full"
                               />
                             </View>

@@ -29,30 +29,36 @@ export default function SuccessScreen() {
         >
           <View
             className="flex-1 px-6"
-            style={{
-              paddingTop: isSmallDevice ? 14 : 24,
-              paddingBottom: isSmallDevice ? 18 : 30,
-            }}
+            style={[
+              {
+                paddingTop: isSmallDevice ? 14 : 24,
+                paddingBottom: isSmallDevice ? 18 : 30,
+              },
+            ]}
           >
             {/* SUCCESS HERO */}
             <AnimatedSection direction="down" className="items-center">
               {/* Glow */}
               <View
                 className="absolute rounded-full bg-primary/10"
-                style={{
-                  width: width * 0.45,
-                  height: width * 0.45,
-                }}
+                style={[
+                  {
+                    width: width * 0.45,
+                    height: width * 0.45,
+                  },
+                ]}
               />
 
               {/* Success Icon */}
               <View
                 className="rounded-full bg-primary items-center justify-center shadow-lg"
-                style={{
-                  width: isSmallDevice ? 66 : 82,
-                  height: isSmallDevice ? 66 : 82,
-                  marginBottom: isSmallDevice ? 20 : 28,
-                }}
+                style={[
+                  {
+                    width: isSmallDevice ? 66 : 82,
+                    height: isSmallDevice ? 66 : 82,
+                    marginBottom: isSmallDevice ? 20 : 28,
+                  },
+                ]}
               >
                 <Ionicons
                   name="checkmark"
@@ -64,10 +70,12 @@ export default function SuccessScreen() {
               {/* Heading */}
               <Text
                 className="text-text font-black text-center tracking-tight"
-                style={{
-                  fontSize: isSmallDevice ? 25 : 31,
-                  lineHeight: isSmallDevice ? 34 : 40,
-                }}
+                style={[
+                  {
+                    fontSize: isSmallDevice ? 25 : 31,
+                    lineHeight: isSmallDevice ? 34 : 40,
+                  },
+                ]}
               >
                 Business{'\n'}
                 <Text className="text-primary">Successfully Created</Text>
@@ -76,10 +84,12 @@ export default function SuccessScreen() {
               {/* Description */}
               <Text
                 className="text-textSecondary text-center font-medium px-4 mt-4"
-                style={{
-                  fontSize: isSmallDevice ? 13 : 15,
-                  lineHeight: isSmallDevice ? 24 : 28,
-                }}
+                style={[
+                  {
+                    fontSize: isSmallDevice ? 13 : 15,
+                    lineHeight: isSmallDevice ? 24 : 28,
+                  },
+                ]}
               >
                 Your business profile is now live on CusOwn and ready to accept customer bookings.
               </Text>

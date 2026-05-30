@@ -13,7 +13,7 @@ interface PremiumButtonProps extends PressableProps {
   loading?: boolean;
 }
 
-export const PremiumButton: React.FC<PremiumButtonProps> = ({
+const PremiumButtonBase: React.FC<PremiumButtonProps> = ({
   title,
   variant = 'primary',
   className = '',
@@ -69,3 +69,5 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
     </AnimatedPressable>
   );
 };
+
+export const PremiumButton = React.memo(PremiumButtonBase);

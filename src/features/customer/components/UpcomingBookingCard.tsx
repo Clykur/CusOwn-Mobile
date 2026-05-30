@@ -12,7 +12,7 @@ interface UpcomingBookingCardProps {
   lastVisited?: any; // Fallback to last visited salon
 }
 
-export function UpcomingBookingCard({ booking, lastVisited }: UpcomingBookingCardProps) {
+function UpcomingBookingCardBase({ booking, lastVisited }: UpcomingBookingCardProps) {
   if (!booking && !lastVisited) return null;
 
   return (
@@ -94,3 +94,5 @@ export function UpcomingBookingCard({ booking, lastVisited }: UpcomingBookingCar
     </View>
   );
 }
+
+export const UpcomingBookingCard = React.memo(UpcomingBookingCardBase);

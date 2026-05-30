@@ -68,18 +68,22 @@ export default function OnboardingScreen() {
             key={currentSlide.id}
             entering={SlideInRight.duration(650).springify().damping(20).stiffness(120)}
             exiting={SlideOutLeft.duration(320)}
-            style={{
-              transform: [{ translateX: 0 }],
-            }}
+            style={[
+              {
+                transform: [{ translateX: 0 }],
+              },
+            ]}
           >
             <View className="items-center">
               {/* SVG */}
               <View
                 className="justify-center items-center mb-12.5"
-                style={{
-                  width: width * 0.74,
-                  height: width * 0.74,
-                }}
+                style={[
+                  {
+                    width: width * 0.74,
+                    height: width * 0.74,
+                  },
+                ]}
               >
                 <currentSlide.image width="100%" height="100%" />
               </View>
@@ -103,10 +107,13 @@ export default function OnboardingScreen() {
             <View
               className="h-2 rounded-full mx-1"
               key={index}
-              style={{
-                width: index === activeIndex ? 34 : 8,
-                backgroundColor: index === activeIndex ? THEME.colors.primary : THEME.colors.border,
-              }}
+              style={[
+                {
+                  width: index === activeIndex ? 34 : 8,
+                  backgroundColor:
+                    index === activeIndex ? THEME.colors.primary : THEME.colors.border,
+                },
+              ]}
             />
           ))}
         </View>

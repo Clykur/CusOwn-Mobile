@@ -462,7 +462,7 @@ function BookingScreenInner(): JSX.Element {
                     ? 'border-primary bg-primary/10'
                     : 'border-border'
               }`}
-              style={{ opacity: !isAvailable ? 0.45 : 1 }}
+              style={[{ opacity: !isAvailable ? 0.45 : 1 }]}
             >
               <Text
                 className={`font-black text-sm ${
@@ -514,24 +514,26 @@ function BookingScreenInner(): JSX.Element {
         {/* Shop-closed banner */}
         <Animated.View
           className="flex-row items-center px-5"
-          style={{
-            opacity: bannerAnim,
-            transform: [
-              {
-                translateY: bannerAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-40, 0],
-                }),
-              },
-            ],
-            overflow: 'hidden',
-            backgroundColor: '#E53E3E',
-            paddingVertical: isShopClosed ? 10 : 0,
-            maxHeight: isShopClosed ? 50 : 0,
-          }}
+          style={[
+            {
+              opacity: bannerAnim,
+              transform: [
+                {
+                  translateY: bannerAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-40, 0],
+                  }),
+                },
+              ],
+              overflow: 'hidden',
+              backgroundColor: '#E53E3E',
+              paddingVertical: isShopClosed ? 10 : 0,
+              maxHeight: isShopClosed ? 50 : 0,
+            },
+          ]}
         >
           <Ionicons className="mr-2" name="lock-closed" size={14} color="#fff" />
-          <Text className="text-sm font-semibold flex-1" style={{ color: '#fff' }}>
+          <Text className="text-sm font-semibold flex-1" style={[{ color: '#fff' }]}>
             Shop is closed. Showing availability for tomorrow.
           </Text>
         </Animated.View>
@@ -544,12 +546,14 @@ function BookingScreenInner(): JSX.Element {
           <View className="px-5 mt-5">
             <View
               className="rounded-full  overflow-hidden bg-card"
-              style={{
-                shadowColor: THEME.colors.background,
-                shadowOpacity: 0.04,
-                shadowRadius: 14,
-                elevation: 4,
-              }}
+              style={[
+                {
+                  shadowColor: THEME.colors.background,
+                  shadowOpacity: 0.04,
+                  shadowRadius: 14,
+                  elevation: 4,
+                },
+              ]}
             >
               {/* SERVICES */}
               <View className="px-6 pt-6">
@@ -708,13 +712,15 @@ function BookingScreenInner(): JSX.Element {
         {/* Sticky Confirm Booking Button */}
         <View
           className="absolute bottom-0 left-0 right-0 border-t border-border px-6 pt-4 pb-10 bg-card"
-          style={{
-            shadowColor: THEME.colors.background,
-            shadowOffset: { width: 0, height: -3 },
-            shadowOpacity: 0.08,
-            shadowRadius: 10,
-            elevation: 8,
-          }}
+          style={[
+            {
+              shadowColor: THEME.colors.background,
+              shadowOffset: { width: 0, height: -3 },
+              shadowOpacity: 0.08,
+              shadowRadius: 10,
+              elevation: 8,
+            },
+          ]}
         >
           <View className="flex-row justify-between items-center mb-4">
             <View>

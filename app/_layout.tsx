@@ -181,9 +181,11 @@ export default function RootLayout() {
     return (
       <View
         className="flex-1 justify-center items-center"
-        style={{
-          backgroundColor: '#F8FAFC',
-        }}
+        style={[
+          {
+            backgroundColor: '#F8FAFC',
+          },
+        ]}
       >
         <ActivityIndicator size="large" color="#0F172A" />
       </View>

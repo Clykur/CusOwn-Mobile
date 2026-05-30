@@ -109,9 +109,11 @@ export default function RoleSelectionScreen() {
 
           <Text
             className="text-base leading-7 text-textSecondary"
-            style={{
-              maxWidth: '90%',
-            }}
+            style={[
+              {
+                maxWidth: '90%',
+              },
+            ]}
           >
             Pick your role to get started
           </Text>
@@ -150,9 +152,11 @@ export default function RoleSelectionScreen() {
             <View className="items-center mt-5">
               <Text
                 className="text-xs tracking-wide text-textSecondary"
-                style={{
-                  textTransform: 'uppercase',
-                }}
+                style={[
+                  {
+                    textTransform: 'uppercase',
+                  },
+                ]}
               >
                 Secure Authentication
               </Text>

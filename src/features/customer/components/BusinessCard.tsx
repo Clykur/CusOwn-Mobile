@@ -14,7 +14,7 @@ interface BrowseSalonCardProps {
   onPress?: () => void;
 }
 
-export function BusinessCard({ item, index = 0, onPress }: BrowseSalonCardProps) {
+function BusinessCardBase({ item, index = 0, onPress }: BrowseSalonCardProps) {
   const status = getShopStatus(item.opening_time, item.closing_time);
 
   return (
@@ -102,3 +102,5 @@ export function BusinessCard({ item, index = 0, onPress }: BrowseSalonCardProps)
     </AnimatedSection>
   );
 }
+
+export const BusinessCard = React.memo(BusinessCardBase);

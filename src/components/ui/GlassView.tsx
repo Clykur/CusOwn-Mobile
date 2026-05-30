@@ -37,9 +37,11 @@ export const GlassView: React.FC<GlassViewProps> = ({
       ) : (
         <View
           className="absolute inset-0"
-          style={{
-            backgroundColor: tint === 'light' ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.70)',
-          }}
+          style={[
+            {
+              backgroundColor: tint === 'light' ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.70)',
+            },
+          ]}
         />
       )}
       <View className="p-4">{children}</View>

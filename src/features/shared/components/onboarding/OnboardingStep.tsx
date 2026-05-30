@@ -34,7 +34,7 @@ export const OnboardingStep: React.FC<OnboardingStepProps> = ({
   const color = getVariantColor();
 
   return (
-    <View style={{ width }} className="px-luxury items-center justify-center">
+    <View style={[{ width }]} className="px-luxury items-center justify-center">
       <Animated.View entering={FadeInUp.delay(200).duration(800)} className="mb-12">
         <View className="w-28 h-28 rounded-full items-center justify-center bg-border/20 border border-border shadow-2xl">
           <Ionicons name={icon} size={56} color={color} />

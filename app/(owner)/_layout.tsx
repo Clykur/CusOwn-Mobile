@@ -27,9 +27,11 @@ export default function OwnerTabsLayout() {
     return (
       <View
         className="flex-1 justify-center items-center"
-        style={{
-          backgroundColor: '#010409',
-        }}
+        style={[
+          {
+            backgroundColor: '#010409',
+          },
+        ]}
       >
         <ActivityIndicator size="large" color="#FFFFFF" />
       </View>

@@ -13,7 +13,7 @@ interface Props {
   index?: number;
 }
 
-export const BrowseCard = ({ item, index = 0 }: Props) => {
+const BrowseCardBase = ({ item, index = 0 }: Props) => {
   const status = getShopStatus(item.opening_time, item.closing_time);
 
   return (
@@ -90,3 +90,5 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
     </AnimatedSection>
   );
 };
+
+export const BrowseCard = React.memo(BrowseCardBase);

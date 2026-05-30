@@ -16,7 +16,6 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { useModal } from '@/hooks/useModal';
 import { getBookingPrice } from '@/services/api.service';
-import { supabase } from '@/lib/supabase';
 import { CONFIG } from '@/constants/config';
 import { formatBookingDate, formatBookingTime } from '@/utils/time';
 

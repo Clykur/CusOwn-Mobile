@@ -312,9 +312,11 @@ export default function SalonDetailsScreen() {
                 </Text>
                 <View
                   className="w-1.5 h-1.5 rounded-full ml-auto mr-1"
-                  style={{
-                    backgroundColor: shopIsOpen ? THEME.colors.success : THEME.colors.error,
-                  }}
+                  style={[
+                    {
+                      backgroundColor: shopIsOpen ? THEME.colors.success : THEME.colors.error,
+                    },
+                  ]}
                 />
                 <Text
                   className={

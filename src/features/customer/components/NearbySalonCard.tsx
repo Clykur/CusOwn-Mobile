@@ -21,7 +21,7 @@ interface NearbySalonCardProps {
   onPress?: () => void;
 }
 
-export function NearbySalonCard({ item, index = 0, onPress }: NearbySalonCardProps) {
+function NearbySalonCardBase({ item, index = 0, onPress }: NearbySalonCardProps) {
   const status = getShopStatus(item.opening_time, item.closing_time);
 
   return (
@@ -109,3 +109,5 @@ export function NearbySalonCard({ item, index = 0, onPress }: NearbySalonCardPro
     </AnimatedSection>
   );
 }
+
+export const NearbySalonCard = React.memo(NearbySalonCardBase);

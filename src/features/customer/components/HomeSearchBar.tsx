@@ -34,19 +34,21 @@ export function HomeSearchBar({
           border
           px-4
         "
-        style={{
-          minHeight: 58,
-          backgroundColor: 'rgba(18,18,18,0.92)',
-          borderColor: 'rgba(0,230,118,0.14)',
-          shadowColor: '#000',
-          shadowOpacity: 0.25,
-          shadowRadius: 12,
-          shadowOffset: {
-            width: 0,
-            height: 6,
+        style={[
+          {
+            minHeight: 58,
+            backgroundColor: 'rgba(18,18,18,0.92)',
+            borderColor: 'rgba(0,230,118,0.14)',
+            shadowColor: '#000',
+            shadowOpacity: 0.25,
+            shadowRadius: 12,
+            shadowOffset: {
+              width: 0,
+              height: 6,
+            },
+            elevation: 10,
           },
-          elevation: 10,
-        }}
+        ]}
       >
         {/* Search Icon */}
         <View className="w-6 items-center justify-center">
@@ -70,12 +72,14 @@ export function HomeSearchBar({
 
             setSearchQuery(val);
           }}
-          style={{
-            paddingVertical: Platform.OS === 'ios' ? 16 : 12,
+          style={[
+            {
+              paddingVertical: Platform.OS === 'ios' ? 16 : 12,
 
-            includeFontPadding: false,
-            textAlignVertical: 'center',
-          }}
+              includeFontPadding: false,
+              textAlignVertical: 'center',
+            },
+          ]}
         />
 
         {/* Clear Button */}
@@ -102,9 +106,11 @@ export function HomeSearchBar({
               onLocate();
             }
           }}
-          style={{
-            backgroundColor: useCurrentLocation ? 'rgba(0,230,118,0.12)' : 'transparent',
-          }}
+          style={[
+            {
+              backgroundColor: useCurrentLocation ? 'rgba(0,230,118,0.12)' : 'transparent',
+            },
+          ]}
         >
           {locationLoading ? (
             <ActivityIndicator size="small" color={THEME.colors.primary} />

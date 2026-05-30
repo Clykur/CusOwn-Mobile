@@ -10,7 +10,6 @@ import { Booking } from '@/types/booking.types';
 import { router } from 'expo-router';
 import { Avatar } from '@/components/ui/Avatar';
 import { getBookingPrice } from '@/services/api.service';
-import { supabase } from '@/lib/supabase';
 import { CONFIG } from '@/constants/config';
 import { formatBookingDate, formatBookingTime } from '@/utils/time';
 

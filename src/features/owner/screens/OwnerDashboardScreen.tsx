@@ -229,27 +229,31 @@ export default function OwnerDashboardScreen() {
           <AnimatedSection delay={50} direction="up" className="px-luxury mb-8 z-50">
             <View
               className="flex-row items-center w-full"
-              style={{
-                gap: 12,
-              }}
+              style={[
+                {
+                  gap: 12,
+                },
+              ]}
             >
               {/* Search Bar */}
               <View
                 className="flex-1 h-14 flex-row items-center px-4 rounded-3xl"
-                style={{
-                  backgroundColor: THEME.colors.input,
-                  borderWidth: 1,
-                  borderColor: THEME.colors.border,
+                style={[
+                  {
+                    backgroundColor: THEME.colors.input,
+                    borderWidth: 1,
+                    borderColor: THEME.colors.border,
 
-                  shadowColor: '#000',
-                  shadowOpacity: 0.08,
-                  shadowRadius: 8,
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.08,
+                    shadowRadius: 8,
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+                    elevation: 3,
                   },
-                  elevation: 3,
-                }}
+                ]}
               >
                 {/* Search Icon */}
                 <View className="w-6 items-center justify-center">
@@ -266,12 +270,14 @@ export default function OwnerDashboardScreen() {
                   returnKeyType="search"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  style={{
-                    paddingVertical: Platform.OS === 'ios' ? 14 : 10,
+                  style={[
+                    {
+                      paddingVertical: Platform.OS === 'ios' ? 14 : 10,
 
-                    includeFontPadding: false,
-                    textAlignVertical: 'center',
-                  }}
+                      includeFontPadding: false,
+                      textAlignVertical: 'center',
+                    },
+                  ]}
                 />
 
                 {/* Clear Button */}
@@ -291,21 +297,23 @@ export default function OwnerDashboardScreen() {
                 className="w-14.5 h-14 rounded-3xl items-center justify-center"
                 hitSlop={12}
                 onPress={() => setShowBusinessMenu(true)}
-                style={{
-                  backgroundColor: THEME.colors.input,
+                style={[
+                  {
+                    backgroundColor: THEME.colors.input,
 
-                  borderWidth: 1,
-                  borderColor: THEME.colors.border,
+                    borderWidth: 1,
+                    borderColor: THEME.colors.border,
 
-                  shadowColor: '#000',
-                  shadowOpacity: 0.08,
-                  shadowRadius: 8,
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.08,
+                    shadowRadius: 8,
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+                    elevation: 3,
                   },
-                  elevation: 3,
-                }}
+                ]}
               >
                 <Ionicons name="options-outline" size={20} color={THEME.colors.textSecondary} />
               </Pressable>
@@ -320,29 +328,35 @@ export default function OwnerDashboardScreen() {
               >
                 <View
                   className="flex-1 justify-end"
-                  style={{
-                    backgroundColor: 'rgba(0,0,0,0.45)',
-                  }}
+                  style={[
+                    {
+                      backgroundColor: 'rgba(0,0,0,0.45)',
+                    },
+                  ]}
                 >
                   {/* Backdrop */}
                   <Pressable
                     className="absolute"
-                    style={{
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                    }}
+                    style={[
+                      {
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                      },
+                    ]}
                     onPress={() => setShowBusinessMenu(false)}
                   />
 
                   {/* Sheet */}
                   <View
                     className="bg-card rounded-tl-8 rounded-tr-8 px-5 pt-3.5 pb-10.5 min-h-80"
-                    style={{
-                      borderTopWidth: 1,
-                      borderColor: THEME.colors.border,
-                    }}
+                    style={[
+                      {
+                        borderTopWidth: 1,
+                        borderColor: THEME.colors.border,
+                      },
+                    ]}
                   >
                     {/* Handle */}
                     <View className="items-center mb-6">
@@ -374,13 +388,15 @@ export default function OwnerDashboardScreen() {
 
                       <Text
                         className="flex-1 ml-4 text-sm font-black tracking-wide"
-                        style={{
-                          textTransform: 'uppercase',
-                          color:
-                            selectedBusinessId === null
-                              ? THEME.colors.primary
-                              : THEME.colors.textSecondary,
-                        }}
+                        style={[
+                          {
+                            textTransform: 'uppercase',
+                            color:
+                              selectedBusinessId === null
+                                ? THEME.colors.primary
+                                : THEME.colors.textSecondary,
+                          },
+                        ]}
                       >
                         All Businesses
                       </Text>
@@ -412,14 +428,16 @@ export default function OwnerDashboardScreen() {
                           <Text
                             className="text-sm font-black tracking-wide"
                             numberOfLines={1}
-                            style={{
-                              textTransform: 'uppercase',
+                            style={[
+                              {
+                                textTransform: 'uppercase',
 
-                              color:
-                                selectedBusinessId === biz.id
-                                  ? THEME.colors.primary
-                                  : THEME.colors.textSecondary,
-                            }}
+                                color:
+                                  selectedBusinessId === biz.id
+                                    ? THEME.colors.primary
+                                    : THEME.colors.textSecondary,
+                              },
+                            ]}
                           >
                             {biz.salon_name}
                           </Text>

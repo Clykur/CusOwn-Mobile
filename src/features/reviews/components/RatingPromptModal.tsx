@@ -160,12 +160,14 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
       <View className="flex-1 justify-center items-center bg-black/80 px-6">
         <View
           className="w-full rounded-full bg-gray-500 p-6"
-          style={{
-            maxWidth: 340,
-            overflow: 'hidden',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.05)',
-          }}
+          style={[
+            {
+              maxWidth: 340,
+              overflow: 'hidden',
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.05)',
+            },
+          ]}
         >
           {/* Header */}
           <View className="flex-row justify-between items-start mb-8">
@@ -176,9 +178,11 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
 
               <Text
                 className="text-textSecondary text-sm tracking-wide"
-                style={{
-                  textTransform: 'uppercase',
-                }}
+                style={[
+                  {
+                    textTransform: 'uppercase',
+                  },
+                ]}
               >
                 {salonName}
               </Text>
@@ -188,9 +192,11 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               className="w-8 h-8 rounded-full justify-center items-center"
               onPress={onClose}
               disabled={isLoading}
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.04)',
-              }}
+              style={[
+                {
+                  backgroundColor: 'rgba(255,255,255,0.04)',
+                },
+              ]}
             >
               <Ionicons name="close" size={18} color={THEME.colors.textSecondary} />
             </Pressable>
@@ -254,11 +260,13 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               numberOfLines={4}
               textAlignVertical="top"
               editable={!isLoading}
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.03)',
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.05)',
-              }}
+              style={[
+                {
+                  backgroundColor: 'rgba(255,255,255,0.03)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255,255,255,0.05)',
+                },
+              ]}
             />
           </View>
 
@@ -266,9 +274,11 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
           {error && (
             <Text
               className="mb-4.5 text-center text-sm"
-              style={{
-                color: '#ff6b6b',
-              }}
+              style={[
+                {
+                  color: '#ff6b6b',
+                },
+              ]}
             >
               {error}
             </Text>
@@ -280,18 +290,22 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               className="h-14 rounded-full justify-center items-center"
               onPress={handleSubmit}
               disabled={isLoading || !rating}
-              style={{
-                backgroundColor: rating ? THEME.colors.primary : 'rgba(255,255,255,0.08)',
-              }}
+              style={[
+                {
+                  backgroundColor: rating ? THEME.colors.primary : 'rgba(255,255,255,0.08)',
+                },
+              ]}
             >
               {isLoading && actionType === 'submit' ? (
                 <ActivityIndicator size="small" color="#000" />
               ) : (
                 <Text
                   className="font-black tracking-wide text-sm"
-                  style={{
-                    color: rating ? '#000' : THEME.colors.textSecondary,
-                  }}
+                  style={[
+                    {
+                      color: rating ? '#000' : THEME.colors.textSecondary,
+                    },
+                  ]}
                 >
                   SUBMIT REVIEW
                 </Text>

@@ -9,7 +9,7 @@ interface BadgeProps {
   className?: string;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ status, customLabel, className = '' }) => {
+const BadgeBase: React.FC<BadgeProps> = ({ status, customLabel, className = '' }) => {
   const getBadgeStyles = () => {
     switch (status) {
       case 'confirmed':
@@ -53,9 +53,11 @@ export const Badge: React.FC<BadgeProps> = ({ status, customLabel, className = '
   return (
     <View className={className}>
       <Text
-        style={{
-          fontSize: responsiveFontSize(11),
-        }}
+        style={[
+          {
+            fontSize: responsiveFontSize(11),
+          },
+        ]}
         className={`
           font-black uppercase tracking-wider
           ${badge.text}
@@ -66,3 +68,5 @@ export const Badge: React.FC<BadgeProps> = ({ status, customLabel, className = '
     </View>
   );
 };
+
+export const Badge = React.memo(BadgeBase);

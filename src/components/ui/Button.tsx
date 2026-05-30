@@ -18,7 +18,7 @@ interface ButtonProps extends TouchableOpacityProps {
   children: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+const ButtonBase: React.FC<ButtonProps> = ({
   variant = 'primary',
   loading = false,
   disabled = false,
@@ -120,3 +120,5 @@ const styles = StyleSheet.create({
   },
   textGhost: {},
 });
+
+export const Button = React.memo(ButtonBase);

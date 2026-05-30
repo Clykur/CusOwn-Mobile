@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
 import { queryKeys } from '@/lib/queryClient';
 import { getPublicStorageUrl, createSignedStorageUrl } from '@/services/supabase/storage';
 import { logger, LogTag } from '@/utils/logger';

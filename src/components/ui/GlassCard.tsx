@@ -39,10 +39,12 @@ export const GlassCard: React.FC<GlassCardProps> = ({
       ) : (
         <View
           className="absolute inset-0"
-          style={{
-            // Elevated dark surface with slight transparency for depth
-            backgroundColor: 'rgba(20,20,20,0.97)',
-          }}
+          style={[
+            {
+              // Elevated dark surface with slight transparency for depth
+              backgroundColor: 'rgba(20,20,20,0.97)',
+            },
+          ]}
         />
       )}
       <View className="p-6 relative">{children}</View>

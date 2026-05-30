@@ -3,7 +3,6 @@ import { apiService } from '@/services/api.service';
 import { queryClient } from '@/lib/queryClient';
 import { CreateServiceFormValues } from '@/schemas/booking.schema';
 import { useAuthStore } from '@/store/auth.store';
-import { supabase } from '@/lib/supabase';
 import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
 
 export const useOwnerStats = (businessId?: string) => {

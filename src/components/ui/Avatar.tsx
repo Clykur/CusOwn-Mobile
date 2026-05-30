@@ -17,7 +17,7 @@ interface AvatarProps {
   type?: 'customer' | 'business' | 'default';
 }
 
-export const Avatar: React.FC<AvatarProps> = ({
+const AvatarBase: React.FC<AvatarProps> = ({
   url,
   userId,
   name = '',
@@ -100,11 +100,13 @@ export const Avatar: React.FC<AvatarProps> = ({
       ) : (
         <Image
           source={{ uri: resolvedUrl }}
-          style={{
-            width: size,
-            height: size,
-            borderRadius: radius,
-          }}
+          style={[
+            {
+              width: size,
+              height: size,
+              borderRadius: radius,
+            },
+          ]}
           contentFit="cover"
           transition={Platform.OS === 'android' ? 0 : 200}
           onError={() => setHasError(true)}
@@ -126,3 +128,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+export const Avatar = React.memo(AvatarBase);

@@ -34,7 +34,7 @@ export default function SelectServiceScreen() {
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
         <Text style={[styles.errorMsg, { color: theme.text }]}>No business selected.</Text>
         <TouchableOpacity className="mt-3" onPress={() => router.back()}>
-          <Text className="font-semibold" style={{ color: theme.primary }}>
+          <Text className="font-semibold" style={[{ color: theme.primary }]}>
             Go Back
           </Text>
         </TouchableOpacity>
