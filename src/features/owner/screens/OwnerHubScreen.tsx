@@ -47,8 +47,12 @@ export default function ManageHubScreen() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // Downtime State (Holidays & Closures)
-  const [holidays, setHolidays] = useState<any[]>([]);
-  const [closures, setClosures] = useState<any[]>([]);
+  const [holidays, setHolidays] = useState<
+    { id: string; holiday_name?: string; holiday_date?: string }[]
+  >([]);
+  const [closures, setClosures] = useState<
+    { id: string; start_date?: string; end_date?: string; reason?: string }[]
+  >([]);
   const [loadingDowntime, setLoadingDowntime] = useState(false);
 
   // Holiday Form State
@@ -66,7 +70,13 @@ export default function ManageHubScreen() {
   const [reviewData, setReviewData] = useState<{
     rating_avg: number;
     review_count: number;
-    reviews: any[];
+    reviews: {
+      id?: string;
+      rating: number;
+      created_at?: string;
+      comment?: string;
+      [key: string]: unknown;
+    }[];
   }>({
     rating_avg: 0,
     review_count: 0,
@@ -74,7 +84,7 @@ export default function ManageHubScreen() {
   });
   const [loadingReviews, setLoadingReviews] = useState(false);
 
-  const qrRef = useRef<any>(null);
+  const qrRef = useRef<{ toDataURL: (callback: (data: string) => void) => void } | null>(null);
   useEffect(() => {
     fetchBusiness();
   }, [id]);
@@ -276,8 +286,17 @@ export default function ManageHubScreen() {
         apiService.getBusinessHolidays(business.id),
         apiService.getBusinessClosures(business.id),
       ]);
-      setHolidays(holidaysData || []);
-      setClosures(closuresData || []);
+      setHolidays(
+        (holidaysData || []) as { id: string; holiday_name?: string; holiday_date?: string }[],
+      );
+      setClosures(
+        (closuresData || []) as {
+          id: string;
+          start_date?: string;
+          end_date?: string;
+          reason?: string;
+        }[],
+      );
     } catch (err) {
       console.error('Failed to fetch downtime:', err);
     } finally {
@@ -439,7 +458,13 @@ export default function ManageHubScreen() {
         setReviewData({
           rating_avg: res.rating_avg || 0,
           review_count: res.review_count || 0,
-          reviews: res.reviews || [],
+          reviews: (res.reviews || []) as {
+            id?: string;
+            rating: number;
+            created_at?: string;
+            comment?: string;
+            [key: string]: unknown;
+          }[],
         });
       }
     } catch (err) {
@@ -530,7 +555,7 @@ export default function ManageHubScreen() {
     );
   }
 
-  const renderTabButton = (tab: TabType, label: string, icon: any) => (
+  const renderTabButton = (tab: TabType, label: string, icon: keyof typeof Ionicons.glyphMap) => (
     <Pressable
       onPress={() => setActiveTab(tab)}
       className={`px-4 py-3 rounded-full flex-row items-center mr-2 border ${
@@ -1072,38 +1097,50 @@ export default function ManageHubScreen() {
                     </View>
                   ) : (
                     <View className="space-y-4">
-                      {reviewData.reviews.map((rev: any, idx: number) => (
-                        <View
-                          key={rev.id || idx}
-                          className="bg-input border border-border rounded-2xl p-4 mb-3"
-                        >
-                          <View className="flex-row justify-between items-center mb-3">
-                            <View className="flex-row items-center">
-                              {Array.from({ length: rev.rating }).map((_, starIdx) => (
-                                <Ionicons
-                                  className="mr-0.5"
-                                  key={starIdx}
-                                  name="star"
-                                  size={12}
-                                  color="#FFB800"
-                                />
-                              ))}
+                      {reviewData.reviews.map(
+                        (
+                          rev: {
+                            id?: string;
+                            rating: number;
+                            created_at?: string;
+                            comment?: string;
+                          },
+                          idx: number,
+                        ) => (
+                          <View
+                            key={rev.id || idx}
+                            className="bg-input border border-border rounded-2xl p-4 mb-3"
+                          >
+                            <View className="flex-row justify-between items-center mb-3">
+                              <View className="flex-row items-center">
+                                {Array.from({ length: rev.rating }).map((_, starIdx) => (
+                                  <Ionicons
+                                    className="mr-0.5"
+                                    key={starIdx}
+                                    name="star"
+                                    size={12}
+                                    color="#FFB800"
+                                  />
+                                ))}
+                              </View>
+                              <Text className="text-textSecondary text-xs font-semibold">
+                                {rev.created_at
+                                  ? new Date(rev.created_at).toLocaleDateString()
+                                  : ''}
+                              </Text>
                             </View>
-                            <Text className="text-textSecondary text-xs font-semibold">
-                              {rev.created_at ? new Date(rev.created_at).toLocaleDateString() : ''}
-                            </Text>
+                            {rev.comment ? (
+                              <Text className="text-textSecondary text-xs font-medium leading-relaxed">
+                                {rev.comment}
+                              </Text>
+                            ) : (
+                              <Text className="text-textSecondary text-xs italic font-medium">
+                                No comment provided
+                              </Text>
+                            )}
                           </View>
-                          {rev.comment ? (
-                            <Text className="text-textSecondary text-xs font-medium leading-relaxed">
-                              {rev.comment}
-                            </Text>
-                          ) : (
-                            <Text className="text-textSecondary text-xs italic font-medium">
-                              No comment provided
-                            </Text>
-                          )}
-                        </View>
-                      ))}
+                        ),
+                      )}
                     </View>
                   )}
                 </GlassCard>

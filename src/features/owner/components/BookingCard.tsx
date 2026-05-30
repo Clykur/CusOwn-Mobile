@@ -100,7 +100,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                   ellipsizeMode="tail"
                 >
                   {item.services && item.services.length > 0
-                    ? item.services.map((s: any) => s.name).join(', ')
+                    ? item.services.map((s: { name?: string }) => s.name).join(', ')
                     : item.service?.name || 'Standard Slot'}
                 </Text>
               </View>

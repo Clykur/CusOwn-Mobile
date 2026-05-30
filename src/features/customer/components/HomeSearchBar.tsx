@@ -8,7 +8,12 @@ interface HomeSearchBarProps {
   setSearchQuery: (val: string) => void;
   useCurrentLocation: boolean;
   setUseCurrentLocation: (val: boolean) => void;
-  userLocation: any;
+  userLocation: {
+    latitude: number;
+    longitude: number;
+    city?: string;
+    [key: string]: unknown;
+  } | null;
   locationLoading: boolean;
   onLocate: () => void;
 }

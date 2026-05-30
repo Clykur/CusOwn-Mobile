@@ -27,7 +27,7 @@ export const ModalButton: React.FC<ModalButtonProps> = ({
 }) => {
   const theme = THEME.colors;
 
-  const handlePress = (e: any) => {
+  const handlePress = (e: import('react-native').GestureResponderEvent) => {
     if (variant === 'danger') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     } else {

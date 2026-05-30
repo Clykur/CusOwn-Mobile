@@ -86,13 +86,13 @@ export default function OwnerDashboardScreen() {
 
     const merged = [...recent, ...grouped];
 
-    return Array.from(new Map(merged.map((b: any) => [b.id, b])).values()) as Booking[];
+    return Array.from(new Map(merged.map((b: Booking) => [b.id, b])).values());
   }, [dashboard]);
 
   // Synchronize selectedBooking with fresh data from the dashboard bookings
   React.useEffect(() => {
     if (selectedBooking && bookings) {
-      const fresh = bookings.find((b: any) => b.id === selectedBooking.id);
+      const fresh = bookings.find((b: Booking) => b.id === selectedBooking.id);
       if (fresh) {
         setSelectedBooking(fresh);
       }

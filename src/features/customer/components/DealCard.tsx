@@ -6,8 +6,10 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import dayjs from 'dayjs';
 
+import { Business } from '@/features/shared/types/business.types';
+
 export interface FlashDeal {
-  business: any;
+  business?: Business | null;
   id: string;
   business_id: string;
   salon_name: string;

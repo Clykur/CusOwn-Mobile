@@ -52,7 +52,7 @@ export default function SalonDetailsScreen() {
         const items = media?.items || [];
         if (items.length > 0) {
           const urls = await Promise.all(
-            items.map(async (item: any) => {
+            items.map(async (item: { id: string; [key: string]: unknown }) => {
               try {
                 const signed = await apiService.getSignedUrl(item.id);
                 return signed?.url || null;
@@ -176,33 +176,46 @@ export default function SalonDetailsScreen() {
   // - customer_name (already anonymized) and/or created_at
   const hasRealReviews = !!(reviewsData?.reviews && reviewsData.reviews.length > 0);
   const reviewsList = hasRealReviews
-    ? (reviewsData.reviews as any[]).map((r: any) => {
-        const rawRating = typeof r.rating === 'number' ? r.rating : Number(r.rating);
-        const rating = Number.isFinite(rawRating) && rawRating > 0 ? rawRating : 0;
+    ? reviewsData.reviews.map(
+        (r: {
+          id: string;
+          rating?: number | string;
+          customer?: { full_name?: string; avatar_url?: string };
+          customer_name?: string;
+          name?: string;
+          comment?: string;
+          created_at?: string;
+          date?: string;
+          user_id?: string;
+          [key: string]: unknown;
+        }) => {
+          const rawRating = typeof r.rating === 'number' ? r.rating : Number(r.rating);
+          const rating = Number.isFinite(rawRating) && rawRating > 0 ? rawRating : 0;
 
-        const name = r.customer?.full_name || r.customer_name || r.name || 'Guest User';
+          const name = r.customer?.full_name || r.customer_name || r.name || 'Guest User';
 
-        const comment = (r.comment ?? '') as string;
+          const comment = (r.comment ?? '') as string;
 
-        const createdAt = r.created_at || r.date;
-        const date = createdAt
-          ? new Date(createdAt).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })
-          : 'Recently';
+          const createdAt = r.created_at || r.date;
+          const date = createdAt
+            ? new Date(createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : 'Recently';
 
-        return {
-          id: r.id,
-          name,
-          rating,
-          comment,
-          date,
-          user_id: r.user_id,
-          avatar_url: r.customer?.avatar_url,
-        };
-      })
+          return {
+            id: r.id,
+            name,
+            rating,
+            comment,
+            date,
+            user_id: r.user_id,
+            avatar_url: r.customer?.avatar_url,
+          };
+        },
+      )
     : [];
 
   // Ratings calculation based on API response
@@ -391,7 +404,7 @@ export default function SalonDetailsScreen() {
             </View>
           ) : (
             <View className="gap-y-3">
-              {services.map((service: any) => {
+              {services.map((service: Service) => {
                 const isSelected = localSelectedServices.some((s) => s.id === service.id);
                 return (
                   <Pressable
@@ -469,32 +482,41 @@ export default function SalonDetailsScreen() {
           </Text>
           <View className="gap-y-3">
             {reviewsList.length > 0 ? (
-              reviewsList.map((rev: any) => (
-                <View key={rev.id} className="bg-card  rounded-3xl p-5 shadow-sm">
-                  <View className="flex-row justify-between items-center mb-2">
-                    <View className="flex-row items-center">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Ionicons
-                          className="mr-0.5"
-                          key={star}
-                          name={star <= Math.round(rev.rating) ? 'star' : 'star-outline'}
-                          size={16}
-                          color="#FACC15"
-                        />
-                      ))}
-                      <Text className="text-text font-extrabold text-xs ml-2">
-                        {Number.isFinite(rev.rating) ? rev.rating.toFixed(1) : '0.0'}
-                      </Text>
+              reviewsList.map(
+                (rev: {
+                  id: string;
+                  rating: number;
+                  date: string;
+                  comment: string;
+                  user_id?: string;
+                  avatar_url?: string;
+                }) => (
+                  <View key={rev.id} className="bg-card  rounded-3xl p-5 shadow-sm">
+                    <View className="flex-row justify-between items-center mb-2">
+                      <View className="flex-row items-center">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Ionicons
+                            className="mr-0.5"
+                            key={star}
+                            name={star <= Math.round(rev.rating) ? 'star' : 'star-outline'}
+                            size={16}
+                            color="#FACC15"
+                          />
+                        ))}
+                        <Text className="text-text font-extrabold text-xs ml-2">
+                          {Number.isFinite(rev.rating) ? rev.rating.toFixed(1) : '0.0'}
+                        </Text>
+                      </View>
+                      <Text className="text-textSecondary text-xs">{rev.date}</Text>
                     </View>
-                    <Text className="text-textSecondary text-xs">{rev.date}</Text>
+                    {rev.comment ? (
+                      <Text className="text-textSecondary text-sm leading-relaxed mt-2 font-medium">
+                        {rev.comment}
+                      </Text>
+                    ) : null}
                   </View>
-                  {rev.comment ? (
-                    <Text className="text-textSecondary text-sm leading-relaxed mt-2 font-medium">
-                      {rev.comment}
-                    </Text>
-                  ) : null}
-                </View>
-              ))
+                ),
+              )
             ) : (
               <View className="bg-card  rounded-3xl p-6 items-center">
                 <Ionicons name="star-outline" size={32} color={THEME.colors.textSecondary} />

@@ -27,28 +27,32 @@ class Logger {
     return `[${timestamp}] [${level}] [${tag}] ${message}`;
   }
 
-  debug(tag: LogTag, message: string, data?: any) {
+  debug(tag: LogTag, message: string, data?: unknown) {
     if (this.isDevelopment) {
       console.log(this.formatMessage(LogLevel.DEBUG, tag, message), data || '');
     }
   }
 
-  info(tag: LogTag, message: string, data?: any) {
+  info(tag: LogTag, message: string, data?: unknown) {
     console.log(this.formatMessage(LogLevel.INFO, tag, message), data || '');
   }
 
-  warn(tag: LogTag, message: string, data?: any) {
-    console.warn(this.formatMessage(LogLevel.WARN, tag, message), data || '');
+  warn(tag: LogTag, message: string, data?: unknown) {
+    console.log(this.formatMessage(LogLevel.WARN, tag, message), data || '');
   }
 
-  error(tag: LogTag, message: string, data?: any) {
+  error(tag: LogTag, message: string, data?: unknown) {
     console.error(this.formatMessage(LogLevel.ERROR, tag, message), data || '');
   }
 
   /**
    * Specifically for auditing API responses and identifying potential RLS issues.
    */
-  auditResponse(url: string, response: any, error?: any) {
+  auditResponse(
+    url: string,
+    response: { data?: unknown; status?: number } | null | undefined,
+    error?: { response?: { status?: number; data?: unknown }; message?: string } | null | undefined,
+  ) {
     if (error) {
       this.error(LogTag.API, `❌ FAILED: ${url}`, {
         status: error.response?.status,
@@ -66,7 +70,7 @@ class Logger {
           ? 1
           : 0;
       this.info(LogTag.API, `✅ SUCCESS: ${url}`, {
-        status: response.status,
+        status: response?.status,
         rowCount,
       });
 

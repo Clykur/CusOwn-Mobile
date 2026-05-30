@@ -88,12 +88,14 @@ function BookingActionsComponent({
     onSuccess: () => {
       onCancelled();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       setOptimisticStatus(null);
       showModal({
         variant: 'error',
         title: 'Cancellation Failed',
-        description: error.message || 'An error occurred while cancelling your booking.',
+        description:
+          (error instanceof Error ? error.message : String(error)) ||
+          'An error occurred while cancelling your booking.',
       });
     },
   });
@@ -107,7 +109,7 @@ function BookingActionsComponent({
 
   const handleRebook = useCallback(() => {
     const serviceIds =
-      booking.services?.map((s: any) => s.id).join(',') || booking.service?.id || '';
+      booking.services?.map((s: { id: string }) => s.id).join(',') || booking.service?.id || '';
     router.push({
       pathname: '/(customer)/book/[id]',
       params: {

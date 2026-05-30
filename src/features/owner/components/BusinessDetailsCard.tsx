@@ -19,7 +19,7 @@ const DetailField = ({
 }: {
   label: string;
   value: string | number;
-  icon: any;
+  icon: keyof typeof Ionicons.glyphMap;
 }) => (
   <View className="mb-4">
     <View className="flex-row items-center mb-1">

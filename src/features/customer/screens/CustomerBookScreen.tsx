@@ -175,8 +175,9 @@ function BookingScreenInner(): JSX.Element {
     if (isRescheduling && existingBooking && services.length > 0) {
       const preselectedServices = services.filter(
         (srv) =>
-          existingBooking.services?.some((es: any) => es.id === srv.id) ||
-          existingBooking.service?.id === srv.id,
+          existingBooking.services?.some(
+            (es: import('@/types/business.types').Service) => es.id === srv.id,
+          ) || existingBooking.service?.id === srv.id,
       );
       if (preselectedServices.length > 0) {
         setSelectedServices(preselectedServices);
@@ -239,7 +240,15 @@ function BookingScreenInner(): JSX.Element {
   // NOTE: Past-slot filtering is now done server-side in slots.ts (getShopLocalDate/Now).
   // Here we only normalize the shape and apply a client-side guard as a safety net.
   const normalizedSlots = useMemo(() => {
-    let rawSlotsList: any[] = [];
+    let rawSlotsList: {
+      id: string;
+      time?: string;
+      start_time?: string;
+      business_id?: string;
+      date?: string;
+      is_available?: boolean;
+      [key: string]: unknown;
+    }[] = [];
     if (slotsResponse) {
       if (Array.isArray(slotsResponse)) {
         rawSlotsList = slotsResponse;
@@ -248,11 +257,23 @@ function BookingScreenInner(): JSX.Element {
         'slots' in slotsResponse &&
         Array.isArray((slotsResponse as { slots: unknown[] }).slots)
       ) {
-        rawSlotsList = (slotsResponse as { slots: unknown[] }).slots;
+        rawSlotsList = (
+          slotsResponse as {
+            slots: {
+              id: string;
+              time?: string;
+              start_time?: string;
+              business_id?: string;
+              date?: string;
+              is_available?: boolean;
+              [key: string]: unknown;
+            }[];
+          }
+        ).slots;
       }
     }
 
-    const processedSlots: any[] = rawSlotsList.map((slot: any) => {
+    const processedSlots = rawSlotsList.map((slot) => {
       const timeVal = slot.time || slot.start_time || '09:00';
       const [hours, minutes] = timeVal.split(':').map(Number);
       const ampm = hours >= 12 ? 'PM' : 'AM';
@@ -275,7 +296,7 @@ function BookingScreenInner(): JSX.Element {
     if (selectedDate === clock.todayStr) {
       const now = getShopLocalNow(/* business?.timezone */);
       const currentMinutes = now.hour() * 60 + now.minute();
-      return processedSlots.filter((slot: any) => {
+      return processedSlots.filter((slot: { time: string; [key: string]: unknown }) => {
         const [h, m] = slot.time.split(':').map(Number);
         return h * 60 + m > currentMinutes;
       });

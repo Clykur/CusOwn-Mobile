@@ -16,7 +16,7 @@ const SERVICE_CATEGORIES = [
     icon: 'cut-outline',
     color: THEME.colors.primary,
   },
-];
+] as const;
 
 export default function CustomerCategoriesScreen() {
   const onSelectCategory = (id: string) => {
@@ -45,7 +45,6 @@ export default function CustomerCategoriesScreen() {
               Find Your <Text className="text-primary">Experience</Text>.
             </Text>
           </AnimatedSection>
-
           <View className="gap-y-6">
             {SERVICE_CATEGORIES.map((cat, index) => (
               <AnimatedSection key={cat.id} delay={index * 100} direction="up">
@@ -53,7 +52,7 @@ export default function CustomerCategoriesScreen() {
                   <GlassCard className="p-2 overflow-hidden bg-card shadow-sm">
                     <View className="flex-row items-center justify-between mb-6">
                       <View className="w-16 h-16 rounded-2xl items-center justify-center">
-                        <Ionicons name={cat.icon as any} size={32} color={cat.color} />
+                        <Ionicons name={cat.icon} size={32} color={cat.color} />
                       </View>
                       <Ionicons name="arrow-forward" size={20} color={THEME.colors.textSecondary} />
                     </View>

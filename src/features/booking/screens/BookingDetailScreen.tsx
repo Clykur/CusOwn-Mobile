@@ -83,9 +83,7 @@ export default function BookingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { showModal } = useModal();
 
-  const { data: rawBooking, isLoading, isError } = useBookingDetail(id || '');
-
-  const booking = rawBooking as any;
+  const { data: booking, isLoading, isError } = useBookingDetail(id || '');
 
   const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
   const [whatsappLoading, setWhatsappLoading] = useState(false);
@@ -392,7 +390,7 @@ export default function BookingDetailScreen() {
                 <View className="flex-row items-center">
                   {booking.business?.whatsapp_number && (
                     <Pressable
-                      onPress={() => handleCall(booking.business.whatsapp_number)}
+                      onPress={() => handleCall(booking.business?.whatsapp_number)}
                       className="p-3 rounded-xl mr-2"
                     >
                       <Ionicons name="call-outline" size={18} color={THEME.colors.primary} />
@@ -439,7 +437,7 @@ export default function BookingDetailScreen() {
                   <View className="flex-1 mr-4">
                     <Text className="text-text font-extrabold text-base">
                       {booking.services && booking.services.length > 0
-                        ? booking.services.map((s: any) => s.name).join(', ')
+                        ? booking.services.map((s: { name?: string }) => s.name).join(', ')
                         : booking.service?.name || 'Service'}
                     </Text>
                     <Text className="text-textSecondary text-xs mt-1">
@@ -509,11 +507,13 @@ export default function BookingDetailScreen() {
                   id: booking.id,
                   status: booking.status,
                   no_show: booking.no_show,
-                  slot: booking.slot || {
-                    date: booking.date,
-                    start_time: booking.time,
-                    end_time: booking.time,
-                  },
+                  slot:
+                    booking.slot ||
+                    ({
+                      date: booking.date,
+                      start_time: booking.time,
+                      end_time: booking.time,
+                    } as import('@/features/booking/types/slot.types').Slot),
                   salon: booking.business,
                   business_id: booking.business_id,
                   services: booking.services,

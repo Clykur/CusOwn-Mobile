@@ -23,7 +23,10 @@ export const RatingPromptProvider: React.FC = () => {
       const bookings = await apiService.getPendingRatings();
       if (Array.isArray(bookings)) {
         const filtered = bookings.filter(
-          (b: any) => b && b.id && !dismissedBookingIds.includes(b.id),
+          (b) =>
+            (b as { id?: string }) &&
+            (b as { id?: string }).id &&
+            !dismissedBookingIds.includes((b as { id: string }).id),
         );
         setPendingBookings(filtered);
         setVisible(filtered.length > 0);

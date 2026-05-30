@@ -18,7 +18,7 @@ interface ServiceDraftRow {
 }
 
 interface CreateBusinessFormProps {
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data: import('@/types/business.types').Business) => void;
   loading?: boolean;
 }
 

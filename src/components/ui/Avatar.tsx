@@ -12,7 +12,7 @@ interface AvatarProps {
   userId?: string | null;
   name?: string;
   size?: number;
-  style?: any;
+  style?: import('react-native').StyleProp<import('react-native').ViewStyle>;
   className?: string;
   type?: 'customer' | 'business' | 'default';
 }

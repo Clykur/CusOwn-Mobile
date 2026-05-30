@@ -106,7 +106,10 @@ export default function OwnerBookingsScreen() {
 
   const selectedBusinessName = React.useMemo(() => {
     if (selectedBusinessId === 'all') return 'All Hubs';
-    return businessesData?.find((b: any) => b.id === selectedBusinessId)?.salon_name || 'Business';
+    return (
+      businessesData?.find((b: { id: string; salon_name?: string }) => b.id === selectedBusinessId)
+        ?.salon_name || 'Business'
+    );
   }, [selectedBusinessId, businessesData]);
 
   // Compute exact human-readable date bounds for the filters
@@ -402,7 +405,7 @@ export default function OwnerBookingsScreen() {
                   )}
                 </Pressable>
 
-                {businessesData?.map((biz: any) => (
+                {businessesData?.map((biz: { id: string; salon_name: string }) => (
                   <Pressable
                     key={biz.id}
                     onPress={() => setSelectedBusinessId(biz.id)}
@@ -473,7 +476,7 @@ export default function OwnerBookingsScreen() {
                   >
                     <View className="flex-row items-center flex-1 mr-2">
                       <Ionicons
-                        name={period.icon as any}
+                        name={period.icon}
                         size={18}
                         color={
                           dateFilter === period.key

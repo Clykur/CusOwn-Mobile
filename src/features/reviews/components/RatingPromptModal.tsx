@@ -17,9 +17,9 @@ interface RatingPromptModalProps {
     service_name?: string | string[];
     service_date?: string;
     service_time?: string;
-    services?: any[];
-    service?: any;
-    [key: string]: any;
+    services?: { id?: string; name?: string; service_name?: string; [key: string]: unknown }[];
+    service?: { id?: string; name?: string; service_name?: string; [key: string]: unknown };
+    [key: string]: unknown;
   };
   onClose: () => void;
   onSuccess: () => void;
@@ -41,7 +41,17 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
 
   const [error, setError] = useState<string | null>(null);
 
-  const [fullBooking, setFullBooking] = useState<any>(booking);
+  const [fullBooking, setFullBooking] = useState<{
+    salon_name?: string;
+    business_name?: string;
+    business?: { salon_name?: string };
+    service_date?: string;
+    service_time?: string;
+    service_name?: string | string[] | { name?: string; service_name?: string };
+    services?: { name?: string; service_name?: string }[];
+    service?: { name?: string; service_name?: string };
+    [key: string]: unknown;
+  }>(booking);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -76,7 +86,14 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
     fullBooking.business?.salon_name ||
     'Premium Studio';
 
-  const getServiceName = (b: any): string => {
+  const getServiceName = (b: {
+    service_date?: string;
+    service_time?: string;
+    service_name?: string | string[] | { name?: string; service_name?: string };
+    services?: { name?: string; service_name?: string }[];
+    service?: { name?: string; service_name?: string };
+    [key: string]: unknown;
+  }): string => {
     const fallback =
       b?.service_date && b?.service_time
         ? `Booking on ${b.service_date} at ${b.service_time.substring(0, 5)}`
@@ -87,19 +104,33 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
     if (Array.isArray(b.service_name) && b.service_name.length > 0) {
       if (typeof b.service_name[0] === 'string') return b.service_name.join(', ');
       return (
-        b.service_name
-          .map((s: any) => s?.name || s?.service_name || '')
+        (b.service_name as unknown[])
+          .map(
+            (s: unknown) =>
+              (s as { name?: string; service_name?: string })?.name ||
+              (s as { name?: string; service_name?: string })?.service_name ||
+              '',
+          )
           .filter(Boolean)
           .join(', ') || fallback
       );
     }
     if (b.service_name && typeof b.service_name === 'object') {
-      return b.service_name.name || b.service_name.service_name || fallback;
+      return (
+        (b.service_name as { name?: string; service_name?: string }).name ||
+        (b.service_name as { name?: string; service_name?: string }).service_name ||
+        fallback
+      );
     }
     if (Array.isArray(b.services) && b.services.length > 0) {
       return (
-        b.services
-          .map((s: any) => s?.name || s?.service_name || '')
+        (b.services as unknown[])
+          .map(
+            (s: unknown) =>
+              (s as { name?: string; service_name?: string })?.name ||
+              (s as { name?: string; service_name?: string })?.service_name ||
+              '',
+          )
           .filter(Boolean)
           .join(', ') || fallback
       );

@@ -19,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { HomeSearchBar } from '@/features/customer/components/HomeSearchBar';
 import { NearbySalonCard } from '@/features/customer/components/NearbySalonCard';
 import { TrendingServiceCard } from '@/features/customer/components/TrendingServiceCard';
-import { DealCard } from '@/features/customer/components/DealCard';
+import { DealCard, FlashDeal } from '@/features/customer/components/DealCard';
 import { BusinessCard } from '@/features/customer/components/BusinessCard';
 
 const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -92,7 +92,7 @@ export default function CustomerHomeScreen() {
 
     // Fallback if nearby filtering leaves us with nothing
     if (list.length === 0 && businesses && businesses.length > 0) {
-      list = (businesses as any[]).slice(0, 5); // Use general businesses as fallback, max 5 items
+      list = businesses.slice(0, 5); // Use general businesses as fallback, max 5 items
     }
 
     if (searchQuery) {
@@ -108,15 +108,17 @@ export default function CustomerHomeScreen() {
 
   const enrichedTrendingServices = useMemo(() => {
     if (!trendingServices) return [];
-    return trendingServices.map((service: any) => {
-      const business = businesses?.find((b) => b.id === service.business_id);
-      return {
-        ...service,
-        business: business || service.business || null,
-        salon_name: business?.salon_name || service.salon_name,
-        rating_avg: business?.rating_avg || service.rating_avg,
-      };
-    });
+    return trendingServices.map(
+      (service: import('@/features/customer/components/TrendingServiceCard').TrendingService) => {
+        const business = businesses?.find((b) => b.id === service.business_id);
+        return {
+          ...service,
+          business: business || service.business || null,
+          salon_name: business?.salon_name || service.salon_name,
+          rating_avg: business?.rating_avg || service.rating_avg,
+        };
+      },
+    );
   }, [trendingServices, businesses]);
 
   const filteredTrendingServices = useMemo(() => {
@@ -154,7 +156,7 @@ export default function CustomerHomeScreen() {
 
   const enrichedFlashDeals = useMemo(() => {
     if (!flashDeals) return [];
-    return flashDeals.map((deal: any) => {
+    return flashDeals.map((deal: import('@/features/customer/components/DealCard').FlashDeal) => {
       const business = businesses?.find((b) => b.id === deal.business_id);
       return {
         ...deal,
@@ -218,7 +220,7 @@ export default function CustomerHomeScreen() {
   const normalizedBookings = useMemo(() => {
     if (!bookings) return [];
     const now = dayjs();
-    return bookings.map((b: any) => {
+    return bookings.map((b: import('@/types/booking.types').Booking) => {
       let status = (b.status || 'pending').toLowerCase();
       const bookingDateTime = dayjs(`${b.date} ${b.time}`);
       const bookingEndTime = bookingDateTime.add(b.duration || 60, 'minutes');
@@ -237,23 +239,31 @@ export default function CustomerHomeScreen() {
 
   const upcomingBooking = useMemo(() => {
     return normalizedBookings.find(
-      (b: any) => b.normalizedStatus === 'pending' || b.normalizedStatus === 'confirmed',
+      (b: import('@/types/booking.types').Booking & { normalizedStatus?: string }) =>
+        b.normalizedStatus === 'pending' || b.normalizedStatus === 'confirmed',
     );
   }, [normalizedBookings]);
 
   const favouriteSalons = useMemo(() => {
     if (!normalizedBookings || !businesses) return [];
     const completedBookings = normalizedBookings.filter(
-      (b: any) => b.normalizedStatus === 'completed',
+      (b: import('@/types/booking.types').Booking & { normalizedStatus?: string }) =>
+        b.normalizedStatus === 'completed',
     );
-    const sortedBookings = [...completedBookings].sort((a: any, b: any) => {
-      const dateA = dayjs(`${a.date} ${a.time}`);
-      const dateB = dayjs(`${b.date} ${b.time}`);
-      return dateB.isAfter(dateA) ? 1 : -1;
-    });
+    const sortedBookings = [...completedBookings].sort(
+      (a: import('@/types/booking.types').Booking, b: import('@/types/booking.types').Booking) => {
+        const dateA = dayjs(`${a.date} ${a.time}`);
+        const dateB = dayjs(`${b.date} ${b.time}`);
+        return dateB.isAfter(dateA) ? 1 : -1;
+      },
+    );
 
     const visitedBusinessIds = Array.from(
-      new Set(sortedBookings.map((b: any) => b.business_id || b.business?.id).filter(Boolean)),
+      new Set(
+        sortedBookings
+          .map((b: import('@/types/booking.types').Booking) => b.business_id || b.business?.id)
+          .filter(Boolean),
+      ),
     );
     return visitedBusinessIds
       .map((id) => businesses.find((b) => b.id === id))
@@ -350,7 +360,7 @@ export default function CustomerHomeScreen() {
                 {filteredFlashDeals.map((deal, index) => (
                   <DealCard
                     key={deal.id}
-                    item={deal as any}
+                    item={deal as FlashDeal}
                     index={index}
                     onPress={() => handleBusinessPress(deal.business_id)}
                   />
@@ -384,7 +394,7 @@ export default function CustomerHomeScreen() {
                               title: dummyTitles[index] || 'Special Discount',
                               discount_text: dummyDiscounts[index] || 'OFFER',
                               expires_at: dayjs().add(24, 'hours').toISOString(),
-                            } as any
+                            } as FlashDeal
                           }
                           index={index}
                           onPress={() => handleBusinessPress(business.id)}

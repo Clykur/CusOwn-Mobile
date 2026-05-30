@@ -54,6 +54,7 @@ export interface Booking {
   instructions?: string | null;
   payment_status?: string | null;
   salon?: Business; // Backend alias for business
+  duration?: number;
 }
 
 export type BookingWithDetails = Booking & {

@@ -99,11 +99,11 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
       setShowForm(false);
 
       fetchServices();
-    } catch (e: any) {
+    } catch (e: unknown) {
       showModal({
         variant: 'error',
         title: 'Error',
-        description: e.message || 'Failed to save service',
+        description: e instanceof Error ? e.message : 'Failed to save service',
       });
     } finally {
       setSaving(false);
@@ -124,11 +124,11 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             try {
               await apiService.deleteService(id);
               setServices((prev) => prev.filter((s) => s.id !== id));
-            } catch (e: any) {
+            } catch (e: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
-                description: e.message || 'Failed to delete service',
+                description: e instanceof Error ? e.message : 'Failed to delete service',
               });
             }
           },

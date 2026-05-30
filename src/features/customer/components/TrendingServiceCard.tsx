@@ -6,8 +6,10 @@ import { THEME } from '@/theme/theme';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 
+import { Business } from '@/features/shared/types/business.types';
+
 export interface TrendingService {
-  business: any;
+  business?: Business | null;
   id: string;
   name: string;
   category: string;

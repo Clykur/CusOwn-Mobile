@@ -179,7 +179,10 @@ export default function OwnerAnalyticsScreen() {
 
   const selectedBusinessName = useMemo(() => {
     if (selectedBusinessId === 'all') return 'All Hubs';
-    return businessesData?.find((b: any) => b.id === selectedBusinessId)?.salon_name || 'Business';
+    return (
+      businessesData?.find((b: { id: string; salon_name?: string }) => b.id === selectedBusinessId)
+        ?.salon_name || 'Business'
+    );
   }, [selectedBusinessId, businessesData]);
 
   const filterSummary = useMemo(() => {
@@ -212,7 +215,7 @@ export default function OwnerAnalyticsScreen() {
       });
     }
 
-    return rawDaily.map((d: any) => {
+    return rawDaily.map((d: { date: string; totalBookings?: number; revenue?: number }) => {
       const parsedDate = new Date(d.date.split(/[T ]/)[0]);
       return {
         label: `${parsedDate.getDate()} ${parsedDate.toLocaleString('default', { month: 'short' })}`,
@@ -224,7 +227,7 @@ export default function OwnerAnalyticsScreen() {
 
   // Max values for scaling bar charts
   const maxTrendValue = useMemo(() => {
-    const values = dailyPoints.map((p: any) =>
+    const values = dailyPoints.map((p: { bookingCount: number; revenue: number }) =>
       trendTab === 'bookings' ? p.bookingCount : p.revenue,
     );
     return Math.max(...values, 1);
@@ -274,7 +277,7 @@ export default function OwnerAnalyticsScreen() {
     }
     return [...rawPeak]
       .sort((a, b) => a.hour - b.hour)
-      .map((p: any) => {
+      .map((p: { hour: number; bookingCount?: number }) => {
         const ampm = p.hour >= 12 ? 'PM' : 'AM';
         const displayHour = p.hour % 12 === 0 ? 12 : p.hour % 12;
         return {
@@ -315,14 +318,16 @@ export default function OwnerAnalyticsScreen() {
         { name: 'Quick Treatment', count: 0 },
       ];
     }
-    return rawServices.map((s: any) => ({
-      name: s.serviceName || s.name || 'Service',
-      count: s.bookingCount || s.count || 0,
-    }));
+    return rawServices.map(
+      (s: { serviceName?: string; name?: string; bookingCount?: number; count?: number }) => ({
+        name: s.serviceName || s.name || 'Service',
+        count: s.bookingCount || s.count || 0,
+      }),
+    );
   }, [analytics]);
 
   const maxServiceCount = useMemo(() => {
-    return Math.max(...servicesData.map((s: any) => s.count), 1);
+    return Math.max(...servicesData.map((s: { count: number }) => s.count), 1);
   }, [servicesData]);
 
   if (businessesLoading || (analyticsLoading && !analytics)) {
@@ -533,39 +538,44 @@ export default function OwnerAnalyticsScreen() {
                       showsHorizontalScrollIndicator={false}
                       contentContainerClassName="h-52 items-end pb-2"
                     >
-                      {dailyPoints.map((point: any, index: number) => {
-                        const val = trendTab === 'bookings' ? point.bookingCount : point.revenue;
-                        const barHeight = Math.max((val / maxTrendValue) * 100, 4); // min height 4px, max 100px
-                        const isActive = activeBarIndex === index;
+                      {dailyPoints.map(
+                        (
+                          point: { bookingCount: number; revenue: number; label: string },
+                          index: number,
+                        ) => {
+                          const val = trendTab === 'bookings' ? point.bookingCount : point.revenue;
+                          const barHeight = Math.max((val / maxTrendValue) * 100, 4); // min height 4px, max 100px
+                          const isActive = activeBarIndex === index;
 
-                        return (
-                          <Pressable
-                            key={index}
-                            onPress={() => setActiveBarIndex(isActive ? null : index)}
-                            className="items-center justify-end mx-3"
-                          >
-                            {/* Hover info badge */}
-                            {isActive && (
-                              <View className="absolute -top-12 bg-card border border-border px-2.5 py-1 rounded-lg items-center justify-center z-10">
-                                <Text className="text-primary text-xs font-bold">
-                                  {trendTab === 'bookings' ? `${val}` : `₹${Math.round(val)}`}
-                                </Text>
-                                <View className="w-1.5 h-1.5 bg-card rotate-45 -mb-1 mt-0.5" />
-                              </View>
-                            )}
+                          return (
+                            <Pressable
+                              key={index}
+                              onPress={() => setActiveBarIndex(isActive ? null : index)}
+                              className="items-center justify-end mx-3"
+                            >
+                              {/* Hover info badge */}
+                              {isActive && (
+                                <View className="absolute -top-12 bg-card border border-border px-2.5 py-1 rounded-lg items-center justify-center z-10">
+                                  <Text className="text-primary text-xs font-bold">
+                                    {trendTab === 'bookings' ? `${val}` : `₹${Math.round(val)}`}
+                                  </Text>
+                                  <View className="w-1.5 h-1.5 bg-card rotate-45 -mb-1 mt-0.5" />
+                                </View>
+                              )}
 
-                            <View
-                              style={[{ height: barHeight }]}
-                              className={`w-8 rounded-t-lg transition-colors ${
-                                isActive ? 'bg-primary' : 'bg-border'
-                              }`}
-                            />
-                            <Text className="text-textSecondary text-xs font-bold mt-2">
-                              {point.label}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
+                              <View
+                                style={[{ height: barHeight }]}
+                                className={`w-8 rounded-t-lg transition-colors ${
+                                  isActive ? 'bg-primary' : 'bg-border'
+                                }`}
+                              />
+                              <Text className="text-textSecondary text-xs font-bold mt-2">
+                                {point.label}
+                              </Text>
+                            </Pressable>
+                          );
+                        },
+                      )}
                     </ScrollView>
                   </GlassCard>
                 </AnimatedSection>
@@ -838,30 +848,32 @@ export default function OwnerAnalyticsScreen() {
                     </Text>
 
                     <View className="space-y-2">
-                      {servicesData.map((service: any, index: number) => {
-                        const widthPct = Math.max((service.count / maxServiceCount) * 100, 3);
-                        return (
-                          <View key={index} className="space-y-2">
-                            <View className="flex-row justify-between items-center mt-1 mb-1">
-                              <Text
-                                className="text-textSecondary text-xs font-bold"
-                                numberOfLines={1}
-                              >
-                                {service.name}
-                              </Text>
-                              <Text className="text-text text-xs font-extrabold ml-2">
-                                {service.count} book
-                              </Text>
+                      {servicesData.map(
+                        (service: { name: string; count: number }, index: number) => {
+                          const widthPct = Math.max((service.count / maxServiceCount) * 100, 3);
+                          return (
+                            <View key={index} className="space-y-2">
+                              <View className="flex-row justify-between items-center mt-1 mb-1">
+                                <Text
+                                  className="text-textSecondary text-xs font-bold"
+                                  numberOfLines={1}
+                                >
+                                  {service.name}
+                                </Text>
+                                <Text className="text-text text-xs font-extrabold ml-2">
+                                  {service.count} book
+                                </Text>
+                              </View>
+                              <View className="bg-input h-2.5 rounded-full overflow-hidden w-full">
+                                <View
+                                  style={[{ width: `${widthPct}%` }]}
+                                  className="bg-primary h-full rounded-full"
+                                />
+                              </View>
                             </View>
-                            <View className="bg-input h-2.5 rounded-full overflow-hidden w-full">
-                              <View
-                                style={[{ width: `${widthPct}%` }]}
-                                className="bg-primary h-full rounded-full"
-                              />
-                            </View>
-                          </View>
-                        );
-                      })}
+                          );
+                        },
+                      )}
                     </View>
                   </GlassCard>
                 </AnimatedSection>
@@ -920,7 +932,7 @@ export default function OwnerAnalyticsScreen() {
                   )}
                 </Pressable>
 
-                {businessesData?.map((biz: any) => (
+                {businessesData?.map((biz: { id: string; salon_name: string }) => (
                   <Pressable
                     key={biz.id}
                     onPress={() => setSelectedBusinessId(biz.id)}
@@ -991,7 +1003,7 @@ export default function OwnerAnalyticsScreen() {
                   >
                     <View className="flex-row items-center flex-1 mr-2">
                       <Ionicons
-                        name={period.icon as any}
+                        name={period.icon}
                         size={18}
                         color={
                           dateFilter === period.key

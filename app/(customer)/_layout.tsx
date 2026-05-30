@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { RatingPromptProvider } from '@/features/reviews/components/RatingPromptProvider';
@@ -35,13 +36,18 @@ export default function CustomerTabsLayout() {
           tabBarStyle: {
             backgroundColor: '#000000',
             borderTopWidth: 0,
+            borderTopColor: 'transparent',
+            shadowColor: '#000000',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0,
+            shadowRadius: 0,
+            elevation: 0,
             height: verticalScale(60) + insets.bottom,
             paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12),
             paddingTop: verticalScale(12),
-            elevation: 0,
-            shadowOpacity: 0,
           },
 
+          tabBarBackground: () => <View style={{ flex: 1, backgroundColor: '#000000' }} />,
           tabBarActiveTintColor: '#FFFFFF',
 
           tabBarInactiveTintColor: '#64748B',
