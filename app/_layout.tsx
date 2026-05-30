@@ -180,11 +180,9 @@ export default function RootLayout() {
   if (isLoading) {
     return (
       <View
+        className="flex-1 justify-center items-center"
         style={{
-          flex: 1,
           backgroundColor: '#F8FAFC',
-          justifyContent: 'center',
-          alignItems: 'center',
         }}
       >
         <ActivityIndicator size="large" color="#0F172A" />

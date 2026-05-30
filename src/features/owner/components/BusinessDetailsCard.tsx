@@ -24,7 +24,7 @@ const DetailField = ({
   <View className="mb-4">
     <View className="flex-row items-center mb-1">
       <Ionicons name={icon} size={14} color={THEME.colors.textSecondary} className="mr-2" />
-      <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px]">{label}</Text>
+      <Text className="text-slate-400 text-xs font-black uppercase tracking-0.5">{label}</Text>
     </View>
     <Text className="text-slate-900 text-base font-semibold ml-6">{value}</Text>
   </View>

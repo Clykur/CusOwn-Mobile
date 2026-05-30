@@ -20,14 +20,7 @@ export default function BookingSuccessScreen() {
 
   if (!isMounted) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: THEME.colors.background,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <View className="flex-1 bg-background justify-center items-center">
         <ActivityIndicator size="large" color={THEME.colors.primary} />
       </View>
     );
@@ -85,14 +78,14 @@ function BookingSuccessScreenInner() {
 
           {/* Booking Summary */}
           <AnimatedSection direction="up" delay={120} className="mb-6">
-            <GlassCard className="bg-card  rounded-[30px] p-2 shadow-sm">
+            <GlassCard className="bg-card  rounded-full p-2 shadow-sm">
               {/* Booking ID */}
               <View className="items-center pb-5 border-b border-border">
-                <Text className="text-textSecondary text-sm font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-textSecondary text-sm font-black uppercase tracking-0.5 mb-2">
                   Appointment ID
                 </Text>
 
-                <Text className="text-text text-base text-[15px] font-black text-center">
+                <Text className="text-text text-base text-base font-black text-center">
                   {bookingId || 'CUSOWN-54923'}
                 </Text>
               </View>
@@ -208,10 +201,10 @@ function BookingSuccessScreenInner() {
               {/* Info Note */}
               <View className="mt-6 bg-border/30  rounded-2xl p-3 flex-row items-start">
                 <Ionicons
+                  className="mt-0.25 mr-2"
                   name="information-circle-outline"
                   size={18}
                   color={THEME.colors.textSecondary}
-                  style={{ marginTop: 1, marginRight: 8 }}
                 />
 
                 <Text className="text-textSecondary text-xs leading-6 flex-1">

@@ -31,14 +31,14 @@ export function TrendingServiceCard({ item, index = 0, onPress }: TrendingServic
   return (
     <AnimatedSection delay={index * 100} direction="left" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-[190px] p-2 bg-card shadow-sm rounded-[24px] items-center justify-center">
+        <GlassCard className="w-48 p-2 bg-card shadow-sm rounded-3xl items-center justify-center">
           {/* Icon */}
           <View className="items-center justify-center mb-3">
             <Ionicons name="trending-up" size={30} color={THEME.colors.primary} />
           </View>
 
           {/* Category */}
-          <Text className="text-primary text-[10px] font-bold uppercase tracking-[2px] text-center mb-1">
+          <Text className="text-primary text-xs font-bold uppercase tracking-0.5 text-center mb-1">
             {item.category}
           </Text>
 
@@ -64,7 +64,7 @@ export function TrendingServiceCard({ item, index = 0, onPress }: TrendingServic
 
           {/* Price */}
           <View className="items-center justify-center mt-4">
-            <Text className="text-textSecondary text-[10px] uppercase font-bold tracking-wider text-center mb-0.5">
+            <Text className="text-textSecondary text-xs uppercase font-bold tracking-wider text-center mb-0.5">
               Starts At
             </Text>
 

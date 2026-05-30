@@ -554,7 +554,7 @@ export default function ManageHubScreen() {
           <View className="px-luxury pt-6 pb-4 mb-4">
             <View className="flex-row justify-between items-start">
               <View className="flex-1 mr-4">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
                   Management Suite
                 </Text>
                 <Text className="text-text text-3xl font-black tracking-tight" numberOfLines={2}>
@@ -659,7 +659,7 @@ export default function ManageHubScreen() {
                           color={THEME.colors.primary}
                         />
 
-                        <Text className="ml-2 text-primary font-black text-[11px] uppercase tracking-[2px]">
+                        <Text className="ml-2 text-primary font-black text-xs uppercase tracking-0.5">
                           Share
                         </Text>
                       </Pressable>
@@ -675,7 +675,7 @@ export default function ManageHubScreen() {
                           color={THEME.colors.textSecondary}
                         />
 
-                        <Text className="ml-2 text-textSecondary font-black text-[11px] uppercase tracking-[2px]">
+                        <Text className="ml-2 text-textSecondary font-black text-xs uppercase tracking-0.5">
                           Download
                         </Text>
                       </Pressable>
@@ -699,7 +699,7 @@ export default function ManageHubScreen() {
                   <View>
                     {/* Salon Name */}
                     <View className="flex-row justify-between items-center py-4 border-b border-border">
-                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
                         Salon
                       </Text>
 
@@ -712,7 +712,7 @@ export default function ManageHubScreen() {
                     </View>
                     {/* Owner Name */}
                     <View className="flex-row justify-between items-center py-4 border-b border-border">
-                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
                         Owner
                       </Text>
 
@@ -726,7 +726,7 @@ export default function ManageHubScreen() {
 
                     {/* Phone Number */}
                     <View className="flex-row justify-between items-center py-4 border-b border-border">
-                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
                         Phone
                       </Text>
 
@@ -740,7 +740,7 @@ export default function ManageHubScreen() {
 
                     {/* Address */}
                     <View className="flex-row justify-between items-start py-4 border-b border-border">
-                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
                         Address
                       </Text>
 
@@ -751,7 +751,7 @@ export default function ManageHubScreen() {
 
                     {/* City */}
                     <View className="flex-row justify-between items-center py-4 border-b border-border">
-                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
                         City
                       </Text>
 
@@ -762,7 +762,7 @@ export default function ManageHubScreen() {
 
                     {/* Working Hours */}
                     <View className="flex-row justify-between items-center py-4 border-b border-border">
-                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
                         Hours
                       </Text>
 
@@ -775,7 +775,7 @@ export default function ManageHubScreen() {
 
                     {/* Created */}
                     <View className="flex-row justify-between items-center py-4">
-                      <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                      <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
                         Created
                       </Text>
 
@@ -832,7 +832,7 @@ export default function ManageHubScreen() {
                       {photos.map((item) => (
                         <View
                           key={item.id}
-                          className="w-[47%] aspect-square bg-input rounded-2xl border border-border overflow-hidden relative mb-2"
+                          className="flex-1 aspect-square bg-input rounded-2xl border border-border overflow-hidden relative mb-2"
                         >
                           <Image
                             source={{ uri: item.url }}
@@ -864,7 +864,7 @@ export default function ManageHubScreen() {
 
                   {/* Add Holiday Form */}
                   <View className="p-2 mb-3">
-                    <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
+                    <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">
                       Schedule a Holiday
                     </Text>
                     <View className="space-y-3">
@@ -941,7 +941,7 @@ export default function ManageHubScreen() {
 
                   {/* Add Closure Form */}
                   <View className="p-2 mb-3">
-                    <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
+                    <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">
                       Add Specific Closure
                     </Text>
                     <View className="space-y-3">
@@ -1051,11 +1051,11 @@ export default function ManageHubScreen() {
                       <View className="flex-row items-center">
                         {Array.from({ length: 5 }).map((_, index) => (
                           <Ionicons
+                            className="mx-0.5"
                             key={index}
                             name="star-outline"
                             size={30}
                             color={THEME.colors.border}
-                            style={{ marginHorizontal: 2 }}
                           />
                         ))}
                       </View>
@@ -1076,11 +1076,11 @@ export default function ManageHubScreen() {
                             <View className="flex-row items-center">
                               {Array.from({ length: rev.rating }).map((_, starIdx) => (
                                 <Ionicons
+                                  className="mr-0.5"
                                   key={starIdx}
                                   name="star"
                                   size={12}
                                   color="#FFB800"
-                                  style={{ marginRight: 2 }}
                                 />
                               ))}
                             </View>

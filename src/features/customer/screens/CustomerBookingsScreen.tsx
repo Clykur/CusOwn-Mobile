@@ -88,7 +88,7 @@ export default function CustomerBookingsScreen() {
 
     return (
       <AnimatedSection delay={index * 30} direction="up" className="mb-3">
-        <GlassCard className="bg-card rounded-[22px] p-1 shadow-sm overflow-hidden">
+        <GlassCard className="bg-card rounded-3xl p-1 shadow-sm overflow-hidden">
           <Pressable onPress={() => router.push(`/booking-detail/${item.id}`)}>
             {/* Top */}
             <View className="flex-row items-center">
@@ -99,7 +99,7 @@ export default function CustomerBookingsScreen() {
                   name={salonName}
                   size={70}
                   type="business"
-                  className="w-[70px] h-[70px] rounded-full"
+                  className="w-20 h-20 rounded-full"
                 />
               </View>
 
@@ -129,7 +129,7 @@ export default function CustomerBookingsScreen() {
             <View className="flex-row items-start justify-between">
               {/* Service */}
               <View className="flex-1">
-                <Text className="text-[11px] uppercase tracking-[2px] text-textSecondary font-black">
+                <Text className="text-xs uppercase tracking-0.5 text-textSecondary font-black">
                   Service
                 </Text>
 
@@ -186,9 +186,7 @@ export default function CustomerBookingsScreen() {
                 }}
                 className="px-4 py-2 rounded-full border border-text"
               >
-                <Text className="text-text text-xs font-black uppercase tracking-[1.5px]">
-                  Rebook
-                </Text>
+                <Text className="text-text text-xs font-black uppercase tracking-wide">Rebook</Text>
               </Pressable>
             )}
           </View>
@@ -202,7 +200,7 @@ export default function CustomerBookingsScreen() {
       <SafeAreaView className="flex-1" edges={['top']}>
         {/* Cinematic Page Title */}
         <View className="px-luxury pt-5 pb-2">
-          <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
             My Bookings
           </Text>
           <Text className="text-text text-3xl font-black tracking-tight">

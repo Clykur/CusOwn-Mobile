@@ -219,15 +219,11 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
         animationType="slide"
         onRequestClose={() => setShowForm(false)}
       >
-        <Pressable
-          className="flex-1 justify-end"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
-          onPress={() => setShowForm(false)}
-        >
+        <Pressable className="flex-1 justify-end bg-black/70" onPress={() => setShowForm(false)}>
           {/* Bottom Sheet */}
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="bg-card rounded-t-[36px] p-6 pb-10 border-t border-border"
+            className="bg-card rounded-t-9 p-6 pb-10 border-t border-border"
           >
             {/* Handle */}
             <View className="w-14 h-1.5 bg-border rounded-full self-center mb-6" />
@@ -245,7 +241,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
             {/* Service Name */}
             <View className="mb-4">
-              <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
                 Service Name
               </Text>
 
@@ -262,7 +258,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             <View className="flex-row gap-x-3 mb-6">
               {/* Duration */}
               <View className="flex-1">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
                   Duration
                 </Text>
 
@@ -278,7 +274,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
               {/* Price */}
               <View className="flex-1">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
                   Price (₹)
                 </Text>
 

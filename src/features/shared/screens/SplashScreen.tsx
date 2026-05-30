@@ -140,7 +140,7 @@ export default function Splash() {
         </Animated.View>
 
         <Animated.View style={taglineStyle} className="mt-4">
-          <Text className="text-textLight text-lg font-medium tracking-[4px] uppercase text-center">
+          <Text className="text-textLight text-lg font-medium tracking-1 uppercase text-center">
             Elevated Experiences
           </Text>
         </Animated.View>
@@ -160,7 +160,7 @@ export default function Splash() {
         delay={2000}
         className="absolute bottom-16 w-full items-center"
       >
-        <Text className="text-textSecondary/50 text-xs tracking-[8px] uppercase">
+        <Text className="text-textSecondary/50 text-xs tracking-2 uppercase">
           Powered by Gold Protocol
         </Text>
       </AnimatedSection>

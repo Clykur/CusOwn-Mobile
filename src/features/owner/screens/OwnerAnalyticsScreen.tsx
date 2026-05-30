@@ -34,22 +34,20 @@ const MetricCard = ({
   icon: any;
   delay?: number;
 }) => (
-  <AnimatedSection delay={delay} direction="up" className="w-[48%] mb-4">
-    <GlassCard className="p-5 border border-border rounded-[30px] h-36">
+  <AnimatedSection delay={delay} direction="up" className="flex-1 mb-4">
+    <GlassCard className="p-5 border border-border rounded-full h-36">
       {/* Top */}
       <View className="flex-row items-center justify-start mb-6">
         <View className="w-8 h-8 rounded-2xl bg-secondary/40 items-start justify-center">
           <Ionicons name={icon} size={22} color={THEME.colors.primary} />
         </View>
 
-        <Text className="text-xs font-bold uppercase tracking-[2px] text-textSecondary">
-          {title}
-        </Text>
+        <Text className="text-xs font-bold uppercase tracking-0.5 text-textSecondary">{title}</Text>
       </View>
 
       {/* Value */}
       <View className="-mt-5">
-        <Text className="text-2xl leading-[38px] font-black text-text">{value}</Text>
+        <Text className="text-2xl leading-10 font-black text-text">{value}</Text>
       </View>
     </GlassCard>
   </AnimatedSection>
@@ -373,7 +371,7 @@ export default function OwnerAnalyticsScreen() {
         {/* Cinematic Header & Filter Action */}
         <View className="px-luxury pt-5 pb-2 flex-row justify-between items-center">
           <View className="flex-1 mr-4">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
               Performance
             </Text>
             <Text className="text-text text-3xl font-black tracking-tight">Analytics</Text>
@@ -628,7 +626,7 @@ export default function OwnerAnalyticsScreen() {
 
                 {/* Peak Booking Hours */}
                 <AnimatedSection direction="up" delay={550}>
-                  <GlassCard className="border border-border p-2 rounded-[28px] mb-6">
+                  <GlassCard className="border border-border p-2 rounded-full mb-6">
                     {/* Header */}
                     <View className="mb-5">
                       <Text className="text-text text-lg font-black">Peak Traffic Hours</Text>
@@ -639,7 +637,7 @@ export default function OwnerAnalyticsScreen() {
                     </View>
 
                     {/* Graph */}
-                    <View style={{ width: '100%', height: 180 }}>
+                    <View className="w-full h-45">
                       {(() => {
                         const height = 180;
                         const padding = { top: 20, right: 15, bottom: 25, left: 30 };
@@ -663,13 +661,14 @@ export default function OwnerAnalyticsScreen() {
 
                         return (
                           <View
-                            style={{ width: '100%', height, position: 'relative' }}
+                            className="w-full relative"
+                            style={{ height }}
                             onLayout={(e) => setChartWidth(e.nativeEvent.layout.width || 300)}
                           >
                             {activeHourIndex !== null && peakHoursPoints[activeHourIndex] && (
                               <View
+                                className="absolute bg-background px-2 py-1 rounded-md"
                                 style={{
-                                  position: 'absolute',
                                   left: Math.max(
                                     10,
                                     Math.min(
@@ -678,10 +677,6 @@ export default function OwnerAnalyticsScreen() {
                                     ),
                                   ),
                                   top: Math.max(0, peakHoursPoints[activeHourIndex].y - 35),
-                                  backgroundColor: THEME.colors.background,
-                                  paddingHorizontal: 8,
-                                  paddingVertical: 4,
-                                  borderRadius: 6,
                                   zIndex: 10,
                                   shadowColor: THEME.colors.background,
                                   shadowOffset: { width: 0, height: 2 },
@@ -690,13 +685,7 @@ export default function OwnerAnalyticsScreen() {
                                   elevation: 5,
                                 }}
                               >
-                                <Text
-                                  style={{
-                                    color: THEME.colors.text,
-                                    fontSize: 10,
-                                    fontWeight: 'bold',
-                                  }}
-                                >
+                                <Text className="text-text text-xs font-bold">
                                   {peakHoursPoints[activeHourIndex].val}
                                 </Text>
                               </View>
@@ -871,11 +860,10 @@ export default function OwnerAnalyticsScreen() {
           onRequestClose={() => setShowFilter(false)}
         >
           <Pressable
-            className="flex-1 justify-end"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+            className="flex-1 justify-end bg-black/70"
             onPress={() => setShowFilter(false)}
           >
-            <View className="bg-card rounded-t-[40px] p-6 border-t border-border max-h-[90%]">
+            <View className="bg-card rounded-t-3xl p-6 border-t border-border max-h-full flex-1">
               <View className="items-center mb-6">
                 <View className="w-12 h-1.5 bg-border rounded-full mb-6" />
                 <Text className="text-text text-xl font-black uppercase tracking-wider">
@@ -885,7 +873,7 @@ export default function OwnerAnalyticsScreen() {
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
                 {/* 1. Business Selection */}
-                <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">
                   Select Business
                 </Text>
 
@@ -945,7 +933,7 @@ export default function OwnerAnalyticsScreen() {
                 <View className="h-[0.5px] bg-border my-5" />
 
                 {/* 2. Date Selection */}
-                <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">
                   Select Period
                 </Text>
 

@@ -117,10 +117,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
       <View className="flex-1 justify-end">
         <Pressable className="flex-1" onPress={onClose} />
 
-        <View
-          className="rounded-t-[32px] max-h-[90%] w-full relative overflow-hidden"
-          style={{ backgroundColor: THEME.colors.card }}
-        >
+        <View className="rounded-t-2xl max-h-full flex-1 w-full relative overflow-hidden bg-card">
           {/* Top Grab Bar */}
           <View className="items-center py-3">
             <View className="w-12 h-1 bg-border rounded-full" />

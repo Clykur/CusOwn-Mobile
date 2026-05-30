@@ -26,11 +26,9 @@ export default function OwnerTabsLayout() {
   if (isLoading) {
     return (
       <View
+        className="flex-1 justify-center items-center"
         style={{
-          flex: 1,
           backgroundColor: '#010409',
-          justifyContent: 'center',
-          alignItems: 'center',
         }}
       >
         <ActivityIndicator size="large" color="#FFFFFF" />

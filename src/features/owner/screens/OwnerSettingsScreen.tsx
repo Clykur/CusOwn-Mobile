@@ -193,7 +193,7 @@ export default function OwnerProfileScreen() {
               paddingBottom: 40,
             }}
           >
-            <View className="h-[360px] w-full relative">
+            <View className="h-96 w-full relative">
               {isValidImageUrl(mediaUrl || profileImageUrl) ? (
                 <Image
                   source={{
@@ -240,14 +240,14 @@ export default function OwnerProfileScreen() {
               <AnimatedSection direction="up">
                 <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl">
                   <View className="flex-row items-center justify-between mb-1">
-                    <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px]">
+                    <Text className="text-textSecondary text-xs font-black uppercase tracking-1">
                       Manage your account
                     </Text>
 
                     <View className="flex-row items-center">
                       <View className="w-2 h-2 rounded-full bg-success mr-2" />
 
-                      <Text className="text-success text-[10px] font-black uppercase tracking-[2px]">
+                      <Text className="text-success text-xs font-black uppercase tracking-0.5">
                         Verified
                       </Text>
                     </View>
@@ -292,7 +292,7 @@ export default function OwnerProfileScreen() {
                   <View>
                     {/* Full Name */}
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[90px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-24">
                         Name
                       </Text>
 
@@ -320,7 +320,7 @@ export default function OwnerProfileScreen() {
 
                     {/* Email */}
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[90px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-24">
                         Email
                       </Text>
 
@@ -334,7 +334,7 @@ export default function OwnerProfileScreen() {
 
                     {/* Phone */}
                     <View className="flex-row items-center justify-between py-5">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[90px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-24">
                         Phone
                       </Text>
 
@@ -397,7 +397,7 @@ export default function OwnerProfileScreen() {
 
                   <View>
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[120px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-32">
                         Type
                       </Text>
                       <View className="flex-1 items-end">
@@ -414,7 +414,7 @@ export default function OwnerProfileScreen() {
                     </View>
 
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[120px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-32">
                         Created
                       </Text>
                       <View className="flex-1 items-end">
@@ -433,7 +433,7 @@ export default function OwnerProfileScreen() {
                     </View>
 
                     <View className="flex-row items-center justify-between py-5">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[120px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-32">
                         Last Login
                       </Text>
                       <View className="flex-1 items-end">
@@ -467,7 +467,7 @@ export default function OwnerProfileScreen() {
               <AnimatedSection direction="up" delay={500}>
                 <GlassCard className="p-2 border border-error/30 bg-error/5 rounded-3xl mb-6">
                   <View className="flex-row items-center mb-3">
-                    <Text className="text-error text-xl font-black uppercase tracking-[2px]">
+                    <Text className="text-error text-xl font-black uppercase tracking-0.5">
                       Danger Zone
                     </Text>
                   </View>
@@ -481,7 +481,7 @@ export default function OwnerProfileScreen() {
                     onPress={handleDeleteAccount}
                     className="flex-row items-center justify-center border border-error/40 bg-error/10 rounded-2xl h-14 active:bg-error/20"
                   >
-                    <Text className="text-error font-black text-sm uppercase tracking-[2px]">
+                    <Text className="text-error font-black text-sm uppercase tracking-0.5">
                       Delete Account
                     </Text>
                   </Pressable>

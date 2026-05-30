@@ -23,7 +23,7 @@ export function UpcomingBookingCard({ booking, lastVisited }: UpcomingBookingCar
         </Text>
       </View>
 
-      <GlassCard className="p-4 bg-card shadow-sm rounded-[28px]">
+      <GlassCard className="p-4 bg-card shadow-sm rounded-full">
         {booking ? (
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">

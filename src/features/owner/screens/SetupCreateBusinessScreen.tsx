@@ -25,7 +25,7 @@ export default function CreateBusinessScreen() {
             showsVerticalScrollIndicator={false}
           >
             <AnimatedSection direction="down" className="mb-8">
-              <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-2">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-2">
                 Create Business
               </Text>
               <Text className="text-text text-3xl font-black tracking-tight">

@@ -154,11 +154,8 @@ export default function RescheduleButton({
 
       {/* Bottom Sheet Modal */}
       <Modal visible={showModal} transparent animationType="slide">
-        <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <View
-            className="rounded-t-[32px] p-5"
-            style={{ backgroundColor: THEME.colors.card, maxHeight: '90%' }}
-          >
+        <View className="flex-1 justify-end bg-black/70">
+          <View className="rounded-t-2xl p-5 bg-card max-h-full">
             {/* Handle bar */}
             <View className="w-12 h-1 rounded-full bg-border self-center mb-5" />
 
@@ -213,7 +210,7 @@ export default function RescheduleButton({
             <Text className="text-textSecondary text-xs font-black uppercase tracking-widest mb-3">
               Available Slots
             </Text>
-            <ScrollView style={{ maxHeight: 220 }} showsVerticalScrollIndicator={false}>
+            <ScrollView className="max-h-56" showsVerticalScrollIndicator={false}>
               {slotsLoading ? (
                 <View className="items-center py-8">
                   <ActivityIndicator color={THEME.colors.primary} />
@@ -258,8 +255,7 @@ export default function RescheduleButton({
               placeholder="Reason for rescheduling (optional)"
               placeholderTextColor={THEME.colors.textSecondary}
               multiline
-              className="border border-border rounded-2xl px-4 py-3 mt-4 text-text bg-input"
-              style={{ minHeight: 72, textAlignVertical: 'top', color: THEME.colors.text }}
+              className="border border-border rounded-2xl px-4 py-3 mt-4 text-text bg-input min-h-20 align-top"
             />
 
             {/* Action Buttons */}

@@ -10,7 +10,6 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Core palette tokens
         background: '#0A0A0A',
         card: '#141414',
         input: '#1C1C1C',
@@ -23,19 +22,42 @@ module.exports = {
         success: '#22C55E',
         disabled: '#525252',
         transparent: 'transparent',
-        // Accent alias — maps to primary for legacy usages
         'accent-premium': '#00E676',
-        // Gradient helpers
         'gradient-start': '#00E676',
         'gradient-end': '#0F3D2E',
       },
       borderRadius: {
+        sm: '4px',
+        md: '8px',
+        lg: '12px',
+        xl: '16px',
+        '2xl': '24px',
+        '3xl': '32px',
         premium: '20px',
         luxury: '28px',
       },
       spacing: {
+        xs: '4px',
+        sm: '8px',
+        md: '12px',
+        lg: '16px',
+        xl: '24px',
+        '2xl': '32px',
+        '3xl': '48px',
+        '4xl': '64px',
         luxury: '24px',
         premium: '32px',
+      },
+      fontSize: {
+        xs: '12px',
+        sm: '14px',
+        base: '16px',
+        lg: '18px',
+        xl: '20px',
+        '2xl': '24px',
+        '3xl': '30px',
+        '4xl': '36px',
+        '5xl': '48px',
       },
     },
   },

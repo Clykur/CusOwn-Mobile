@@ -27,7 +27,7 @@ export function NearbySalonCard({ item, index = 0, onPress }: NearbySalonCardPro
   return (
     <AnimatedSection delay={index * 100} direction="right" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-[220px] h-[240px] p-2 bg-card shadow-sm rounded-[28px] relative">
+        <GlassCard className="w-56 h-64 p-2 bg-card shadow-sm rounded-full relative">
           {/* Top Right Status */}
           <View className="absolute top-1 right-4 flex-row items-center z-10">
             {/* Pulse Circle */}
@@ -49,14 +49,14 @@ export function NearbySalonCard({ item, index = 0, onPress }: NearbySalonCardPro
             <Text
               className={`${
                 status.isOpen ? 'text-success' : 'text-error'
-              } text-[10px] font-black uppercase tracking-wider`}
+              } text-xs font-black uppercase tracking-wider`}
             >
               {status.isOpen ? 'Open' : 'Closed'}
             </Text>
           </View>
           {/* Profile Image */}
           <View className="items-center justify-center mb-2">
-            <View className="w-[100px] h-[100px] rounded-full overflow-hidden items-center justify-center">
+            <View className="w-28 h-28 rounded-full overflow-hidden items-center justify-center">
               <Avatar
                 userId={item.owner_user_id}
                 name={item.salon_name}
@@ -77,7 +77,7 @@ export function NearbySalonCard({ item, index = 0, onPress }: NearbySalonCardPro
             </Text>
 
             {/* Distance */}
-            <View className="flex-row items-center min-h-[24px] mt-1">
+            <View className="flex-row items-center min-h-6 mt-1">
               <Ionicons name="location-outline" size={12} color={THEME.colors.primary} />
 
               <Text className="text-textSecondary text-xs ml-1 font-medium">

@@ -39,14 +39,7 @@ export default function BookingScreen() {
 
   if (!isMounted) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: THEME.colors.background,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <View className="flex-1 bg-background justify-center items-center">
         <ActivityIndicator size="large" color={THEME.colors.primary} />
       </View>
     );
@@ -444,7 +437,7 @@ function BookingScreenInner(): JSX.Element {
         ? 'Shop is closed on this day.'
         : 'No slots available for this date.';
       return (
-        <View className=" rounded-[28px] py-14 items-center">
+        <View className=" rounded-full py-14 items-center">
           <Ionicons name="calendar-outline" size={32} color={THEME.colors.textSecondary} />
           <Text className="text-textSecondary font-bold mt-3 text-center px-4">{emptyMsg}</Text>
         </View>
@@ -462,7 +455,7 @@ function BookingScreenInner(): JSX.Element {
               key={slot.id}
               disabled={!isAvailable}
               onPress={() => setSelectedSlot(slot)}
-              className={`w-[31%] py-4 mb-3 rounded-[22px] border items-center justify-center bg-card ${
+              className={`w-1/3 py-4 mb-3 rounded-3xl border items-center justify-center bg-card ${
                 !isAvailable
                   ? 'border-border'
                   : isSelected
@@ -479,7 +472,7 @@ function BookingScreenInner(): JSX.Element {
                 {slot.label}
               </Text>
               {!isAvailable && (
-                <Text className="text-textSecondary text-[10px] font-semibold uppercase mt-0.5">
+                <Text className="text-textSecondary text-xs font-semibold uppercase mt-0.5">
                   Booked
                 </Text>
               )}
@@ -520,6 +513,7 @@ function BookingScreenInner(): JSX.Element {
 
         {/* Shop-closed banner */}
         <Animated.View
+          className="flex-row items-center px-5"
           style={{
             opacity: bannerAnim,
             transform: [
@@ -532,15 +526,12 @@ function BookingScreenInner(): JSX.Element {
             ],
             overflow: 'hidden',
             backgroundColor: '#E53E3E',
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 20,
             paddingVertical: isShopClosed ? 10 : 0,
             maxHeight: isShopClosed ? 50 : 0,
           }}
         >
-          <Ionicons name="lock-closed" size={14} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600', flex: 1 }}>
+          <Ionicons className="mr-2" name="lock-closed" size={14} color="#fff" />
+          <Text className="text-sm font-semibold flex-1" style={{ color: '#fff' }}>
             Shop is closed. Showing availability for tomorrow.
           </Text>
         </Animated.View>
@@ -552,7 +543,7 @@ function BookingScreenInner(): JSX.Element {
         >
           <View className="px-5 mt-5">
             <View
-              className="rounded-[36px]  overflow-hidden bg-card"
+              className="rounded-full  overflow-hidden bg-card"
               style={{
                 shadowColor: THEME.colors.background,
                 shadowOpacity: 0.04,
@@ -562,7 +553,7 @@ function BookingScreenInner(): JSX.Element {
             >
               {/* SERVICES */}
               <View className="px-6 pt-6">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-4">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-4">
                   Services
                 </Text>
 
@@ -574,7 +565,7 @@ function BookingScreenInner(): JSX.Element {
                       <Pressable
                         key={service.id}
                         onPress={() => toggleService(service)}
-                        className={`mb-3 rounded-[26px] border p-4 flex-row items-center justify-between bg-card ${
+                        className={`mb-3 rounded-full border p-4 flex-row items-center justify-between bg-card ${
                           isSelected ? 'border-primary bg-primary/5' : 'border-border'
                         }`}
                       >
@@ -607,7 +598,7 @@ function BookingScreenInner(): JSX.Element {
               {/* SLOT SECTION */}
               <View className="px-6 mt-6">
                 <View className="flex-row items-center justify-between mb-4">
-                  <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                  <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
                     Available Slots
                   </Text>
 
@@ -635,7 +626,7 @@ function BookingScreenInner(): JSX.Element {
 
                 {/* Calendar — past dates disabled */}
                 {showCalendar && (
-                  <View className="mb-5 rounded-[28px]  overflow-hidden bg-card">
+                  <View className="mb-5 rounded-full  overflow-hidden bg-card">
                     <Calendar
                       current={selectedDate}
                       // minDate driven by live clock so it updates at midnight
@@ -679,12 +670,12 @@ function BookingScreenInner(): JSX.Element {
 
               {/* CUSTOMER INFO */}
               <View className="px-6 mt-5 pb-6">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-4">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-4">
                   Customer Details
                 </Text>
 
                 <View className="mb-4">
-                  <View className="h-14 rounded-[22px]  px-4 flex-row items-center bg-input">
+                  <View className="h-14 rounded-3xl  px-4 flex-row items-center bg-input">
                     <Ionicons name="person-outline" size={18} color={THEME.colors.textSecondary} />
                     <TextInput
                       className="flex-1 ml-3 text-text font-bold"
@@ -697,7 +688,7 @@ function BookingScreenInner(): JSX.Element {
                 </View>
 
                 <View>
-                  <View className="h-14 rounded-[22px]  px-4 flex-row items-center bg-input">
+                  <View className="h-14 rounded-3xl  px-4 flex-row items-center bg-input">
                     <Ionicons name="call-outline" size={18} color={THEME.colors.textSecondary} />
                     <TextInput
                       className="flex-1 ml-3 text-text font-bold"

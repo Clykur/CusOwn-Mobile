@@ -19,7 +19,7 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
   return (
     <AnimatedSection delay={index * 50} direction="up" className="mb-4">
       <Pressable onPress={() => router.push(`/(customer)/browse/salons/${item.id}`)}>
-        <View className="flex-row items-center bg-card rounded-[28px] p-4">
+        <View className="flex-row items-center bg-card rounded-full p-4">
           {/* Business Image */}
           <View className="mr-4">
             <Avatar
@@ -27,7 +27,7 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
               name={item.salon_name}
               size={76}
               type="business"
-              className="w-[76px] h-[76px] rounded-full"
+              className="w-20 h-20 rounded-full"
             />
           </View>
 
@@ -35,7 +35,7 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
           <View className="flex-1 min-w-0 justify-center">
             {/* Salon Name */}
             <Text
-              className="text-text text-[22px] font-extrabold tracking-tight"
+              className="text-text text-2xl font-extrabold tracking-tight"
               numberOfLines={1}
               ellipsizeMode="tail"
             >

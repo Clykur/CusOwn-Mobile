@@ -228,14 +228,11 @@ export default function SalonDetailsScreen() {
         contentContainerStyle={{ paddingBottom: 160 }}
       >
         {/* Hero Header */}
-        <View className="h-[360px] w-full relative">
+        <View className="h-96 w-full relative">
           {ownerImage ? (
             <Image
+              className="w-full h-full"
               source={{ uri: ownerImage }}
-              style={{
-                width: '100%',
-                height: '100%',
-              }}
               contentFit="cover"
               transition={300}
               cachePolicy="memory-disk"
@@ -282,6 +279,7 @@ export default function SalonDetailsScreen() {
                 <View className="items-end bg-border px-3 py-1.5 rounded-xl flex-row items-center shadow-sm">
                   <View className="flex-row items-center">
                     <Ionicons
+                      className="mr-1"
                       name={
                         business.rating_avg && Number(business.rating_avg) > 0
                           ? 'star'
@@ -293,16 +291,9 @@ export default function SalonDetailsScreen() {
                           ? THEME.colors.gold
                           : THEME.colors.textSecondary
                       }
-                      style={{ marginRight: 4 }}
                     />
 
-                    <Text
-                      style={{
-                        color: THEME.colors.text,
-                        fontSize: 14,
-                        fontWeight: '600',
-                      }}
-                    >
+                    <Text className="text-text text-sm font-semibold">
                       {business.rating_avg ? Number(business.rating_avg).toFixed(1) : '0.0'}
                     </Text>
                   </View>
@@ -346,7 +337,7 @@ export default function SalonDetailsScreen() {
                       name={business.owner_name || 'Owner'}
                       size={42}
                       type="business"
-                      className="w-[42px] h-[42px] rounded-full mr-3 shadow-sm"
+                      className="w-11 h-11 rounded-full mr-3 shadow-sm"
                     />
                     <View>
                       <Text className="text-text font-bold text-base">
@@ -457,7 +448,7 @@ export default function SalonDetailsScreen() {
               {photos.map((url, i) => (
                 <View
                   key={i}
-                  className="w-[48%] h-44 bg-card rounded-3xl  overflow-hidden shadow-sm mb-4"
+                  className="flex-1 h-44 bg-card rounded-3xl  overflow-hidden shadow-sm mb-4"
                 >
                   <Image source={{ uri: url }} className="w-full h-full" resizeMode="cover" />
                 </View>
@@ -479,11 +470,11 @@ export default function SalonDetailsScreen() {
                     <View className="flex-row items-center">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Ionicons
+                          className="mr-0.5"
                           key={star}
                           name={star <= Math.round(rev.rating) ? 'star' : 'star-outline'}
                           size={16}
                           color="#FACC15"
-                          style={{ marginRight: 2 }}
                         />
                       ))}
                       <Text className="text-text font-extrabold text-xs ml-2">

@@ -37,11 +37,11 @@ export default function CustomerCategoriesScreen() {
         >
           <AnimatedSection direction="down" className="mb-4">
             <View className="flex-row items-center mb-2">
-              <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-1">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-1">
                 Explore
               </Text>
             </View>
-            <Text className="text-text text-4xl font-bold tracking-tighter leading-[48px]">
+            <Text className="text-text text-4xl font-bold tracking-tighter leading-12">
               Find Your <Text className="text-primary">Experience</Text>.
             </Text>
           </AnimatedSection>

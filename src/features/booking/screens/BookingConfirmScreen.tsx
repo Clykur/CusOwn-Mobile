@@ -24,8 +24,10 @@ export default function ConfirmBookingScreen() {
         <Text style={[styles.errorMsg, { color: theme.text }]}>
           Incomplete booking workflow state.
         </Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 12 }}>
-          <Text style={{ color: theme.primary, fontWeight: '600' }}>Go Back</Text>
+        <TouchableOpacity className="mt-3" onPress={() => router.back()}>
+          <Text className="font-semibold" style={{ color: theme.primary }}>
+            Go Back
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -68,7 +70,7 @@ export default function ConfirmBookingScreen() {
         <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
           Review & Confirm
         </Text>
-        <View style={{ width: 22 }} />
+        <View className="w-6" />
       </View>
 
       <ScrollView style={styles.content}>

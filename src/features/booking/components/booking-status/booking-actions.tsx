@@ -183,10 +183,10 @@ function BookingActionsComponent({
           {isActionDisabled && (
             <View className="flex-row items-start gap-x-2 mb-2 -mt-2">
               <Ionicons
+                className="mt-0.25"
                 name="information-circle-outline"
                 size={14}
                 color={THEME.colors.textSecondary}
-                style={{ marginTop: 1 }}
               />
               <Text className="text-textSecondary text-xs flex-1 leading-5">
                 Actions are disabled as the appointment time has passed or is too close.

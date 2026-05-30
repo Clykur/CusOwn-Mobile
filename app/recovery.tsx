@@ -89,7 +89,7 @@ export default function RecoveryScreen() {
     <PremiumBackground>
       <SafeAreaView className="flex-1 justify-center px-6">
         <AnimatedSection direction="up">
-          <GlassCard className="p-2 rounded-[32px] border border-border items-center">
+          <GlassCard className="p-2 rounded-full border border-border items-center">
             {/* Icon */}
             <View className="rounded-full items-center justify-center mb-8 mt-6">
               <Ionicons name="trash-outline" size={42} color={THEME.colors.error} />
@@ -120,7 +120,7 @@ export default function RecoveryScreen() {
                 disabled={loading}
                 className="bg-primary rounded-full py-5 items-center justify-center active:opacity-80"
               >
-                <Text className="text-black font-black text-sm uppercase tracking-[2px]">
+                <Text className="text-black font-black text-sm uppercase tracking-0.5">
                   {loading ? 'Processing...' : 'Restore Account'}
                 </Text>
               </Pressable>
@@ -131,7 +131,7 @@ export default function RecoveryScreen() {
                 disabled={loading}
                 className="border border-red-500 rounded-full py-5 items-center justify-center active:opacity-80"
               >
-                <Text className="px-3 text-red-500 font-black text-sm uppercase tracking-[3px]">
+                <Text className="px-3 text-red-500 font-black text-sm uppercase tracking-1">
                   Delete Permanently
                 </Text>
               </Pressable>

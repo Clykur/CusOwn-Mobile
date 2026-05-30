@@ -296,7 +296,7 @@ export default function BookingDetailScreen() {
               <View className="flex-row items-center justify-between">
                 {/* Left Side */}
                 <View className="flex-1">
-                  <Text className={`text-text text-[22px] font-bold ${statusConfig.text}`}>
+                  <Text className={`text-text text-2xl font-bold ${statusConfig.text}`}>
                     {statusConfig.label}
                   </Text>
 
@@ -315,7 +315,7 @@ export default function BookingDetailScreen() {
 
           {/* YOUR INFORMATION */}
           <AnimatedSection delay={100} className="mb-5">
-            <GlassCard className="bg-card shadow-sm rounded-[22px] p-1">
+            <GlassCard className="bg-card shadow-sm rounded-3xl p-1">
               <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Your Information
               </Text>
@@ -359,7 +359,7 @@ export default function BookingDetailScreen() {
 
           {/* SALON PARTNER */}
           <AnimatedSection delay={150} className="mb-5">
-            <GlassCard className="bg-card shadow-sm rounded-[22px] p-1">
+            <GlassCard className="bg-card shadow-sm rounded-3xl p-1">
               <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Salon Partner
               </Text>
@@ -410,10 +410,10 @@ export default function BookingDetailScreen() {
               {booking.business?.address && (
                 <View className="mt-4 pt-4 border-t border-border flex-row gap-x-2">
                   <Ionicons
+                    className="mt-0.5"
                     name="location-outline"
                     size={16}
                     color={THEME.colors.textSecondary}
-                    style={{ marginTop: 2 }}
                   />
                   <Text className="text-textSecondary text-xs flex-1 leading-relaxed">
                     {booking.business.address}
@@ -425,7 +425,7 @@ export default function BookingDetailScreen() {
 
           {/* APPOINTMENT DETAILS */}
           <AnimatedSection delay={200} className="mb-5">
-            <GlassCard className="bg-card shadow-sm rounded-[22px] p-1">
+            <GlassCard className="bg-card shadow-sm rounded-3xl p-1">
               <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Appointment Details
               </Text>
@@ -466,10 +466,10 @@ export default function BookingDetailScreen() {
                   </Text>
                   <View className="flex-row items-center">
                     <Ionicons
+                      className="mr-1"
                       name="calendar-outline"
                       size={14}
                       color={THEME.colors.textSecondary}
-                      style={{ marginRight: 4 }}
                     />
                     <Text className="text-text font-bold text-sm">
                       {formatBookingDate(booking.date)}
@@ -483,10 +483,10 @@ export default function BookingDetailScreen() {
                   </Text>
                   <View className="flex-row items-center">
                     <Ionicons
+                      className="mr-1"
                       name="time-outline"
                       size={14}
                       color={THEME.colors.textSecondary}
-                      style={{ marginRight: 4 }}
                     />
                     <Text className="text-text font-bold text-sm text-right">
                       {formatBookingTime(booking.time)}
@@ -499,7 +499,7 @@ export default function BookingDetailScreen() {
 
           {/* BOOKING ACTIONS */}
           <AnimatedSection delay={250} className="mb-10">
-            <GlassCard className="bg-card shadow-sm rounded-[22px] p-1">
+            <GlassCard className="bg-card shadow-sm rounded-3xl p-1">
               <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Booking Actions
               </Text>

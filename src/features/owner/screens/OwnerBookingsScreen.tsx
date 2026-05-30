@@ -268,7 +268,7 @@ export default function OwnerBookingsScreen() {
         {/* Cinematic Header & Filter Action */}
         <View className="px-luxury pt-5 pb-2 flex-row justify-between items-center">
           <View className="flex-1 mr-4">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
               Bookings
             </Text>
             <Text className="text-text text-3xl font-black tracking-tight">Appointments</Text>
@@ -360,11 +360,10 @@ export default function OwnerBookingsScreen() {
           onRequestClose={() => setShowFilter(false)}
         >
           <Pressable
-            className="flex-1 justify-end"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+            className="flex-1 justify-end bg-black/70"
             onPress={() => setShowFilter(false)}
           >
-            <View className="bg-card rounded-t-[40px] p-6 border-t border-border max-h-[90%]">
+            <View className="bg-card rounded-t-3xl p-6 border-t border-border max-h-full flex-1">
               <View className="items-center mb-6">
                 <View className="w-12 h-1.5 bg-border rounded-full mb-6" />
                 <Text className="text-text text-xl font-black uppercase tracking-wider">
@@ -374,7 +373,7 @@ export default function OwnerBookingsScreen() {
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
                 {/* 1. Business Selection */}
-                <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">
                   Select Business
                 </Text>
 
@@ -434,7 +433,7 @@ export default function OwnerBookingsScreen() {
                 <View className="h-[0.5px] bg-border my-5" />
 
                 {/* 2. Date Selection */}
-                <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">
                   Select Period
                 </Text>
 

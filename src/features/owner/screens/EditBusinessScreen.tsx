@@ -45,7 +45,7 @@ export default function EditBusinessScreen() {
     return (
       <PremiumBackground>
         <SafeAreaView className="flex-1 justify-center items-center px-luxury">
-          <GlassCard className="bg-card rounded-[22px] p-1 w-full items-center">
+          <GlassCard className="bg-card rounded-3xl p-1 w-full items-center">
             <Ionicons name="business-outline" size={48} color={THEME.colors.textSecondary} />
             <Text className="text-text text-xl font-black mb-3 text-center mt-4">
               Business Not Found
@@ -76,7 +76,7 @@ export default function EditBusinessScreen() {
           >
             {/* Header */}
             <AnimatedSection direction="down" className="mb-8">
-              <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
                 Manage Business
               </Text>
               <Text className="text-text text-3xl font-black tracking-tight">

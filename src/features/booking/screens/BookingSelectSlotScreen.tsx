@@ -130,8 +130,10 @@ export default function SelectSlotScreen() {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
         <Text style={[styles.errorMsg, { color: theme.text }]}>Missing booking criteria.</Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 12 }}>
-          <Text style={{ color: theme.primary, fontWeight: '600' }}>Go Back</Text>
+        <TouchableOpacity className="mt-3" onPress={() => router.back()}>
+          <Text className="font-semibold" style={{ color: theme.primary }}>
+            Go Back
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -228,7 +230,7 @@ export default function SelectSlotScreen() {
 
     return (
       <Animated.View style={[styles.closedBanner, { opacity, transform: [{ translateY }] }]}>
-        <Ionicons name="lock-closed" size={16} color="#fff" style={{ marginRight: 8 }} />
+        <Ionicons className="mr-2" name="lock-closed" size={16} color="#fff" />
         <Text style={styles.closedBannerText}>
           Shop is closed. Showing availability for tomorrow.
         </Text>
@@ -296,7 +298,7 @@ export default function SelectSlotScreen() {
         <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
           Select Date & Time
         </Text>
-        <View style={{ width: 22 }} />
+        <View className="w-6" />
       </View>
 
       {/* Shop closed banner */}

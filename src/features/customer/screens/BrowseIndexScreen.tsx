@@ -185,7 +185,7 @@ export default function CustomerBrowseScreen() {
     <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['top']}>
         <View className="px-luxury pt-5 pb-2">
-          <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
             Discover Salons
           </Text>
           <Text className="text-text text-3xl font-black tracking-tight">

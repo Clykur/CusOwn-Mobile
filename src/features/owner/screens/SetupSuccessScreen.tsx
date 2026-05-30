@@ -75,9 +75,8 @@ export default function SuccessScreen() {
 
               {/* Description */}
               <Text
-                className="text-textSecondary text-center font-medium px-4"
+                className="text-textSecondary text-center font-medium px-4 mt-4"
                 style={{
-                  marginTop: 16,
                   fontSize: isSmallDevice ? 13 : 15,
                   lineHeight: isSmallDevice ? 24 : 28,
                 }}
@@ -89,7 +88,7 @@ export default function SuccessScreen() {
             {/* STATUS CARDS */}
             <AnimatedSection delay={150} direction="up" className="mt-6">
               {/* CARD 1 */}
-              <GlassCard className="bg-card rounded-[28px] px-4 py-4 border border-white/5 mb-4">
+              <GlassCard className="bg-card rounded-full px-4 py-4 border border-white/5 mb-4">
                 <View className="flex-row items-start">
                   <View className="w-12 h-12 rounded-2xl items-center justify-center border border-success/20">
                     <Ionicons name="radio-outline" size={22} color={THEME.colors.success} />
@@ -107,7 +106,7 @@ export default function SuccessScreen() {
               </GlassCard>
 
               {/* CARD 2 */}
-              <GlassCard className="bg-card rounded-[28px] px-4 py-4 border border-white/5">
+              <GlassCard className="bg-card rounded-full px-4 py-4 border border-white/5">
                 <View className="flex-row items-start">
                   <View className="w-12 h-12 rounded-2xl items-center justify-center border border-primary/20">
                     <Ionicons name="sparkles-outline" size={22} color={THEME.colors.primary} />

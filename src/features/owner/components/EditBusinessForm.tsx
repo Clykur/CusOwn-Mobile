@@ -22,7 +22,7 @@ const inputClass =
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <View className="mb-5">
-    <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+    <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
       {label}
     </Text>
     {children}
@@ -144,10 +144,10 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
       {error && (
         <View className="bg-error/10 border border-error/30 rounded-2xl p-4 mb-2 flex-row items-start gap-x-2">
           <Ionicons
+            className="mt-0.25"
             name="alert-circle-outline"
             size={16}
             color={THEME.colors.error}
-            style={{ marginTop: 1 }}
           />
           <Text className="text-error text-sm font-medium flex-1">{error}</Text>
         </View>
@@ -161,7 +161,6 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
           placeholderTextColor={THEME.colors.textSecondary}
           value={formData.salon_name}
           onChangeText={(val) => handleChange('salon_name', val)}
-          style={{ color: THEME.colors.text }}
         />
       </Field>
 
@@ -174,14 +173,13 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
           value={formData.whatsapp_number}
           onChangeText={(val) => handleChange('whatsapp_number', val.replace(/\D/g, ''))}
           keyboardType="phone-pad"
-          style={{ color: THEME.colors.text }}
         />
       </Field>
 
       {/* Hours */}
       <View className="flex-row gap-4 mb-5">
         <View className="flex-1">
-          <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
             Open Time
           </Text>
           <TextInput
@@ -190,11 +188,10 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
             placeholderTextColor={THEME.colors.textSecondary}
             value={formData.opening_time}
             onChangeText={(val) => handleChange('opening_time', val)}
-            style={{ color: THEME.colors.text }}
           />
         </View>
         <View className="flex-1">
-          <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
             Close Time
           </Text>
           <TextInput
@@ -203,14 +200,13 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
             placeholderTextColor={THEME.colors.textSecondary}
             value={formData.closing_time}
             onChangeText={(val) => handleChange('closing_time', val)}
-            style={{ color: THEME.colors.text }}
           />
         </View>
       </View>
 
       {/* Slot Duration Chips */}
       <View className="mb-5">
-        <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-3">
+        <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-3">
           Slot Duration
         </Text>
         <View className="flex-row flex-wrap gap-2">
@@ -239,7 +235,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
       {/* Location */}
       <View className="mb-5">
         <View className="flex-row justify-between items-center mb-3">
-          <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
             Location
           </Text>
           <Pressable onPress={handleUseLocation} className="flex-row items-center gap-x-1">
@@ -255,7 +251,6 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
           value={formData.address}
           onChangeText={(val) => handleChange('address', val)}
           multiline
-          style={{ color: THEME.colors.text }}
         />
 
         <View className="flex-row gap-3">
@@ -265,7 +260,6 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
             placeholderTextColor={THEME.colors.textSecondary}
             value={formData.city}
             onChangeText={(val) => handleChange('city', val)}
-            style={{ color: THEME.colors.text }}
           />
           <TextInput
             className={`flex-1 ${inputClass}`}
@@ -273,7 +267,6 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
             placeholderTextColor={THEME.colors.textSecondary}
             value={formData.location}
             onChangeText={(val) => handleChange('location', val)}
-            style={{ color: THEME.colors.text }}
           />
         </View>
       </View>

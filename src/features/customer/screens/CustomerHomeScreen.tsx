@@ -297,7 +297,7 @@ export default function CustomerHomeScreen() {
             className="px-luxury pt-4 pb-2 flex-row justify-between items-center"
           >
             <View>
-              <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-1">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-1">
                 {dayjs().hour() < 12
                   ? 'Good Morning'
                   : dayjs().hour() < 18

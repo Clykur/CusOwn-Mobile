@@ -27,7 +27,7 @@ const SLOT_DURATIONS = ['15', '30', '45', '60'];
 /* ─── Reusable styled input ─────────────────────────────────────────────── */
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <View className="mb-5">
-    <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+    <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
       {label}
     </Text>
     {children}
@@ -238,10 +238,10 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       {error && (
         <View className="bg-error/10 border border-error/30 rounded-2xl p-4 mb-2 flex-row items-start gap-x-2">
           <Ionicons
+            className="mt-0.25"
             name="alert-circle-outline"
             size={16}
             color={THEME.colors.error}
-            style={{ marginTop: 1 }}
           />
           <Text className="text-error text-sm font-medium flex-1">{error}</Text>
         </View>
@@ -255,7 +255,6 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
           placeholderTextColor={THEME.colors.textSecondary}
           value={formData.salon_name}
           onChangeText={(val) => handleChange('salon_name', val)}
-          style={{ color: THEME.colors.text }}
         />
       </Field>
 
@@ -267,7 +266,6 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
           placeholderTextColor={THEME.colors.textSecondary}
           value={formData.owner_name}
           onChangeText={(val) => handleChange('owner_name', val)}
-          style={{ color: THEME.colors.text }}
         />
       </Field>
 
@@ -283,7 +281,6 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
           }
           keyboardType="phone-pad"
           maxLength={10}
-          style={{ color: THEME.colors.text }}
         />
       </Field>
 
@@ -324,7 +321,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
         {/* Hours */}
         <View className="flex-row gap-4 mb-5">
           <View className="flex-1">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
               Open Time
             </Text>
             <TextInput
@@ -333,11 +330,10 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
               onChangeText={(val) => handleChange('opening_time', val)}
               placeholder="10:00"
               placeholderTextColor={THEME.colors.textSecondary}
-              style={{ color: THEME.colors.text }}
             />
           </View>
           <View className="flex-1">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
               Close Time
             </Text>
             <TextInput
@@ -346,14 +342,13 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
               onChangeText={(val) => handleChange('closing_time', val)}
               placeholder="21:00"
               placeholderTextColor={THEME.colors.textSecondary}
-              style={{ color: THEME.colors.text }}
             />
           </View>
         </View>
 
         {/* Slot Duration Chips */}
         <View className="mb-5">
-          <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-3">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-3">
             Slot Duration *
           </Text>
           <View className="flex-row flex-wrap gap-2">
@@ -388,7 +383,6 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
             value={formData.concurrent_booking_capacity}
             onChangeText={(val) => handleChange('concurrent_booking_capacity', val)}
             keyboardType="number-pad"
-            style={{ color: THEME.colors.text }}
           />
         </Field>
       </View>
@@ -401,7 +395,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
             onPress={handleAddService}
             className="bg-primary/10 border border-primary/30 rounded-full px-4 py-1.5 active:bg-primary/20"
           >
-            <Text className="text-primary text-xs font-black uppercase tracking-[2px]">
+            <Text className="text-primary text-xs font-black uppercase tracking-0.5">
               + Add Service
             </Text>
           </Pressable>
@@ -449,13 +443,12 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
             value={formData.address}
             onChangeText={(val) => handleChange('address', val)}
             multiline
-            style={{ color: THEME.colors.text }}
           />
         </Field>
 
         <View className="flex-row gap-4 mb-5">
           <View className="flex-1">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
               City *
             </Text>
             <TextInput
@@ -464,11 +457,10 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
               placeholderTextColor={THEME.colors.textSecondary}
               value={formData.city}
               onChangeText={(val) => handleChange('city', val)}
-              style={{ color: THEME.colors.text }}
             />
           </View>
           <View className="flex-1">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
               Locality *
             </Text>
             <TextInput
@@ -477,14 +469,13 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
               placeholderTextColor={THEME.colors.textSecondary}
               value={formData.location}
               onChangeText={(val) => handleChange('location', val)}
-              style={{ color: THEME.colors.text }}
             />
           </View>
         </View>
 
         <View className="flex-row gap-4">
           <View className="flex-1">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
               Sub-Area
             </Text>
             <TextInput
@@ -493,11 +484,10 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
               placeholderTextColor={THEME.colors.textSecondary}
               value={formData.area}
               onChangeText={(val) => handleChange('area', val)}
-              style={{ color: THEME.colors.text }}
             />
           </View>
           <View className="flex-1">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
               Pincode
             </Text>
             <TextInput
@@ -507,7 +497,6 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
               value={formData.pincode}
               onChangeText={(val) => handleChange('pincode', val)}
               keyboardType="number-pad"
-              style={{ color: THEME.colors.text }}
             />
           </View>
         </View>

@@ -94,7 +94,7 @@ export default function OwnerBusinessesScreen() {
           }
         >
           <AnimatedSection direction="down" className="mb-8">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
               Management
             </Text>
             <Text className="text-text text-3xl font-black tracking-tight">Businesses</Text>
@@ -151,7 +151,7 @@ export default function OwnerBusinessesScreen() {
                       <View className="flex-row items-center">
                         <View className="w-1.5 h-1.5 rounded-full bg-success mr-2" />
 
-                        <Text className="text-success text-xs font-bold uppercase tracking-[2px]">
+                        <Text className="text-success text-xs font-bold uppercase tracking-0.5">
                           Active
                         </Text>
                       </View>
@@ -184,7 +184,7 @@ export default function OwnerBusinessesScreen() {
             {/* Deleted Businesses Section */}
             {deletedBusinesses && deletedBusinesses.length > 0 && (
               <AnimatedSection direction="up" className="mt-4">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-4">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-4">
                   Recently Deleted
                 </Text>
 
@@ -207,7 +207,7 @@ export default function OwnerBusinessesScreen() {
                             {b.salon_name}
                           </Text>
 
-                          <Text className="text-error text-xs font-bold uppercase tracking-[1px]">
+                          <Text className="text-error text-xs font-bold uppercase tracking-0.5">
                             {daysRemaining} Days until permanent deletion
                           </Text>
                         </View>

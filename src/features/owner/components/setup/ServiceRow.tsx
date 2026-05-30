@@ -31,7 +31,7 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({
   return (
     <View className="mb-4 pb-4 border-b border-border">
       <View className="flex-row justify-between items-center mb-2">
-        <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+        <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
           Service #{index + 1}
         </Text>
         {showRemove && (
@@ -48,14 +48,13 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({
           placeholderTextColor={THEME.colors.textSecondary}
           value={name}
           onChangeText={onNameChange}
-          style={{ color: THEME.colors.text }}
         />
       </View>
 
       <View className="flex-row gap-3">
         <View className="flex-1">
           <View className="mb-2">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
               Duration (mins)
             </Text>
           </View>
@@ -66,12 +65,11 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({
             value={duration.toString()}
             onChangeText={onDurationChange}
             keyboardType="number-pad"
-            style={{ color: THEME.colors.text }}
           />
         </View>
         <View className="flex-1">
           <View className="mb-2">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
               Price (₹)
             </Text>
           </View>
@@ -82,7 +80,6 @@ export const ServiceRow: React.FC<ServiceRowProps> = ({
             value={price.toString()}
             onChangeText={onPriceChange}
             keyboardType="decimal-pad"
-            style={{ color: THEME.colors.text }}
           />
         </View>
       </View>

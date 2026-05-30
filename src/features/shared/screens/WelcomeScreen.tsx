@@ -19,10 +19,7 @@ export default function WelcomeScreen() {
 
             {/* Burger Style Branding */}
             <View className="items-center -mt-14">
-              <Text
-                className="text-xs font-semibold tracking-[6px] uppercase"
-                style={{ color: THEME.colors.text }}
-              >
+              <Text className="text-xs font-semibold tracking-1.5 uppercase text-text">
                 A CLYKUR PRODUCT
               </Text>
             </View>
@@ -32,10 +29,7 @@ export default function WelcomeScreen() {
         {/* CTA Card */}
         <AnimatedSection delay={600} direction="up">
           <View className="mb-8">
-            <Text
-              className="text-[32px] text-center font-black leading-10 mb-4"
-              style={{ color: THEME.colors.primary }}
-            >
+            <Text className="text-4xl text-center font-black leading-10 mb-4 text-primary">
               Your Time.{'\n'}Optimized.
             </Text>
 
@@ -55,10 +49,7 @@ export default function WelcomeScreen() {
         {/* Footer */}
         <AnimatedSection delay={900} direction="up">
           <View className="items-center pt-6">
-            <Text
-              className="text-xs uppercase"
-              style={{ letterSpacing: 4, color: THEME.colors.textSecondary }}
-            >
+            <Text className="text-xs uppercase tracking-wide text-textSecondary">
               Modern Scheduling Platform
             </Text>
           </View>

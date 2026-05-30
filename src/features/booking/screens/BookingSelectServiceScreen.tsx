@@ -33,8 +33,10 @@ export default function SelectServiceScreen() {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
         <Text style={[styles.errorMsg, { color: theme.text }]}>No business selected.</Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 12 }}>
-          <Text style={{ color: theme.primary, fontWeight: '600' }}>Go Back</Text>
+        <TouchableOpacity className="mt-3" onPress={() => router.back()}>
+          <Text className="font-semibold" style={{ color: theme.primary }}>
+            Go Back
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -92,7 +94,7 @@ export default function SelectServiceScreen() {
         <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
           {selectedBusiness.salon_name}
         </Text>
-        <View style={{ width: 22 }} />
+        <View className="w-6" />
       </View>
 
       <ScrollView style={styles.content}>
@@ -107,8 +109,8 @@ export default function SelectServiceScreen() {
 
         {isLoading ? (
           <View style={styles.skeletonList}>
-            <LoadingSkeleton height={100} borderRadius={12} style={{ marginBottom: 12 }} />
-            <LoadingSkeleton height={100} borderRadius={12} style={{ marginBottom: 12 }} />
+            <LoadingSkeleton className="mb-3" height={100} borderRadius={12} />
+            <LoadingSkeleton className="mb-3" height={100} borderRadius={12} />
             <LoadingSkeleton height={100} borderRadius={12} />
           </View>
         ) : isError ? (

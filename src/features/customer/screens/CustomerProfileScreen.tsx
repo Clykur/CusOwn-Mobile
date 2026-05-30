@@ -215,7 +215,7 @@ export default function CustomerProfileScreen() {
             }}
           >
             {/* Hero */}
-            <View className="h-[360px] w-full relative">
+            <View className="h-96 w-full relative">
               <Image
                 source={{
                   uri: mediaUrl || profileImageUrl || undefined,
@@ -247,14 +247,14 @@ export default function CustomerProfileScreen() {
               <AnimatedSection direction="up">
                 <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl">
                   <View className="flex-row items-center justify-between mb-2">
-                    <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px]">
+                    <Text className="text-textSecondary text-xs font-black uppercase tracking-1">
                       Manage your account
                     </Text>
 
                     <View className="flex-row items-center">
                       <View className="w-2 h-2 rounded-full bg-success mr-2" />
 
-                      <Text className="text-success text-[10px] font-black uppercase tracking-[2px]">
+                      <Text className="text-success text-xs font-black uppercase tracking-0.5">
                         Verified
                       </Text>
                     </View>
@@ -300,7 +300,7 @@ export default function CustomerProfileScreen() {
                   <View>
                     {/* Full Name */}
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[90px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-24">
                         Name
                       </Text>
 
@@ -331,7 +331,7 @@ export default function CustomerProfileScreen() {
 
                     {/* Email */}
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[90px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-24">
                         Email
                       </Text>
 
@@ -345,7 +345,7 @@ export default function CustomerProfileScreen() {
 
                     {/* Phone */}
                     <View className="flex-row items-center justify-between py-5">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[90px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-24">
                         Phone
                       </Text>
 
@@ -413,7 +413,7 @@ export default function CustomerProfileScreen() {
                   <View>
                     {/* Account Type */}
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[120px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-32">
                         Type
                       </Text>
 
@@ -432,7 +432,7 @@ export default function CustomerProfileScreen() {
 
                     {/* Created */}
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[120px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-32">
                         Created
                       </Text>
 
@@ -453,7 +453,7 @@ export default function CustomerProfileScreen() {
 
                     {/* Last Sign In */}
                     <View className="flex-row items-center justify-between py-5">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[120px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-32">
                         Last Login
                       </Text>
 
@@ -498,13 +498,7 @@ export default function CustomerProfileScreen() {
                   </Text>
 
                   <View className="flex-row items-center justify-between">
-                    <View
-                      className="flex-row items-center flex-1"
-                      style={{
-                        marginLeft: -15,
-                        marginRight: 5,
-                      }}
-                    >
+                    <View className="flex-row items-center flex-1 ml--3.75 mr-1.25">
                       <View className="w-12 h-12 rounded-full items-center justify-center">
                         <Ionicons
                           name="notifications-outline"
@@ -532,7 +526,7 @@ export default function CustomerProfileScreen() {
               {/* Danger */}
               <AnimatedSection direction="up" delay={500}>
                 <GlassCard className="p-2 border border-error/30 bg-error/5 rounded-3xl mb-6">
-                  <Text className="text-error text-xl font-black uppercase tracking-[2px] mb-3">
+                  <Text className="text-error text-xl font-black uppercase tracking-0.5 mb-3">
                     Danger Zone
                   </Text>
 
@@ -545,7 +539,7 @@ export default function CustomerProfileScreen() {
                     onPress={handleDeleteAccount}
                     className="flex-row items-center justify-center border border-error/40 bg-error/5 rounded-2xl h-14 active:bg-error/20"
                   >
-                    <Text className="text-error font-black text-sm uppercase tracking-[2px]">
+                    <Text className="text-error font-black text-sm uppercase tracking-0.5">
                       Delete Account
                     </Text>
                   </Pressable>

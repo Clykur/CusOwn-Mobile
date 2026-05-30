@@ -20,7 +20,7 @@ export function BusinessCard({ item, index = 0, onPress }: BrowseSalonCardProps)
   return (
     <AnimatedSection delay={index * 100} direction="right" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-[220px] p-2 bg-card shadow-sm rounded-[28px] items-center relative">
+        <GlassCard className="w-56 p-2 bg-card shadow-sm rounded-full items-center relative">
           {/* Open / Closed Badge */}
           {/* Top Right Status */}
           <View className="absolute top-3 right-3 flex-row items-center z-10">
@@ -43,7 +43,7 @@ export function BusinessCard({ item, index = 0, onPress }: BrowseSalonCardProps)
             <Text
               className={`${
                 status.isOpen ? 'text-success' : 'text-error'
-              } text-[10px] font-black uppercase tracking-wider`}
+              } text-xs font-black uppercase tracking-wider`}
             >
               {status.isOpen ? 'Open' : 'Closed'}
             </Text>
@@ -56,7 +56,7 @@ export function BusinessCard({ item, index = 0, onPress }: BrowseSalonCardProps)
               name={item.salon_name}
               size={110}
               type="business"
-              className="w-[110px] h-[110px] rounded-full"
+              className="w-28 h-28 rounded-full"
             />
           </View>
 
@@ -72,7 +72,7 @@ export function BusinessCard({ item, index = 0, onPress }: BrowseSalonCardProps)
 
             {/* Address */}
             <Text
-              className="text-textSecondary text-xs leading-5 text-center px-2 min-h-[40px]"
+              className="text-textSecondary text-xs leading-5 text-center px-2 min-h-10"
               numberOfLines={2}
             >
               {item.address}

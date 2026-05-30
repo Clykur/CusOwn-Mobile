@@ -210,7 +210,7 @@ export default function OwnerDashboardScreen() {
             className="px-luxury pt-4 pb-6 flex-row justify-between items-center"
           >
             <View>
-              <Text className="text-textSecondary text-[10px] font-black uppercase tracking-[3px] mb-1">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
                 Welcome back to
               </Text>
               <Text className="text-text text-3xl font-black tracking-tight">Dashboard</Text>
@@ -228,22 +228,15 @@ export default function OwnerDashboardScreen() {
           {/* Search & Filters */}
           <AnimatedSection delay={50} direction="up" className="px-luxury mb-8 z-50">
             <View
+              className="flex-row items-center w-full"
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                width: '100%',
                 gap: 12,
               }}
             >
               {/* Search Bar */}
               <View
+                className="flex-1 h-14 flex-row items-center px-4 rounded-3xl"
                 style={{
-                  flex: 1,
-                  height: 58,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingHorizontal: 16,
-                  borderRadius: 22,
                   backgroundColor: THEME.colors.input,
                   borderWidth: 1,
                   borderColor: THEME.colors.border,
@@ -259,18 +252,13 @@ export default function OwnerDashboardScreen() {
                 }}
               >
                 {/* Search Icon */}
-                <View
-                  style={{
-                    width: 22,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
+                <View className="w-6 items-center justify-center">
                   <Ionicons name="search-outline" size={20} color={THEME.colors.textSecondary} />
                 </View>
 
                 {/* Input */}
                 <TextInput
+                  className="flex-1 ml-3 text-text text-sm font-semibold"
                   placeholder="Search clients or services..."
                   placeholderTextColor={THEME.colors.textSecondary}
                   value={searchTerm}
@@ -279,12 +267,6 @@ export default function OwnerDashboardScreen() {
                   autoCapitalize="none"
                   autoCorrect={false}
                   style={{
-                    flex: 1,
-                    marginLeft: 12,
-                    color: THEME.colors.text,
-                    fontSize: 14,
-                    fontWeight: '600',
-
                     paddingVertical: Platform.OS === 'ios' ? 14 : 10,
 
                     includeFontPadding: false,
@@ -295,14 +277,9 @@ export default function OwnerDashboardScreen() {
                 {/* Clear Button */}
                 {searchTerm.length > 0 && (
                   <Pressable
+                    className="w-6.5 h-6.5 items-center justify-center"
                     hitSlop={12}
                     onPress={() => setSearchTerm('')}
-                    style={{
-                      width: 26,
-                      height: 26,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
                   >
                     <Ionicons name="close-circle" size={18} color={THEME.colors.textSecondary} />
                   </Pressable>
@@ -311,15 +288,10 @@ export default function OwnerDashboardScreen() {
 
               {/* Filter Button */}
               <Pressable
+                className="w-14.5 h-14 rounded-3xl items-center justify-center"
                 hitSlop={12}
                 onPress={() => setShowBusinessMenu(true)}
                 style={{
-                  width: 58,
-                  height: 58,
-                  borderRadius: 22,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-
                   backgroundColor: THEME.colors.input,
 
                   borderWidth: 1,
@@ -347,16 +319,15 @@ export default function OwnerDashboardScreen() {
                 onRequestClose={() => setShowBusinessMenu(false)}
               >
                 <View
+                  className="flex-1 justify-end"
                   style={{
-                    flex: 1,
-                    justifyContent: 'flex-end',
                     backgroundColor: 'rgba(0,0,0,0.45)',
                   }}
                 >
                   {/* Backdrop */}
                   <Pressable
+                    className="absolute"
                     style={{
-                      position: 'absolute',
                       top: 0,
                       left: 0,
                       right: 0,
@@ -367,59 +338,28 @@ export default function OwnerDashboardScreen() {
 
                   {/* Sheet */}
                   <View
+                    className="bg-card rounded-tl-8 rounded-tr-8 px-5 pt-3.5 pb-10.5 min-h-80"
                     style={{
-                      backgroundColor: THEME.colors.card,
-                      borderTopLeftRadius: 32,
-                      borderTopRightRadius: 32,
-                      paddingHorizontal: 20,
-                      paddingTop: 14,
-                      paddingBottom: 42,
-                      minHeight: 320,
                       borderTopWidth: 1,
                       borderColor: THEME.colors.border,
                     }}
                   >
                     {/* Handle */}
-                    <View
-                      style={{
-                        alignItems: 'center',
-                        marginBottom: 24,
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: 56,
-                          height: 5,
-                          borderRadius: 999,
-                          backgroundColor: THEME.colors.border,
-                        }}
-                      />
+                    <View className="items-center mb-6">
+                      <View className="w-14 h-1.25 rounded-full bg-border" />
                     </View>
 
                     {/* Header */}
-                    <Text
-                      style={{
-                        color: THEME.colors.text,
-                        fontSize: 22,
-                        fontWeight: '900',
-                        marginBottom: 24,
-                        letterSpacing: -0.5,
-                      }}
-                    >
+                    <Text className="text-text text-2xl font-black mb-6 tracking-tighter">
                       Select Business
                     </Text>
 
                     {/* All Businesses */}
                     <Pressable
+                      className="flex-row items-center py-4 px-1"
                       onPress={() => {
                         setSelectedBusinessId(null);
                         setShowBusinessMenu(false);
-                      }}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingVertical: 16,
-                        paddingHorizontal: 4,
                       }}
                     >
                       <Ionicons
@@ -433,12 +373,8 @@ export default function OwnerDashboardScreen() {
                       />
 
                       <Text
+                        className="flex-1 ml-4 text-sm font-black tracking-wide"
                         style={{
-                          flex: 1,
-                          marginLeft: 16,
-                          fontSize: 14,
-                          fontWeight: '900',
-                          letterSpacing: 1,
                           textTransform: 'uppercase',
                           color:
                             selectedBusinessId === null
@@ -454,27 +390,16 @@ export default function OwnerDashboardScreen() {
                       )}
                     </Pressable>
 
-                    <View
-                      style={{
-                        height: 1,
-                        backgroundColor: THEME.colors.border,
-                        marginVertical: 4,
-                      }}
-                    />
+                    <View className="h-0.25 bg-border my-1" />
 
                     {/* Business List */}
                     {businesses?.map((biz) => (
                       <Pressable
+                        className="flex-row items-center py-4 px-1"
                         key={biz.id}
                         onPress={() => {
                           setSelectedBusinessId(biz.id);
                           setShowBusinessMenu(false);
-                        }}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          paddingVertical: 16,
-                          paddingHorizontal: 4,
                         }}
                       >
                         <Avatar
@@ -483,18 +408,11 @@ export default function OwnerDashboardScreen() {
                           size={40}
                         />
 
-                        <View
-                          style={{
-                            flex: 1,
-                            marginLeft: 16,
-                          }}
-                        >
+                        <View className="flex-1 ml-4">
                           <Text
+                            className="text-sm font-black tracking-wide"
                             numberOfLines={1}
                             style={{
-                              fontSize: 14,
-                              fontWeight: '900',
-                              letterSpacing: 1,
                               textTransform: 'uppercase',
 
                               color:
@@ -524,11 +442,11 @@ export default function OwnerDashboardScreen() {
             <View className="flex-row gap-x-2 mb-4">
               {/* Active Businesses */}
               <AnimatedSection delay={200} direction="left" className="flex-1">
-                <GlassCard className="p-5 border border-border rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
+                <GlassCard className="p-5 border border-border rounded-full overflow-hidden relative min-h-44 justify-between">
                   <View className="flex-row items-center gap-1">
                     <Ionicons name="business-outline" size={22} color={THEME.colors.primary} />
 
-                    <Text className="text-textSecondary text-[11px] font-extrabold uppercase tracking-[2px]">
+                    <Text className="text-textSecondary text-xs font-extrabold uppercase tracking-0.5">
                       Active Businesses
                     </Text>
                   </View>
@@ -536,7 +454,7 @@ export default function OwnerDashboardScreen() {
                   {bookingsLoading ? (
                     <LoadingSkeleton height={34} width={70} />
                   ) : (
-                    <Text className="text-text text-[48px] font-black leading-none mt-6">
+                    <Text className="text-text text-5xl font-black leading-none mt-6">
                       {stats?.total_businesses || '0'}
                     </Text>
                   )}
@@ -545,11 +463,11 @@ export default function OwnerDashboardScreen() {
 
               {/* Total Bookings */}
               <AnimatedSection delay={300} direction="right" className="flex-1">
-                <GlassCard className="p-5 border border-border rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
+                <GlassCard className="p-5 border border-border rounded-full overflow-hidden relative min-h-44 justify-between">
                   <View className="flex-row items-center gap-2">
                     <Ionicons name="calendar-outline" size={22} color={THEME.colors.primary} />
 
-                    <Text className="text-textSecondary text-[11px] font-extrabold uppercase tracking-[2px]">
+                    <Text className="text-textSecondary text-xs font-extrabold uppercase tracking-0.5">
                       Total Bookings
                     </Text>
                   </View>
@@ -557,7 +475,7 @@ export default function OwnerDashboardScreen() {
                   {bookingsLoading ? (
                     <LoadingSkeleton height={34} width={70} />
                   ) : (
-                    <Text className="text-text text-[48px] font-black leading-none mt-6">
+                    <Text className="text-text text-5xl font-black leading-none mt-6">
                       {stats?.total_bookings || '0'}
                     </Text>
                   )}
@@ -569,7 +487,7 @@ export default function OwnerDashboardScreen() {
             <View className="flex-row gap-x-2">
               {/* Confirmed */}
               <AnimatedSection delay={400} direction="left" className="flex-1">
-                <GlassCard className="p-5 border border-border rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
+                <GlassCard className="p-5 border border-border rounded-full overflow-hidden relative min-h-44 justify-between">
                   <View className="flex-row items-center gap-2">
                     <Ionicons
                       name="checkmark-circle-outline"
@@ -577,7 +495,7 @@ export default function OwnerDashboardScreen() {
                       color={THEME.colors.success}
                     />
 
-                    <Text className="text-textSecondary text-[11px] font-extrabold uppercase tracking-[2px]">
+                    <Text className="text-textSecondary text-xs font-extrabold uppercase tracking-0.5">
                       Confirmed
                     </Text>
                   </View>
@@ -585,7 +503,7 @@ export default function OwnerDashboardScreen() {
                   {bookingsLoading ? (
                     <LoadingSkeleton height={34} width={70} />
                   ) : (
-                    <Text className="text-text text-[48px] font-black leading-none mt-6">
+                    <Text className="text-text text-5xl font-black leading-none mt-6">
                       {stats?.confirmed_bookings || '0'}
                     </Text>
                   )}
@@ -594,11 +512,11 @@ export default function OwnerDashboardScreen() {
 
               {/* Pending */}
               <AnimatedSection delay={500} direction="right" className="flex-1">
-                <GlassCard className="p-5 border border-border rounded-[28px] overflow-hidden relative min-h-[170px] justify-between">
+                <GlassCard className="p-5 border border-border rounded-full overflow-hidden relative min-h-44 justify-between">
                   <View className="flex-row items-center gap-2">
                     <Ionicons name="time-outline" size={22} color={THEME.colors.warning} />
 
-                    <Text className="text-textSecondary text-[11px] font-extrabold uppercase tracking-[2px]">
+                    <Text className="text-textSecondary text-xs font-extrabold uppercase tracking-0.5">
                       Pending
                     </Text>
                   </View>
@@ -606,7 +524,7 @@ export default function OwnerDashboardScreen() {
                   {bookingsLoading ? (
                     <LoadingSkeleton height={34} width={70} />
                   ) : (
-                    <Text className="text-text text-[48px] font-black leading-none mt-6">
+                    <Text className="text-text text-5xl font-black leading-none mt-6">
                       {stats?.pending_bookings || '0'}
                     </Text>
                   )}
@@ -627,7 +545,7 @@ export default function OwnerDashboardScreen() {
                 onPress={() => router.push('/(owner)/bookings')}
                 className="px-4 py-2 rounded-full"
               >
-                <Text className="text-primary font-black text-[10px] uppercase tracking-widest">
+                <Text className="text-primary font-black text-xs uppercase tracking-widest">
                   See All
                 </Text>
               </Pressable>
@@ -650,7 +568,7 @@ export default function OwnerDashboardScreen() {
                 ListEmptyComponent={
                   <View className="w-full items-center justify-center py-16">
                     <AnimatedSection direction="up" className="w-full items-center justify-center">
-                      <GlassCard className="w-full h-[420px] p-10 items-center justify-center border-dashed border-border">
+                      <GlassCard className="w-full h-full p-10 items-center justify-center border-dashed border-border">
                         <View className="items-center justify-center mb-6">
                           <Ionicons
                             name="calendar-clear-outline"
@@ -663,7 +581,7 @@ export default function OwnerDashboardScreen() {
                           No bookings yet
                         </Text>
 
-                        <Text className="text-textSecondary text-sm text-center leading-7 max-w-[260px]">
+                        <Text className="text-textSecondary text-sm text-center leading-7 max-w-72">
                           Your upcoming customer bookings will appear here once appointments are
                           scheduled.
                         </Text>
