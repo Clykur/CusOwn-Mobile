@@ -1,8 +1,5 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-// NOTE: supabase is imported here solely for real-time subscriptions (.channel/.on/.subscribe).
-// All other DB access goes through apiService. This is the single allowed UI-layer exception.
-import { supabase } from '@/lib/supabase';
 import { apiService } from '@/services/api.service';
 import { queryKeys, queryClient } from '@/lib/queryClient';
 import { CreateBookingPayload, BookingStatus } from '@/types/booking.types';
@@ -11,7 +8,8 @@ import { logger, LogTag } from '@/utils/logger';
 import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
 
 export const useBookings = (roleInput?: 'Customer' | 'Owner') => {
-  const { user, role: authRole } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const authRole = useAuthStore((s) => s.role);
   const role = roleInput || (authRole as 'Customer' | 'Owner');
 
   const query = useQuery({
@@ -33,37 +31,23 @@ export const useBookings = (roleInput?: 'Customer' | 'Owner') => {
 
   useQueryLogger('useBookings', query, { role });
 
-  // Real-time subscription (Keep this via Supabase as requested)
+  // Real-time subscription
   useEffect(() => {
     if (!user?.id) return;
 
-    const channelId = `bookings-${role}-${user.id}-${Math.random().toString(36).substr(2, 6)}`;
-    const filterOptions = {
-      event: '*' as const,
-      schema: 'public',
-      table: 'bookings',
-      ...(role === 'Customer' && { filter: `customer_user_id=eq.${user.id}` }),
-      // Owner: no column filter — RLS limits rows; avoids wrong customer_id filter on prod schema.
-    };
+    const unsubscribe = apiService.subscribeToBookings(user.id, role, (payload) => {
+      logger.info(LogTag.API, '🔔 Real-time update received for bookings', payload);
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
 
-    const channel = supabase
-      .channel(channelId)
-      .on('postgres_changes', filterOptions, (payload) => {
-        logger.info(LogTag.API, '🔔 Real-time update received for bookings', payload);
-        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
+      const newRecord = payload.new as Record<string, unknown>;
+      if (newRecord && newRecord.id) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.bookings.detail(newRecord.id as string),
+        });
+      }
+    });
 
-        const newRecord = payload.new as Record<string, unknown>;
-        if (newRecord && newRecord.id) {
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.bookings.detail(newRecord.id as string),
-          });
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return unsubscribe;
   }, [user?.id, role]);
 
   return query;
@@ -78,7 +62,7 @@ export const useBookingDetail = (id: string) => {
 };
 
 export const useCreateBooking = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   return useMutation({
     mutationFn: (payload: CreateBookingPayload) => {

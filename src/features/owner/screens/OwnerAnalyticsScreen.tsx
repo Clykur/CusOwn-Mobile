@@ -948,7 +948,7 @@ export default function OwnerAnalyticsScreen() {
                   </Pressable>
                 ))}
 
-                <View className="h-[0.5px] bg-border my-5" />
+                <View className="h-hairline bg-border my-5" />
 
                 {/* 2. Date Selection */}
                 <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">

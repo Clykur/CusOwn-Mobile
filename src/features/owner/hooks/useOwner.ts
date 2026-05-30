@@ -7,7 +7,7 @@ import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
 import { getOwnerDefaultBusinessId } from '@/services/supabase/businesses';
 
 export const useOwnerStats = (businessId?: string) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'stats', user?.id, businessId],
@@ -28,7 +28,7 @@ export const useOwnerAnalytics = (params: {
   endDate?: string;
   aggregated?: boolean;
 }) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   return useQuery({
     queryKey: ['owner', 'analytics', user?.id, params],
@@ -51,7 +51,7 @@ export const useOwnerServices = (businessId?: string) => {
 };
 
 export const useCreateService = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   return useMutation({
     mutationFn: async (payload: CreateServiceFormValues) => {
@@ -75,7 +75,7 @@ export const useOwnerDashboard = (params?: {
   fromDate?: string;
   toDate?: string;
 }) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'dashboard', user?.id, params],
@@ -94,7 +94,7 @@ export const useOwnerDashboard = (params?: {
   return query;
 };
 export const useOwnerBusiness = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'business', user?.id],
@@ -110,7 +110,7 @@ export const useOwnerBusiness = () => {
 };
 
 export const useOwnerBusinesses = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'businesses', user?.id],
@@ -146,7 +146,7 @@ export const useDeleteBusiness = () => {
 };
 
 export const useDeletedOwnerBusinesses = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'businesses', 'deleted', user?.id],

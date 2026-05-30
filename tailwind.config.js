@@ -59,6 +59,12 @@ module.exports = {
         '4xl': '36px',
         '5xl': '48px',
       },
+      borderWidth: {
+        hairline: '0.5px',
+      },
+      height: {
+        hairline: '0.5px',
+      },
     },
   },
   plugins: [],

@@ -21,6 +21,7 @@ import {
   deleteUserAccount,
   getProfilePayload,
   updateProfile as updateProfileSupabase,
+  upsertProfile as upsertProfileSupabase,
   restoreUserAccount,
   hardDeleteUserAccount,
 } from '@/services/supabase/profiles';
@@ -58,6 +59,7 @@ import {
   rescheduleBooking as rescheduleBookingSupabase,
   undoConfirm,
   undoReject,
+  subscribeToBookings as subscribeToBookingsSupabase,
 } from '@/services/supabase/bookings';
 import {
   createService as createServiceSupabase,
@@ -104,6 +106,15 @@ export const apiService = {
   }): Promise<UserProfile> => {
     assertSupabaseOnly('updateProfile');
     return updateProfileSupabase(payload);
+  },
+
+  upsertProfile: async (payload: {
+    id: string;
+    user_type: 'customer' | 'owner' | 'both' | 'admin';
+    full_name?: string | null;
+  }): Promise<UserProfile> => {
+    assertSupabaseOnly('upsertProfile');
+    return upsertProfileSupabase(payload);
   },
 
   getSignedUrl: async (mediaId: string) => {
@@ -301,6 +312,15 @@ export const apiService = {
   getBookings: async (role: 'Customer' | 'Owner'): Promise<Booking[]> => {
     assertSupabaseOnly('getBookings');
     return listBookingsSupabase(role);
+  },
+
+  subscribeToBookings: (
+    userId: string,
+    role: 'Customer' | 'Owner',
+    onUpdate: (payload: { new?: Record<string, unknown> }) => void,
+  ) => {
+    assertSupabaseOnly('subscribeToBookings');
+    return subscribeToBookingsSupabase(userId, role, onUpdate);
   },
 
   getBookingById: async (id: string): Promise<Booking> => {

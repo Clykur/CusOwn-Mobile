@@ -18,7 +18,8 @@ import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SelectServiceScreen() {
-  const { selectedBusiness, setService } = useBookingStore();
+  const selectedBusiness = useBookingStore((s) => s.selectedBusiness);
+  const setService = useBookingStore((s) => s.setService);
   const {
     data: businessDetail,
     isLoading,

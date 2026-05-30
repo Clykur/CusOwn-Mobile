@@ -15,7 +15,7 @@ import { useModal } from '@/hooks/useModal';
 
 export const useProfileImage = () => {
   const [uploading, setUploading] = useState(false);
-  const { refreshProfile } = useAuthStore();
+  const refreshProfile = useAuthStore((s) => s.refreshProfile);
   const { showModal } = useModal();
 
   const pickAndUpload = async (): Promise<string | null> => {

@@ -21,7 +21,8 @@ import { useProfileMedia } from '@/hooks/useProfileMedia';
 export default function SalonDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { data: business, isLoading: businessLoading, error } = useBusinessDetail(id as string);
-  const { setBusiness, setSelectedServices } = useBookingStore();
+  const setBusiness = useBookingStore((s) => s.setBusiness);
+  const setSelectedServices = useBookingStore((s) => s.setSelectedServices);
   const [localSelectedServices, setLocalSelectedServices] = useState<Service[]>([]);
   const { showModal } = useModal();
 

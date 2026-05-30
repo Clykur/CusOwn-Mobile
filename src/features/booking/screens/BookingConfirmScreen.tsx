@@ -10,7 +10,10 @@ import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ConfirmBookingScreen() {
-  const { selectedBusiness, selectedService, selectedSlot, resetBooking } = useBookingStore();
+  const selectedBusiness = useBookingStore((s) => s.selectedBusiness);
+  const selectedService = useBookingStore((s) => s.selectedService);
+  const selectedSlot = useBookingStore((s) => s.selectedSlot);
+  const resetBooking = useBookingStore((s) => s.resetBooking);
   const { mutateAsync: createBooking, isPending } = useCreateBooking();
   const { showModal } = useModal();
 

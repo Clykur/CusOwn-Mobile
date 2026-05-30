@@ -36,7 +36,10 @@ import { PremiumButton } from '@/components/ui/PremiumButton';
 import { Avatar } from '@/components/ui/Avatar';
 
 export default function CustomerProfileScreen() {
-  const { user, profile, profileImageUrl, refreshProfile } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const profile = useAuthStore((s) => s.profile);
+  const profileImageUrl = useAuthStore((s) => s.profileImageUrl);
+  const refreshProfile = useAuthStore((s) => s.refreshProfile);
   const { signOut } = useAuth();
   const { showModal } = useModal();
 

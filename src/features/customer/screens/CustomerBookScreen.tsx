@@ -51,8 +51,10 @@ export default function BookingScreen() {
 function BookingScreenInner(): JSX.Element {
   const { id, bookingId, selectedTime: initialTime } = useLocalSearchParams();
   const { data: business, isLoading: businessLoading } = useBusinessDetail(id as string);
-  const { selectedService, selectedServices: storeSelectedServices } = useBookingStore();
-  const { user, profile } = useAuthStore();
+  const selectedService = useBookingStore((s) => s.selectedService);
+  const storeSelectedServices = useBookingStore((s) => s.selectedServices);
+  const user = useAuthStore((s) => s.user);
+  const profile = useAuthStore((s) => s.profile);
   const { showModal } = useModal();
 
   const { data: existingBooking, isLoading: existingBookingLoading } = useBookingDetail(

@@ -214,7 +214,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                 )}
               </View>
 
-              <View className="h-[1px] bg-border my-3" />
+              <View className="h-px bg-border my-3" />
 
               {/* Schedule Info */}
               <View className="flex-row justify-between mb-4">
@@ -264,7 +264,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                 <Text className="text-text font-extrabold text-sm">₹{price.toFixed(2)}</Text>
               </View>
 
-              <View className="h-[1px] bg-border my-2" />
+              <View className="h-px bg-border my-2" />
 
               <View className="flex-row justify-between items-center mt-1">
                 <View>

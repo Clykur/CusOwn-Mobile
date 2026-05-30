@@ -24,7 +24,9 @@ import { queryClient } from '@/lib/queryClient';
 import { queryKeys } from '@/lib/queryClient';
 
 export default function SelectSlotScreen() {
-  const { selectedBusiness, selectedService, setSlot } = useBookingStore();
+  const selectedBusiness = useBookingStore((s) => s.selectedBusiness);
+  const selectedService = useBookingStore((s) => s.selectedService);
+  const setSlot = useBookingStore((s) => s.setSlot);
 
   // ─── Live clock — ticks every minute, fires exactly at midnight ──────────────
   // Pass selectedBusiness?.timezone here once that column exists.

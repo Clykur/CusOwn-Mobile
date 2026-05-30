@@ -1,71 +1,18 @@
-export const BASE_COLORS = {
-  obsidianBlack: '#0A0A0A',
-  elevatedSurface: '#141414',
-  darkSlate: '#1C1C1C',
-  vibrantMint: '#00E676',
-  forestGreen: '#0F3D2E',
-  offWhite: '#F5F5F5',
-  softGrey: '#A1A1A1',
-  coolCharcoal: '#2A2A2A',
-  coralRed: '#FF5C5C',
-  freshGreen: '#22C55E',
-  mutedGrey: '#525252',
-  transparent: 'transparent',
-  white: '#FFFFFF',
-  black: '#000000',
-  yellow: '#FACC15',
-};
+import { colors, BASE_COLORS } from './colors';
+import { spacing } from './spacing';
+import { radius } from './radius';
+import { typography } from './typography';
+
+export { BASE_COLORS };
 
 export const THEME = {
-  colors: {
-    background: BASE_COLORS.obsidianBlack,
-    card: BASE_COLORS.elevatedSurface,
-    input: BASE_COLORS.darkSlate,
-    primary: BASE_COLORS.vibrantMint,
-    secondary: BASE_COLORS.forestGreen,
-    text: BASE_COLORS.offWhite,
-    textSecondary: BASE_COLORS.softGrey,
-    border: BASE_COLORS.coolCharcoal,
-    error: BASE_COLORS.coralRed,
-    success: BASE_COLORS.freshGreen,
-    disabled: BASE_COLORS.mutedGrey,
-    warning: BASE_COLORS.coralRed,
-    info: BASE_COLORS.offWhite,
-    gradientStart: BASE_COLORS.vibrantMint,
-    gradientEnd: BASE_COLORS.forestGreen,
-    transparent: BASE_COLORS.transparent,
-    gold: BASE_COLORS.yellow,
-    // Convenience aliases
-    accentPremium: BASE_COLORS.vibrantMint,
-    surface: BASE_COLORS.elevatedSurface,
-    surfaceInput: BASE_COLORS.darkSlate,
-  },
+  colors,
   gradient: {
     start: BASE_COLORS.vibrantMint,
     end: BASE_COLORS.forestGreen,
     colors: [BASE_COLORS.vibrantMint, BASE_COLORS.forestGreen] as string[],
   },
-  spacing: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-    xxl: 48,
-  },
-  borderRadius: {
-    sm: 6,
-    md: 10,
-    lg: 14,
-    xl: 20,
-    full: 9999,
-  },
-  typography: {
-    xs: 12,
-    sm: 14,
-    md: 16,
-    lg: 18,
-    xl: 22,
-    xxl: 28,
-  },
+  spacing,
+  borderRadius: radius,
+  typography,
 };

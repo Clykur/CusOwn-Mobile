@@ -21,7 +21,8 @@ WebBrowser.maybeCompleteAuthSession();
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { setSession, clearSession } = useAuthStore();
+  const setSession = useAuthStore((s) => s.setSession);
+  const clearSession = useAuthStore((s) => s.clearSession);
 
   // ─── Email Sign-In ────────────────────────────────────────────────────
   const signInWithEmail = async (values: LoginFormValues) => {

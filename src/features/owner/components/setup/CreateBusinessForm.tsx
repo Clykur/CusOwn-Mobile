@@ -48,7 +48,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
   onSuccess,
   loading: externalLoading,
 }) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<BusinessCategory[]>([]);

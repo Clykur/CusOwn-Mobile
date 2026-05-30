@@ -671,3 +671,28 @@ export async function rescheduleBooking(
 
   return getBookingById(bookingId);
 }
+
+export function subscribeToBookings(
+  userId: string,
+  role: 'Customer' | 'Owner',
+  onUpdate: (payload: { new?: Record<string, unknown> }) => void,
+) {
+  const channelId = `bookings-${role}-${userId}-${Math.random().toString(36).substr(2, 6)}`;
+  const filterOptions = {
+    event: '*' as const,
+    schema: 'public',
+    table: 'bookings',
+    ...(role === 'Customer' && { filter: `customer_user_id=eq.${userId}` }),
+  };
+
+  const channel = supabase
+    .channel(channelId)
+    .on('postgres_changes', filterOptions, (payload) => {
+      onUpdate(payload);
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}

@@ -10,6 +10,8 @@ import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { Booking } from '@/features/booking/types/booking.types';
+import { Service } from '@/features/shared/types/business.types';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import { formatBookingDate, formatBookingTime } from '@/utils/time';
@@ -27,7 +29,7 @@ export default function CustomerBookingsScreen() {
     if (!bookings) return [];
     const now = dayjs();
 
-    return bookings.filter((b: any) => {
+    return bookings.filter((b: Booking) => {
       let status = (b.status || 'pending').toLowerCase();
       const bookingDateTime = dayjs(`${b.date} ${b.time}`);
       const bookingEndTime = bookingDateTime.add(b.duration || 60, 'minutes'); // Default to 60 mins if duration not present
@@ -72,7 +74,7 @@ export default function CustomerBookingsScreen() {
     setRefreshing(false);
   };
 
-  const renderBookingCard = ({ item, index }: { item: any; index: number }) => {
+  const renderBookingCard = ({ item, index }: { item: Booking; index: number }) => {
     const salonName = item.business?.salon_name || item.salon?.salon_name || 'Business Partner';
 
     const salonAddress = item.business?.address || item.salon?.address || 'Premium Suite';
@@ -112,7 +114,7 @@ export default function CustomerBookingsScreen() {
                     {salonName}
                   </Text>
 
-                  <Badge status={item.status as any} />
+                  <Badge status={item.status as Booking['status']} />
                 </View>
                 {/* Location */}
                 <View className="flex-row items-center mt-1">
@@ -136,7 +138,7 @@ export default function CustomerBookingsScreen() {
 
                 <Text className="text-text text-xl font-bold mt-1" numberOfLines={1}>
                   {item.services && item.services.length > 0
-                    ? item.services.map((s: any) => s.name).join(', ')
+                    ? item.services.map((s: Service) => s.name).join(', ')
                     : item.service?.name || 'Curated Session'}
                 </Text>
               </View>
@@ -173,7 +175,7 @@ export default function CustomerBookingsScreen() {
               <Pressable
                 onPress={() => {
                   const serviceIds =
-                    item.services?.map((s: any) => s.id).join(',') || item.service?.id || '';
+                    item.services?.map((s: Service) => s.id).join(',') || item.service?.id || '';
 
                   router.push({
                     pathname: '/(customer)/book/[id]',

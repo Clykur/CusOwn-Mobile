@@ -30,7 +30,9 @@ import { Avatar } from '@/components/ui/Avatar';
 
 export default function OwnerProfileScreen() {
   const { signOut } = useAuth();
-  const { user, profile, profileImageUrl } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const profile = useAuthStore((s) => s.profile);
+  const profileImageUrl = useAuthStore((s) => s.profileImageUrl);
   const { pickAndUpload, uploading } = useProfileImage();
   const { data: mediaUrl } = useProfileMedia(user?.id);
   const { showModal } = useModal();

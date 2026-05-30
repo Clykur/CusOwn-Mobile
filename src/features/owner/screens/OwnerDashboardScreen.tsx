@@ -39,7 +39,9 @@ import { THEME } from '@/theme/theme';
 type StatusFilter = 'all' | 'pending' | 'confirmed' | 'rejected' | 'cancelled';
 
 export default function OwnerDashboardScreen() {
-  const { profile, user, profileImageUrl } = useAuthStore();
+  const profile = useAuthStore((s) => s.profile);
+  const user = useAuthStore((s) => s.user);
+  const profileImageUrl = useAuthStore((s) => s.profileImageUrl);
   const [showBusinessMenu, setShowBusinessMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');

@@ -134,7 +134,7 @@ export default function OwnerBusinessesScreen() {
                       </View>
                     </View>
 
-                    <View className="h-[0.5px] bg-border w-full mb-2" />
+                    <View className="h-hairline bg-border w-full mb-2" />
 
                     <View className="flex-row justify-between items-center">
                       <View>
@@ -213,7 +213,7 @@ export default function OwnerBusinessesScreen() {
                         </View>
                       </View>
 
-                      <View className="h-[0.5px] bg-border w-full mb-2" />
+                      <View className="h-hairline bg-border w-full mb-2" />
 
                       <View className="flex-row justify-between items-center mt-2">
                         {/* Delete Left */}

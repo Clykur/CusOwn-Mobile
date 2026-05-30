@@ -4,7 +4,9 @@ import { useAuthStore } from '@/store/auth.store';
 import { useOnboardingStore } from '@/store/onboarding.store';
 
 export default function Index() {
-  const { session, role, isLoading } = useAuthStore();
+  const session = useAuthStore((s) => s.session);
+  const role = useAuthStore((s) => s.role);
+  const isLoading = useAuthStore((s) => s.isLoading);
   const { onboardingCompleted, splashShown } = useOnboardingStore();
 
   if (isLoading) return null;

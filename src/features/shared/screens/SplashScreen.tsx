@@ -27,7 +27,7 @@ const PHRASES = [
 ];
 
 export default function Splash() {
-  const { setSession } = useAuthStore();
+  const setSession = useAuthStore((s) => s.setSession);
   const { selectedRole, setSplashShown } = useOnboardingStore();
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
 

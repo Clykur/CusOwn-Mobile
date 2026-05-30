@@ -106,21 +106,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         logger.info(LogTag.AUTH, `[STORE] No profile found. Syncing initial profile as ${role}`);
 
         try {
-          const { data, error } = await supabase
-            .from('user_profiles')
-            .upsert(
-              {
-                id: user.id,
-                user_type: role.toLowerCase() as DBUserType,
-                full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: 'id' },
-            )
-            .select()
-            .single();
+          const { apiService } = await import('@/services/api.service');
+          const data = await apiService.upsertProfile({
+            id: user.id,
+            user_type: role.toLowerCase() as DBUserType,
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+          });
 
-          if (error) throw error;
           if (data) {
             profile = data;
             // Mark onboarding as completed after successful sync

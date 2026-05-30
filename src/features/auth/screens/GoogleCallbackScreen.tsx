@@ -21,7 +21,10 @@ export default function GoogleCallbackScreen() {
     error_description?: string;
   }>();
 
-  const { setSession, role, session, isLoading: isAuthLoading } = useAuthStore();
+  const setSession = useAuthStore((s) => s.setSession);
+  const role = useAuthStore((s) => s.role);
+  const session = useAuthStore((s) => s.session);
+  const isAuthLoading = useAuthStore((s) => s.isLoading);
 
   useEffect(() => {
     async function handleCallback() {

@@ -227,3 +227,29 @@ export async function recoverUserAccount(): Promise<void> {
     throw rpcError;
   }
 }
+
+export async function upsertProfile(payload: {
+  id: string;
+  user_type: 'customer' | 'owner' | 'both' | 'admin';
+  full_name?: string | null;
+}): Promise<UserProfile> {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .upsert(
+      {
+        id: payload.id,
+        user_type: payload.user_type,
+        full_name: payload.full_name,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' },
+    )
+    .select('*')
+    .single();
+
+  if (error) {
+    logger.error(LogTag.API, 'Failed to upsert user profile', error);
+    throw error;
+  }
+  return data as unknown as UserProfile;
+}

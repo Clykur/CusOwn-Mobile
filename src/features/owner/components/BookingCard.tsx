@@ -111,7 +111,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           </View>
 
           {/* Divider */}
-          <View className="h-[1px] bg-border mb-2" />
+          <View className="h-px bg-border mb-2" />
 
           {/* Footer */}
           <View className="flex-row justify-between items-center">

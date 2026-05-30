@@ -456,7 +456,7 @@ export default function BookingDetailScreen() {
                 </View>
               </View>
 
-              <View className="h-[1px] bg-border my-4" />
+              <View className="h-px bg-border my-4" />
 
               {/* Date + Time */}
               <View className="flex-row items-start justify-between">

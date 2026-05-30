@@ -5,7 +5,7 @@ import { RatingPromptModal } from './RatingPromptModal';
 import { logger, LogTag } from '@/utils/logger';
 
 export const RatingPromptProvider: React.FC = () => {
-  const { session } = useAuthStore();
+  const session = useAuthStore((s) => s.session);
   const [pendingBookings, setPendingBookings] = useState<any[]>([]);
   const [dismissedBookingIds, setDismissedBookingIds] = useState<string[]>([]);
   const [visible, setVisible] = useState(false);
