@@ -405,3 +405,22 @@ export async function searchBusinesses(params: {
   const mapped = (data || []).map((row) => mapBusinessRow(row as Record<string, unknown>));
   return enrichBusinessesWithImages(mapped);
 }
+
+/**
+ * Returns the business_id of the first active business owned by the current user.
+ * Kept in the service layer so hooks never import supabase directly.
+ */
+export async function getOwnerDefaultBusinessId(ownerUserId: string): Promise<string> {
+  const { data: business, error } = await supabase
+    .from('businesses')
+    .select('id')
+    .eq('owner_user_id', ownerUserId)
+    .is('deleted_at', null)
+    .single();
+
+  if (error || !business) {
+    throw new Error('No business found for this owner');
+  }
+
+  return business.id as string;
+}

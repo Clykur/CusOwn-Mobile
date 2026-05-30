@@ -80,7 +80,7 @@ export default function CustomerBrowseScreen() {
         postalCode: address?.postalCode || '',
         street: address?.street || '',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       const { logger, LogTag } = require('@/utils/logger');
       logger.error(LogTag.API, 'Location Error:', error);
 
@@ -115,22 +115,26 @@ export default function CustomerBrowseScreen() {
   const filteredBusinesses = useMemo(() => {
     if (!businesses) return [];
 
-    return businesses.filter((business: Business) => {
-      const matchesSearch =
+    // Base filter: search query
+    const searchFiltered = businesses.filter((business: Business) => {
+      return (
         (business.salon_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (business.address || '').toLowerCase().includes(searchQuery.toLowerCase());
+        (business.address || '').toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
 
-      // Manual location search
-      if (!useCurrentLocation) {
-        const matchesManualLocation =
-          !manualLocation ||
-          (business.address || '').toLowerCase().includes(manualLocation.toLowerCase());
+    // Manual location search
+    if (!useCurrentLocation) {
+      return searchFiltered.filter((b: Business) => {
+        return (
+          !manualLocation || (b.address || '').toLowerCase().includes(manualLocation.toLowerCase())
+        );
+      });
+    }
 
-        return matchesSearch && matchesManualLocation;
-      }
-
-      // Current GPS location radius filtering
-      if (useCurrentLocation && userLocation && business.latitude && business.longitude) {
+    // Current GPS location radius filtering
+    const nearby = searchFiltered.filter((business: Business) => {
+      if (userLocation && business.latitude && business.longitude) {
         const distance = calculateDistanceKm(
           userLocation.latitude,
           userLocation.longitude,
@@ -139,11 +143,18 @@ export default function CustomerBrowseScreen() {
         );
 
         // 10 KM radius
-        return matchesSearch && distance <= 10;
+        return distance <= 10;
       }
 
       return false;
     });
+
+    // Fallback: show general list if no nearby salons found
+    if (nearby.length > 0) {
+      return nearby;
+    }
+
+    return searchFiltered;
   }, [businesses, searchQuery, userLocation, manualLocation, useCurrentLocation]);
 
   const renderCategoryChip = ({
@@ -200,7 +211,7 @@ export default function CustomerBrowseScreen() {
 
             {/* Input */}
             <TextInput
-              className="flex-1 text-text text-base mx-3 -mt-2"
+              className="flex-1 text-text text-base mx-3"
               placeholder="Search services, salons..."
               placeholderTextColor={THEME.colors.textSecondary}
               value={useCurrentLocation ? userLocation?.city || '' : searchQuery}

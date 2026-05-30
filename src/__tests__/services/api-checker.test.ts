@@ -1,7 +1,7 @@
-import { APIChecker } from '../../services/api-checker.service';
+import { apiChecker } from '../../services/api-checker.service';
 
-describe('APIChecker', () => {
+describe('apiChecker', () => {
   it('should initialize correctly', () => {
-    expect(APIChecker).toBeDefined();
+    expect(apiChecker).toBeDefined();
   });
 });

@@ -294,3 +294,29 @@ export async function softDeleteMedia(mediaId: string): Promise<void> {
     throw error;
   }
 }
+
+/**
+ * Fetches the resolved media URL for a user's profile avatar.
+ * Kept in the service layer so hooks never import supabase directly.
+ */
+export async function getUserProfileMedia(userId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('media')
+    .select('bucket_name, storage_path')
+    .eq('entity_type', 'profile')
+    .eq('entity_id', userId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data?.bucket_name || !data?.storage_path) {
+    return null;
+  }
+
+  if (data.bucket_name === 'profile-media') {
+    return createSignedStorageUrl(data.bucket_name, data.storage_path);
+  }
+
+  return getPublicStorageUrl(data.bucket_name, data.storage_path);
+}

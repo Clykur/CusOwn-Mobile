@@ -110,11 +110,12 @@ export default function RescheduleButton({
         description: 'Booking rescheduled successfully',
       });
       onRescheduled?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       showGlobalModal({
         variant: 'error',
         title: 'Reschedule Failed',
-        description: error?.message || 'Failed to reschedule booking',
+        description:
+          (error instanceof Error ? error.message : undefined) || 'Failed to reschedule booking',
       });
     } finally {
       setLoading(false);

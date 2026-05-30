@@ -131,8 +131,8 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
       };
       await apiService.updateBusiness(business.id, payload);
       if (onSuccess) onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Failed to update business.');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Failed to update business.');
     } finally {
       setLoading(false);
     }
@@ -273,7 +273,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
 
       {/* Actions */}
       <View className="gap-y-3 pt-4 pb-2">
-        <PremiumButton title="Save Changes" onPress={handleSubmit} loading={loading} />
+        <PremiumButton title="Save" onPress={handleSubmit} loading={loading} />
 
         <Pressable
           onPress={onCancel || (() => router.back())}

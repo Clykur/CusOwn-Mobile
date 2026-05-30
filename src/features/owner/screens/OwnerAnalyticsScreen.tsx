@@ -23,32 +23,41 @@ import Svg, {
 type DateFilterType = 'all' | 'today' | 'week' | 'month' | 'custom';
 type TrendTabType = 'bookings' | 'revenue';
 
+type MetricCardProps = {
+  title: string;
+  value: string | number;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  iconColor?: string;
+  delay?: number;
+};
+
 const MetricCard = ({
   title,
   value,
   icon,
+  iconColor = THEME.colors.primary,
   delay = 0,
-}: {
-  title: string;
-  value: string | number;
-  icon: any;
-  delay?: number;
-}) => (
-  <AnimatedSection delay={delay} direction="up" className="flex-1 mb-4">
-    <GlassCard className="p-5 border border-border rounded-full h-36">
-      {/* Top */}
-      <View className="flex-row items-center justify-start mb-6">
-        <View className="w-8 h-8 rounded-2xl bg-secondary/40 items-start justify-center">
-          <Ionicons name={icon} size={22} color={THEME.colors.primary} />
-        </View>
+}: MetricCardProps) => (
+  <AnimatedSection delay={delay} direction="up" className="flex-1">
+    <GlassCard className="p-5 border border-border rounded-full overflow-hidden relative min-h-44 justify-between">
+      <View className="flex-row items-center gap-2">
+        <Ionicons name={icon} size={22} color={iconColor} />
 
-        <Text className="text-xs font-bold uppercase tracking-0.5 text-textSecondary">{title}</Text>
+        <Text
+          className="text-textSecondary text-xs font-extrabold uppercase tracking-0.5 flex-1"
+          numberOfLines={1}
+        >
+          {title}
+        </Text>
       </View>
 
-      {/* Value */}
-      <View className="-mt-5">
-        <Text className="text-2xl leading-10 font-black text-text">{value}</Text>
-      </View>
+      <Text
+        className="text-text text-4xl font-black leading-none mt-4"
+        adjustsFontSizeToFit
+        numberOfLines={1}
+      >
+        {value}
+      </Text>
     </GlassCard>
   </AnimatedSection>
 );
@@ -436,31 +445,38 @@ export default function OwnerAnalyticsScreen() {
                 </AnimatedSection>
               </View>
 
-              <View className="px-luxury flex-row flex-wrap justify-between">
-                <MetricCard
-                  title="Volume"
-                  value={analytics?.overview?.totalBookings || 0}
-                  icon="calendar-outline"
-                  delay={100}
-                />
-                <MetricCard
-                  title="Success"
-                  value={`${Math.round(analytics?.overview?.conversionRate || 0)}%`}
-                  icon="checkmark-circle-outline"
-                  delay={200}
-                />
-                <MetricCard
-                  title="No-Show"
-                  value={`${Math.round(analytics?.overview?.noShowRate || 0)}%`}
-                  icon="alert-circle-outline"
-                  delay={300}
-                />
-                <MetricCard
-                  title="Cancelled"
-                  value={analytics?.overview?.cancelledBookings || 0}
-                  icon="close-circle-outline"
-                  delay={400}
-                />
+              <View className="px-luxury mb-8">
+                <View className="flex-row gap-x-2 mb-4">
+                  <MetricCard
+                    title="Volume"
+                    value={analytics?.overview?.totalBookings || 0}
+                    icon="calendar-outline"
+                    delay={100}
+                  />
+
+                  <MetricCard
+                    title="Success"
+                    value={`${Math.round(analytics?.overview?.conversionRate || 0)}%`}
+                    icon="checkmark-circle-outline"
+                    delay={200}
+                  />
+                </View>
+
+                <View className="flex-row gap-x-2">
+                  <MetricCard
+                    title="No-Show"
+                    value={`${Math.round(analytics?.overview?.noShowRate || 0)}%`}
+                    icon="alert-circle-outline"
+                    delay={300}
+                  />
+
+                  <MetricCard
+                    title="Cancelled"
+                    value={analytics?.overview?.cancelledBookings || 0}
+                    icon="close-circle-outline"
+                    delay={400}
+                  />
+                </View>
               </View>
 
               {/* Trend Charts (Interactive Columns View) */}

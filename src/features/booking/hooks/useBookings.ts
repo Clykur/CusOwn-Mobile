@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+// NOTE: supabase is imported here solely for real-time subscriptions (.channel/.on/.subscribe).
+// All other DB access goes through apiService. This is the single allowed UI-layer exception.
 import { supabase } from '@/lib/supabase';
 import { apiService } from '@/services/api.service';
 import { queryKeys, queryClient } from '@/lib/queryClient';
@@ -50,9 +52,10 @@ export const useBookings = (roleInput?: 'Customer' | 'Owner') => {
         logger.info(LogTag.API, '🔔 Real-time update received for bookings', payload);
         queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
 
-        if (payload.new && (payload.new as any).id) {
+        const newRecord = payload.new as Record<string, unknown>;
+        if (newRecord && newRecord.id) {
           queryClient.invalidateQueries({
-            queryKey: queryKeys.bookings.detail((payload.new as any).id),
+            queryKey: queryKeys.bookings.detail(newRecord.id as string),
           });
         }
       })
@@ -100,7 +103,7 @@ export const useUpdateBookingStatus = () => {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: BookingStatus }) =>
       apiService.updateBookingStatus(id, status),
-    onSuccess: (_: any, variables: { id: string; status: BookingStatus }) => {
+    onSuccess: (_, variables: { id: string; status: BookingStatus }) => {
       logger.info(LogTag.API, `✅ Booking status updated to ${variables.status}`, {
         id: variables.id,
       });
@@ -119,8 +122,13 @@ export const useUpdateBookingStatus = () => {
 
 export const useRescheduleBooking = () => {
   return useMutation({
-    mutationFn: ({ bookingId, payload }: { bookingId: string; payload: any }) =>
-      apiService.rescheduleBooking(bookingId, payload),
+    mutationFn: ({
+      bookingId,
+      payload,
+    }: {
+      bookingId: string;
+      payload: Parameters<typeof apiService.rescheduleBooking>[1];
+    }) => apiService.rescheduleBooking(bookingId, payload),
     onSuccess: (_, variables) => {
       logger.info(
         LogTag.API,

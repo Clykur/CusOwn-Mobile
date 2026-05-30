@@ -128,8 +128,8 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
       logger.info(LogTag.API, `Successfully submitted review for booking: ${booking.id}`);
 
       onSuccess();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to submit review');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Failed to submit review');
     } finally {
       setIsLoading(false);
       setActionType(null);
@@ -147,8 +147,8 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
       logger.info(LogTag.API, `Successfully ignored review for booking: ${booking.id}`);
 
       onSuccess();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to skip review');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Failed to skip review');
     } finally {
       setIsLoading(false);
       setActionType(null);

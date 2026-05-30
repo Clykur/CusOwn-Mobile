@@ -40,7 +40,7 @@ export function useLocation() {
         street: address?.street || '',
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const { logger, LogTag } = require('@/utils/logger');
       logger.error(LogTag.API, 'Location Error:', error);
 

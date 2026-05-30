@@ -121,8 +121,11 @@ export async function updateProfile(payload: {
     try {
       const { url } = await resolveMediaPublicUrl(data.profile_media_id);
       profileImageUrl = url;
-    } catch (err: any) {
-      logger.warn(LogTag.API, `Failed to resolve media for updated profile: ${err.message}`);
+    } catch (err: unknown) {
+      logger.warn(
+        LogTag.API,
+        `Failed to resolve media for updated profile: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 

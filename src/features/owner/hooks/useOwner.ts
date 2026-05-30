@@ -4,6 +4,7 @@ import { queryClient } from '@/lib/queryClient';
 import { CreateServiceFormValues } from '@/schemas/booking.schema';
 import { useAuthStore } from '@/store/auth.store';
 import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
+import { getOwnerDefaultBusinessId } from '@/services/supabase/businesses';
 
 export const useOwnerStats = (businessId?: string) => {
   const { user } = useAuthStore();
@@ -56,22 +57,12 @@ export const useCreateService = () => {
     mutationFn: async (payload: CreateServiceFormValues) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      // We still need the business_id for some backend endpoints if they are not session-aware
-      // But ideally the backend knows who the user is from the JWT.
-      // Keeping the business_id lookup for now if the backend requires it.
-      const { data: business, error } = await supabase
-        .from('businesses')
-        .select('id')
-        .eq('owner_user_id', user.id)
-        .single();
+      // Fetch the default business_id via the service layer (no direct supabase access in hooks)
+      const businessId = await getOwnerDefaultBusinessId(user.id);
 
-      if (error || !business) throw new Error('No business found for this owner');
-
-      // The backend should probably have a POST /api/owner/services
-      // For now we'll assume the apiService handles it.
       return apiService.createService({
         ...payload,
-        business_id: business.id,
+        business_id: businessId,
       });
     },
     onSuccess: () => {
@@ -135,7 +126,7 @@ export const useOwnerBusinesses = () => {
 
 export const useUpdateBusiness = () => {
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: Record<string, unknown> }) =>
       apiService.updateBusiness(id, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['owner', 'businesses'] });

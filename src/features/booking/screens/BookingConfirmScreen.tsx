@@ -47,11 +47,13 @@ export default function ConfirmBookingScreen() {
       // Clear wizard selections
       resetBooking();
       router.replace('/booking/success');
-    } catch (err: any) {
+    } catch (err: unknown) {
       showModal({
         variant: 'error',
         title: 'Booking Error',
-        description: err.message || 'Failed to finalize your reservation.',
+        description:
+          (err instanceof Error ? err.message : String(err)) ||
+          'Failed to finalize your reservation.',
       });
     }
   };

@@ -133,10 +133,11 @@ export default function SalonDetailsScreen() {
     });
   };
 
-  const handleBookNow = () => {
+  const handleBookNow = (preSelectedService?: Service) => {
     setBusiness(business);
-    // Set selected services in booking store
-    if (localSelectedServices.length > 0) {
+    if (preSelectedService) {
+      setSelectedServices([preSelectedService]);
+    } else if (localSelectedServices.length > 0) {
       setSelectedServices(localSelectedServices);
     } else if (services.length > 0) {
       // Default to first service if none selected
@@ -424,8 +425,9 @@ export default function SalonDetailsScreen() {
                       </View>
                     </View>
                     <Pressable
-                      onPress={() => {
-                        handleBookNow();
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        handleBookNow(service);
                       }}
                       className="bg-primary px-4 py-2 rounded-xl items-center justify-center"
                     >
@@ -529,7 +531,7 @@ export default function SalonDetailsScreen() {
 
         <PremiumButton
           title={localSelectedServices.length > 0 ? 'Book Slot' : 'Reserve Slot'}
-          onPress={handleBookNow}
+          onPress={() => handleBookNow()}
           className="flex-1 h-10 rounded-2xl"
         />
       </View>

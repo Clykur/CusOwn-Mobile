@@ -222,11 +222,11 @@ export default function ManageHubScreen() {
         description: 'Photo added to portfolio',
       });
       fetchPhotos();
-    } catch (err: any) {
+    } catch (err: unknown) {
       showModal({
         variant: 'error',
         title: 'Error',
-        description: err.message || 'Failed to upload image',
+        description: (err instanceof Error ? err.message : String(err)) || 'Failed to upload image',
       });
     } finally {
       setUploadingPhoto(false);
@@ -253,11 +253,12 @@ export default function ManageHubScreen() {
                 title: 'Success',
                 description: 'Photo removed successfully',
               });
-            } catch (err: any) {
+            } catch (err: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
-                description: err.message || 'Failed to delete image',
+                description:
+                  (err instanceof Error ? err.message : String(err)) || 'Failed to delete image',
               });
             }
           },
@@ -309,11 +310,11 @@ export default function ManageHubScreen() {
         description: 'Holiday added successfully',
       });
       fetchDowntime();
-    } catch (err: any) {
+    } catch (err: unknown) {
       showModal({
         variant: 'error',
         title: 'Error',
-        description: err.message || 'Failed to add holiday',
+        description: (err instanceof Error ? err.message : String(err)) || 'Failed to add holiday',
       });
     } finally {
       setSubmittingHoliday(false);
@@ -341,11 +342,12 @@ export default function ManageHubScreen() {
                 title: 'Success',
                 description: 'Holiday deleted',
               });
-            } catch (err: any) {
+            } catch (err: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
-                description: err.message || 'Failed to delete holiday',
+                description:
+                  (err instanceof Error ? err.message : String(err)) || 'Failed to delete holiday',
               });
             }
           },
@@ -381,11 +383,11 @@ export default function ManageHubScreen() {
         description: 'Downtime closure added successfully',
       });
       fetchDowntime();
-    } catch (err: any) {
+    } catch (err: unknown) {
       showModal({
         variant: 'error',
         title: 'Error',
-        description: err.message || 'Failed to add closure',
+        description: (err instanceof Error ? err.message : String(err)) || 'Failed to add closure',
       });
     } finally {
       setSubmittingClosure(false);
@@ -413,11 +415,12 @@ export default function ManageHubScreen() {
                 title: 'Success',
                 description: 'Closure deleted',
               });
-            } catch (err: any) {
+            } catch (err: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
-                description: err.message || 'Failed to delete closure',
+                description:
+                  (err instanceof Error ? err.message : String(err)) || 'Failed to delete closure',
               });
             }
           },
@@ -481,11 +484,13 @@ export default function ManageHubScreen() {
               });
 
               router.replace('/(owner)');
-            } catch (err: any) {
+            } catch (err: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
-                description: err.message || 'Failed to delete business.',
+                description:
+                  (err instanceof Error ? err.message : String(err)) ||
+                  'Failed to delete business.',
               });
             } finally {
               setLoading(false);

@@ -45,11 +45,12 @@ export default function NoShowButton({ bookingId, onMarked }: NoShowButtonProps)
               if (onMarked) {
                 onMarked();
               }
-            } catch (error: any) {
+            } catch (error: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
-                description: error?.message || 'Failed to mark no-show',
+                description:
+                  (error instanceof Error ? error.message : undefined) || 'Failed to mark no-show',
               });
             } finally {
               setLoading(false);

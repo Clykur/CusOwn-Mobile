@@ -89,6 +89,7 @@ export default function CustomerBookingsScreen() {
     return (
       <AnimatedSection delay={index * 30} direction="up" className="mb-3">
         <GlassCard className="bg-card rounded-3xl p-1 shadow-sm overflow-hidden">
+          {/* Tappable top section → booking detail */}
           <Pressable onPress={() => router.push(`/booking-detail/${item.id}`)}>
             {/* Top */}
             <View className="flex-row items-center">
@@ -149,7 +150,7 @@ export default function CustomerBookingsScreen() {
             </View>
           </Pressable>
 
-          {/* Bottom */}
+          {/* Bottom — date/time + rebook, isolated from the card press */}
           <View className="flex-row items-center justify-between pt-2 border-t border-border">
             {/* Date & Time */}
             <Pressable
@@ -170,9 +171,7 @@ export default function CustomerBookingsScreen() {
               item.status === 'rejected' ||
               item.status === 'no_show') && (
               <Pressable
-                onPress={(e) => {
-                  e.stopPropagation();
-
+                onPress={() => {
                   const serviceIds =
                     item.services?.map((s: any) => s.id).join(',') || item.service?.id || '';
 

@@ -101,7 +101,7 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
       return;
     }
 
-    const servicesByBusiness: Record<string, any[]> = {};
+    const servicesByBusiness: Record<string, Record<string, unknown>[]> = {};
     services?.forEach((s) => {
       if (!servicesByBusiness[s.business_id]) {
         servicesByBusiness[s.business_id] = [];
@@ -136,17 +136,20 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
       if (matchedService) {
         b.services = [
           {
-            ...matchedService,
-            price: Number(matchedService.price_cents || 0) / 100,
-          } as any,
+            id: String(matchedService.id ?? ''),
+            name: String(matchedService.name ?? ''),
+            price: Number(matchedService.price_cents ?? 0) / 100,
+            duration: Number(totalDuration ?? matchedService.duration_minutes ?? 30),
+            business_id: String(b.business_id),
+          },
         ];
         b.service = {
-          id: String(matchedService.id),
-          name: String(matchedService.name),
-          price: b.price || Number(matchedService.price_cents || 0) / 100,
+          id: String(matchedService.id ?? ''),
+          name: String(matchedService.name ?? ''),
+          price: b.price || Number(matchedService.price_cents ?? 0) / 100,
           duration: Number(totalDuration ?? matchedService.duration_minutes ?? 30),
           business_id: String(b.business_id),
-        } as any;
+        };
       } else {
         const fallbackName = b.business?.salon_name
           ? `${b.business.salon_name} Session`
@@ -158,7 +161,7 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
             price: b.price || 0,
             duration: Number(totalDuration ?? 30),
             business_id: String(b.business_id),
-          } as any,
+          },
         ];
         b.service = {
           id: '',
@@ -166,7 +169,7 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
           price: b.price || 0,
           duration: Number(totalDuration ?? 30),
           business_id: String(b.business_id),
-        } as any;
+        };
       }
     }
   } catch (err) {
@@ -174,7 +177,7 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
   }
 }
 
-function isBookingTimePassed(booking: any): boolean {
+function isBookingTimePassed(booking: Booking): boolean {
   if (!booking.date || !booking.time) return false;
 
   // Clean date YYYY-MM-DD
@@ -513,7 +516,7 @@ export async function createBooking(input: MobileCreateBookingInput): Promise<Bo
 
 export async function confirmBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.confirm, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.confirm, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -525,7 +528,7 @@ export async function confirmBooking(bookingId: string): Promise<Booking> {
 
 export async function rejectBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.reject, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.reject, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -537,7 +540,7 @@ export async function rejectBooking(bookingId: string): Promise<Booking> {
 
 export async function undoConfirm(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.undoConfirm, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.undoConfirm, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -549,7 +552,7 @@ export async function undoConfirm(bookingId: string): Promise<Booking> {
 
 export async function undoReject(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.undoReject, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.undoReject, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -561,7 +564,7 @@ export async function undoReject(bookingId: string): Promise<Booking> {
 
 export async function markBookingNoShow(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.markNoShow, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.markNoShow, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -578,7 +581,7 @@ export async function cancelBooking(
   reason?: string,
   cancelledBy: 'customer' | 'owner' = 'customer',
 ): Promise<Booking> {
-  const result = await invokeRpc<any>(BOOKING_RPC.cancel, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.cancel, {
     p_booking_id: bookingId,
     p_cancelled_by: cancelledBy,
     p_cancellation_reason: reason || '',
@@ -655,7 +658,7 @@ export async function rescheduleBooking(
     }
   }
 
-  const result = await invokeRpc<any>(BOOKING_RPC.reschedule, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.reschedule, {
     p_booking_id: bookingId,
     p_new_slot_id: slotId,
     p_rescheduled_by: payload.rescheduled_by ?? 'customer',

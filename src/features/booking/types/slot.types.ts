@@ -1,6 +1,6 @@
 export interface Slot {
-  start_time: any;
-  end_time: any;
+  start_time: string;
+  end_time: string;
   id: string;
   business_id: string;
   date: string; // YYYY-MM-DD format

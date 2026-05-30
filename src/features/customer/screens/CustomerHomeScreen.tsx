@@ -90,6 +90,11 @@ export default function CustomerHomeScreen() {
       });
     }
 
+    // Fallback if nearby filtering leaves us with nothing
+    if (list.length === 0 && businesses && businesses.length > 0) {
+      list = (businesses as any[]).slice(0, 5); // Use general businesses as fallback, max 5 items
+    }
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       list = list.filter(

@@ -10,8 +10,10 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Booking } from '@/types/booking.types';
+import { Service } from '@/types/business.types';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { useModal } from '@/hooks/useModal';
@@ -40,11 +42,11 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
   onUndoReject,
   onNoShow,
 }) => {
+  const insets = useSafeAreaInsets();
   const { showModal } = useModal();
   if (!booking) return null;
 
-  // Cast to any for accessing dynamically populated backend fields safely
-  const b = booking as any;
+  const b = booking;
 
   const price = getBookingPrice(b);
 
@@ -96,27 +98,27 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
 
   const serviceNames = React.useMemo(() => {
     if (b.services && b.services.length > 0) {
-      return b.services.map((s: any) => s.name).join(', ');
+      return b.services.map((s: Service) => s.name).join(', ');
     }
     return b.service?.name || 'Standard Slot';
   }, [b.services, b.service]);
 
   const serviceDuration = React.useMemo(() => {
     if (b.services && b.services.length > 0) {
-      return b.services.reduce(
-        (sum: number, s: any) => sum + (s.duration || s.duration_minutes || 30),
-        0,
-      );
+      return b.services.reduce((sum: number, s: Service) => sum + (s.duration || 30), 0);
     }
     return b.service?.duration || b.total_duration_minutes || 30;
   }, [b.services, b.service, b.total_duration_minutes]);
 
   return (
     <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
-      <View className="flex-1 justify-end">
-        <Pressable className="flex-1" onPress={onClose} />
+      <View className="flex-1 justify-end bg-black/40">
+        <Pressable className="absolute inset-0" onPress={onClose} />
 
-        <View className="rounded-t-2xl max-h-full flex-1 w-full relative overflow-hidden bg-card">
+        <View
+          className="w-full bg-background overflow-hidden rounded-t-3xl"
+          style={{ flex: 1, marginTop: Math.max(insets.top + 20, 60) }}
+        >
           {/* Top Grab Bar */}
           <View className="items-center py-3">
             <View className="w-12 h-1 bg-border rounded-full" />

@@ -14,9 +14,10 @@ import Animated, {
 import { router } from 'expo-router';
 import { useAuthStore } from '@/store/auth.store';
 import { useOnboardingStore } from '@/store/onboarding.store';
-import { supabase } from '@/lib/supabase';
+import { authService } from '@/services/auth.service';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import type { Session } from '@supabase/supabase-js';
 
 const PHRASES = [
   'Book Instantly',
@@ -59,7 +60,7 @@ export default function Splash() {
       try {
         const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = await authService.getSession();
         await setSession(session);
 
         logoOpacity.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.quad) });
@@ -115,7 +116,7 @@ export default function Splash() {
     phraseTranslateY.value = 10;
   };
 
-  const handleNavigation = (session: any) => {
+  const handleNavigation = (session: Session | null) => {
     if (session) {
       const role = session.user.user_metadata?.role || selectedRole;
       router.replace(role === 'Owner' ? '/(owner)' : '/(customer)');

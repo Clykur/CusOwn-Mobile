@@ -294,7 +294,7 @@ export default function OwnerDashboardScreen() {
 
               {/* Filter Button */}
               <Pressable
-                className="w-14.5 h-14 rounded-3xl items-center justify-center"
+                className="h-14 w-14 rounded-xl items-center justify-center"
                 hitSlop={12}
                 onPress={() => setShowBusinessMenu(true)}
                 style={[

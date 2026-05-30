@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { UserProfile } from '@/types/user.types';
+import { UserProfile, DBUserType } from '@/types/user.types';
 import { useOnboardingStore } from './onboarding.store';
 import { useActiveRoleStore } from './active-role.store';
 import { logger, LogTag } from '@/utils/logger';
@@ -91,8 +91,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           // Mark onboarding as completed if we found a verified profile
           useOnboardingStore.getState().setOnboardingCompleted(true);
         }
-      } catch (err: any) {
-        logger.warn(LogTag.AUTH, `[STORE] Profile fetch failed: ${err.message}.`);
+      } catch (err: unknown) {
+        logger.warn(
+          LogTag.AUTH,
+          `[STORE] Profile fetch failed: ${err instanceof Error ? err.message : String(err)}.`,
+        );
       }
 
       // 5. Last resort fallback / First-time login profile sync
@@ -108,7 +111,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             .upsert(
               {
                 id: user.id,
-                user_type: role.toLowerCase() as any,
+                user_type: role.toLowerCase() as DBUserType,
                 full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
                 updated_at: new Date().toISOString(),
               },
@@ -134,8 +137,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
           const { url } = await resolveMediaPublicUrl(profile.profile_media_id);
           profileImageUrl = url;
-        } catch (err: any) {
-          logger.warn(LogTag.AUTH, `[STORE] Failed to resolve profile media URL: ${err.message}`);
+        } catch (err: unknown) {
+          logger.warn(
+            LogTag.AUTH,
+            `[STORE] Failed to resolve profile media URL: ${err instanceof Error ? err.message : String(err)}`,
+          );
         }
       }
 

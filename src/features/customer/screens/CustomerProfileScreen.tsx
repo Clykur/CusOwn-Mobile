@@ -79,8 +79,8 @@ export default function CustomerProfileScreen() {
           phone_number: data.profile.phone_number || '',
         });
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load profile');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Failed to load profile');
     } finally {
       setLoading(false);
     }
@@ -114,11 +114,12 @@ export default function CustomerProfileScreen() {
 
       await fetchProfile();
       await refreshProfile();
-    } catch (err: any) {
+    } catch (err: unknown) {
       showModal({
         variant: 'error',
         title: 'Update Failed',
-        description: err.message || 'Could not update profile',
+        description:
+          (err instanceof Error ? err.message : String(err)) || 'Could not update profile',
       });
     } finally {
       setUpdating(false);
@@ -149,7 +150,7 @@ export default function CustomerProfileScreen() {
             try {
               await apiService.deleteAccount('User requested deletion via mobile app');
               signOut();
-            } catch (err: any) {
+            } catch (err: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
@@ -383,7 +384,7 @@ export default function CustomerProfileScreen() {
                   <View className="flex-row items-center gap-4 mb-6">
                     <View className="flex-1">
                       <PremiumButton
-                        title={updating ? 'Saving...' : 'Save Changes'}
+                        title={updating ? 'Saving...' : 'Save'}
                         onPress={handleUpdateProfile}
                         disabled={updating}
                         className="h-14 bg-primary rounded-2xl w-full"

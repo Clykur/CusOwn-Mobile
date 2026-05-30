@@ -377,14 +377,18 @@ function BookingScreenInner(): JSX.Element {
           },
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       showModal({
         variant: 'error',
         title: isRescheduling ? 'Rescheduling Failed' : 'Booking Failed',
-        description:
-          err.response?.data?.message ||
-          err.message ||
-          'An error occurred while reserving your slot. Please try again.',
+        description: (() => {
+          if (err instanceof Error) return err.message;
+          const axiosErr = err as { response?: { data?: { message?: string } } };
+          return (
+            axiosErr?.response?.data?.message ||
+            'An error occurred while reserving your slot. Please try again.'
+          );
+        })(),
       });
     } finally {
       setIsSubmitting(false);
@@ -497,7 +501,7 @@ function BookingScreenInner(): JSX.Element {
                 router.replace(`/(customer)/browse/salons/${id}`);
               }
             }}
-            className="w-10 h-10 rounded-full items-center justify-center mr-4 bg-border/50"
+            className="w-10 h-10 rounded-full items-center justify-center mr-4"
           >
             <Ionicons name="arrow-back" size={20} color={THEME.colors.text} />
           </Pressable>
@@ -545,7 +549,7 @@ function BookingScreenInner(): JSX.Element {
         >
           <View className="px-5 mt-5">
             <View
-              className="rounded-full  overflow-hidden bg-card"
+              className="rounded-3xl overflow-hidden bg-card"
               style={[
                 {
                   shadowColor: THEME.colors.background,

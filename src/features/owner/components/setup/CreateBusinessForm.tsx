@@ -218,9 +218,12 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       if (onSuccess) {
         onSuccess(result);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Business creation failed:', err);
-      setError(err.message || 'Failed to create business. Please try again.');
+      setError(
+        (err instanceof Error ? err.message : String(err)) ||
+          'Failed to create business. Please try again.',
+      );
     } finally {
       setLoading(false);
     }

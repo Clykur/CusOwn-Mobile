@@ -2,7 +2,7 @@ import { THEME } from '@/theme/theme';
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { logger, LogTag } from '@/utils/logger';
 
@@ -65,7 +65,7 @@ export default function GoogleCallbackScreen() {
             LogTag.AUTH,
             '[CALLBACK] 🔑 Exchanging code for session (Fallback handler)...',
           );
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          const { data, error: exchangeError } = await authService.exchangeCodeForSession(code);
 
           if (exchangeError) throw exchangeError;
 
@@ -73,17 +73,14 @@ export default function GoogleCallbackScreen() {
             logger.info(LogTag.AUTH, '[CALLBACK] ✨ Session established via fallback');
             await setSession(data.session);
           }
-        } catch (err: any) {
-          logger.warn(
-            LogTag.AUTH,
-            '[CALLBACK] ⚠️ Exchange failed or already handled:',
-            err.message,
-          );
+        } catch (err: unknown) {
+          const errMessage = err instanceof Error ? err.message : 'Unknown error';
+          logger.warn(LogTag.AUTH, '[CALLBACK] ⚠️ Exchange failed or already handled:', errMessage);
 
           // Double check if a session appeared while we were trying (race condition)
           const {
             data: { session: currentSession },
-          } = await supabase.auth.getSession();
+          } = await authService.getSession();
           if (currentSession) {
             logger.info(
               LogTag.AUTH,
@@ -95,8 +92,8 @@ export default function GoogleCallbackScreen() {
 
           // If it's a real error and we still don't have a session, go back
           if (
-            !err.message?.includes('verifier not found') &&
-            !err.message?.includes('already used')
+            !errMessage?.includes('verifier not found') &&
+            !errMessage?.includes('already used')
           ) {
             logger.error(LogTag.AUTH, '[CALLBACK] ❌ Real exchange error', err);
             Alert.alert('Sign In Failed', 'We could not establish your session. Please try again.');

@@ -202,7 +202,7 @@ export async function getOwnerAnalytics(params: {
       hourCounts[h] = 0;
     }
     for (const b of bookings) {
-      const slotStart = (b as any).slot_start || b.time || (b.slot as any)?.start_time;
+      const slotStart = b.time || b.slot?.start_time;
       if (slotStart) {
         const hour = parseInt(String(slotStart).split(':')[0], 10);
         if (!isNaN(hour)) {
