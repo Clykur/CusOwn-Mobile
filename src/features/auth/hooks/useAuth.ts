@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Alert, Platform } from 'react-native';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
-import { logger, LogTag } from '@/utils/logger';
-import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/auth.store';
-import { LoginFormValues, RegisterFormValues } from '@/schemas/auth.schema';
-import { STRINGS } from '@/constants/strings';
-import { router } from 'expo-router';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
+import * as WebBrowser from 'expo-web-browser';
+import { useState } from 'react';
+import { Alert } from 'react-native';
+
+import { STRINGS } from '@/constants/strings';
 import { parseOAuthParamsFromUrl } from '@/lib/oauthParams';
+import { authService } from '@/services/auth.service';
+import { useAuthStore } from '@/store/auth.store';
+import { logger, LogTag } from '@/utils/logger';
+
+import type { LoginFormValues, RegisterFormValues } from '@/schemas/auth.schema';
 
 const OAUTH_PENDING_ROLE_KEY = 'oauth_pending_role';
 const NATIVE_GOOGLE_CALLBACK = 'cusown://google-callback';
@@ -21,7 +22,8 @@ WebBrowser.maybeCompleteAuthSession();
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { setSession, clearSession } = useAuthStore();
+  const setSession = useAuthStore((s) => s.setSession);
+  const clearSession = useAuthStore((s) => s.clearSession);
 
   // ─── Email Sign-In ────────────────────────────────────────────────────
   const signInWithEmail = async (values: LoginFormValues) => {
@@ -29,10 +31,7 @@ export const useAuth = () => {
     setError(null);
     try {
       logger.info(LogTag.AUTH, `Attempting email sign-in for: ${values.email}`);
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
+      const { data, error: authError } = await authService.signInWithEmail(values);
 
       if (authError) {
         logger.error(LogTag.AUTH, `Sign-in failed: ${authError.message}`);
@@ -44,9 +43,10 @@ export const useAuth = () => {
         await setSession(data.session);
       }
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : STRINGS.ERRORS.GENERIC;
       logger.error(LogTag.AUTH, `Unexpected error during sign-in`, err);
-      setError(err.message || STRINGS.ERRORS.GENERIC);
+      setError(message || STRINGS.ERRORS.GENERIC);
       throw err;
     } finally {
       setLoading(false);
@@ -59,16 +59,7 @@ export const useAuth = () => {
     setError(null);
     try {
       logger.info(LogTag.AUTH, `Attempting email sign-up for: ${values.email} as ${values.role}`);
-      const { data, error: authError } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          data: {
-            full_name: values.fullName,
-            role: values.role,
-          },
-        },
-      });
+      const { data, error: authError } = await authService.signUpWithEmail(values);
 
       if (authError) {
         logger.error(LogTag.AUTH, `Sign-up failed: ${authError.message}`);
@@ -80,13 +71,11 @@ export const useAuth = () => {
 
         // Ensure the profile is created/updated with the correct user_type immediately
         try {
-          await supabase
-            .from('user_profiles')
-            .update({
-              user_type: values.role.toLowerCase(),
-              full_name: values.fullName,
-            })
-            .eq('id', data.session.user.id);
+          await authService.updateUserProfileOnSignUp(
+            data.session.user.id,
+            values.role,
+            values.fullName,
+          );
         } catch (syncErr) {
           logger.error(LogTag.AUTH, 'Failed to sync profile after signup', syncErr);
         }
@@ -96,9 +85,10 @@ export const useAuth = () => {
         logger.info(LogTag.AUTH, `Sign-up request sent. Verification may be required.`);
       }
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : STRINGS.ERRORS.GENERIC;
       logger.error(LogTag.AUTH, `Unexpected error during sign-up`, err);
-      setError(err.message || STRINGS.ERRORS.GENERIC);
+      setError(message || STRINGS.ERRORS.GENERIC);
       throw err;
     } finally {
       setLoading(false);
@@ -125,19 +115,8 @@ export const useAuth = () => {
         `   ⚠️  IMPORTANT: Copy the URI above and add it to your Supabase "Redirect URLs" whitelist!`,
       );
 
-      // 1. Get the OAuth URL from Supabase
-      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUri,
-          skipBrowserRedirect: true,
-          queryParams: {
-            prompt: 'select_account',
-            access_type: 'offline',
-            skip_http_redirect: 'true',
-          },
-        },
-      });
+      // 1. Get the OAuth URL from Supabase via service
+      const { data, error: oauthError } = await authService.signInWithGoogle(redirectUri);
 
       if (oauthError) throw oauthError;
       if (!data?.url) throw new Error('Could not generate authentication URL');
@@ -145,7 +124,6 @@ export const useAuth = () => {
       logger.info(LogTag.AUTH, `3. 🌐 Opening Auth Session...`);
 
       // 2. Open the auth session
-      // For universal apps, using the redirectUri as the second param is critical
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
 
       logger.info(LogTag.AUTH, `4. 📥 Browser Result Type: ${result.type}`);
@@ -185,7 +163,7 @@ export const useAuth = () => {
 
         logger.info(LogTag.AUTH, '6. 🔑 Exchanging code for session...');
         const { data: sessionData, error: sessionError } =
-          await supabase.auth.exchangeCodeForSession(code);
+          await authService.exchangeCodeForSession(code);
 
         if (sessionError) {
           if (
@@ -203,11 +181,8 @@ export const useAuth = () => {
 
           await setSession(sessionData.session);
 
-          // Save selected role
-          await supabase.from('user_profiles').upsert({
-            id: sessionData.session.user.id,
-            user_type: role.toLowerCase(),
-          });
+          // Save selected role via service
+          await authService.upsertGoogleProfile(sessionData.session.user.id, role);
 
           // RootLayout will automatically route based on role and profile status
         }
@@ -216,11 +191,11 @@ export const useAuth = () => {
       } else {
         logger.warn(LogTag.AUTH, `⚠️ Unexpected browser result type: ${result.type}`);
       }
-    } catch (err: any) {
-      logger.error(LogTag.AUTH, `❌ OAuth Flow Failed: ${err.message}`, err);
-      const userFriendlyError = err.message || 'Failed to sign in with Google';
-      setError(userFriendlyError);
-      Alert.alert('Sign In Failed', userFriendlyError);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to sign in with Google';
+      logger.error(LogTag.AUTH, `❌ OAuth Flow Failed: ${message}`, err);
+      setError(message);
+      Alert.alert('Sign In Failed', message);
     } finally {
       setLoading(false);
     }
@@ -230,7 +205,7 @@ export const useAuth = () => {
   const signOut = async () => {
     setLoading(true);
     try {
-      await supabase.auth.signOut();
+      await authService.signOut();
       await clearSession();
     } catch {
       // ignore

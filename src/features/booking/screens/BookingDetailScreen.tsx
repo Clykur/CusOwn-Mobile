@@ -1,22 +1,25 @@
-import { THEME } from '@/theme/theme';
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, Linking } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useBookingDetail, useUpdateBookingStatus } from '@/hooks/useBookings';
-import { getBookingPrice } from '@/services/api.service';
-import { useModal } from '@/hooks/useModal';
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { buildBookingWhatsAppUrl } from '@/lib/whatsapp';
-import { logger, LogTag } from '@/utils/logger';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Avatar } from '@/components/ui/Avatar';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { BookingActions } from '@/features/booking/components/booking-status/booking-actions';
+import { useBookingDetail, useUpdateBookingStatus } from '@/hooks/useBookings';
+import { useModal } from '@/hooks/useModal';
+import { buildBookingWhatsAppUrl } from '@/lib/whatsapp';
+import { getBookingPrice } from '@/services/api.service';
 import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
+import { logger, LogTag } from '@/utils/logger';
 import { formatBookingDate, formatBookingTime } from '@/utils/time';
+
+import type { Slot } from '@/features/booking/types/slot.types';
 
 function getStatusConfig(status: string) {
   switch (status.toLowerCase()) {
@@ -83,16 +86,17 @@ export default function BookingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { showModal } = useModal();
 
-  const { data: rawBooking, isLoading, isError } = useBookingDetail(id || '');
-
-  const booking = rawBooking as any;
+  const { data: booking, isLoading, isError } = useBookingDetail(id || '');
 
   const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [whatsappLoading, setWhatsappLoading] = useState(false);
-  const [slots, setSlots] = useState<any[]>([]);
+  const [slots, setSlots] = useState<Slot[]>([]);
 
   const cancellationMinHoursMs = 2 * 60 * 60 * 1000;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mutate: updateBookingStatus, isPending: isCancelling } = useUpdateBookingStatus();
 
   /* ---------------- WHATSAPP ---------------- */
@@ -111,6 +115,7 @@ export default function BookingDetailScreen() {
       booking.status === 'completed';
 
     if (isPastOrCancelled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWhatsappUrl(null);
       return;
     }
@@ -143,6 +148,7 @@ export default function BookingDetailScreen() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [booking?.id, booking?.booking_id, booking?.status]);
 
   /* ---------------- AVAILABLE SLOTS ---------------- */
@@ -172,6 +178,7 @@ export default function BookingDetailScreen() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [booking?.id]);
 
   /* ---------------- ACTIONS ---------------- */
@@ -296,7 +303,7 @@ export default function BookingDetailScreen() {
               <View className="flex-row items-center justify-between">
                 {/* Left Side */}
                 <View className="flex-1">
-                  <Text className={`text-text text-[22px] font-bold ${statusConfig.text}`}>
+                  <Text className={`text-text text-2xl font-bold ${statusConfig.text}`}>
                     {statusConfig.label}
                   </Text>
 
@@ -315,7 +322,7 @@ export default function BookingDetailScreen() {
 
           {/* YOUR INFORMATION */}
           <AnimatedSection delay={100} className="mb-5">
-            <GlassCard className="bg-card shadow-sm rounded-[22px] p-1">
+            <GlassCard className="bg-card shadow-sm rounded-3xl p-1">
               <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Your Information
               </Text>
@@ -359,7 +366,7 @@ export default function BookingDetailScreen() {
 
           {/* SALON PARTNER */}
           <AnimatedSection delay={150} className="mb-5">
-            <GlassCard className="bg-card shadow-sm rounded-[22px] p-1">
+            <GlassCard className="bg-card shadow-sm rounded-3xl p-1">
               <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Salon Partner
               </Text>
@@ -392,7 +399,7 @@ export default function BookingDetailScreen() {
                 <View className="flex-row items-center">
                   {booking.business?.whatsapp_number && (
                     <Pressable
-                      onPress={() => handleCall(booking.business.whatsapp_number)}
+                      onPress={() => handleCall(booking.business?.whatsapp_number)}
                       className="p-3 rounded-xl mr-2"
                     >
                       <Ionicons name="call-outline" size={18} color={THEME.colors.primary} />
@@ -410,10 +417,10 @@ export default function BookingDetailScreen() {
               {booking.business?.address && (
                 <View className="mt-4 pt-4 border-t border-border flex-row gap-x-2">
                   <Ionicons
+                    className="mt-0.5"
                     name="location-outline"
                     size={16}
                     color={THEME.colors.textSecondary}
-                    style={{ marginTop: 2 }}
                   />
                   <Text className="text-textSecondary text-xs flex-1 leading-relaxed">
                     {booking.business.address}
@@ -425,7 +432,7 @@ export default function BookingDetailScreen() {
 
           {/* APPOINTMENT DETAILS */}
           <AnimatedSection delay={200} className="mb-5">
-            <GlassCard className="bg-card shadow-sm rounded-[22px] p-1">
+            <GlassCard className="bg-card shadow-sm rounded-3xl p-1">
               <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Appointment Details
               </Text>
@@ -439,7 +446,7 @@ export default function BookingDetailScreen() {
                   <View className="flex-1 mr-4">
                     <Text className="text-text font-extrabold text-base">
                       {booking.services && booking.services.length > 0
-                        ? booking.services.map((s: any) => s.name).join(', ')
+                        ? booking.services.map((s: { name?: string }) => s.name).join(', ')
                         : booking.service?.name || 'Service'}
                     </Text>
                     <Text className="text-textSecondary text-xs mt-1">
@@ -456,7 +463,7 @@ export default function BookingDetailScreen() {
                 </View>
               </View>
 
-              <View className="h-[1px] bg-border my-4" />
+              <View className="h-px bg-border my-4" />
 
               {/* Date + Time */}
               <View className="flex-row items-start justify-between">
@@ -466,10 +473,10 @@ export default function BookingDetailScreen() {
                   </Text>
                   <View className="flex-row items-center">
                     <Ionicons
+                      className="mr-1"
                       name="calendar-outline"
                       size={14}
                       color={THEME.colors.textSecondary}
-                      style={{ marginRight: 4 }}
                     />
                     <Text className="text-text font-bold text-sm">
                       {formatBookingDate(booking.date)}
@@ -483,10 +490,10 @@ export default function BookingDetailScreen() {
                   </Text>
                   <View className="flex-row items-center">
                     <Ionicons
+                      className="mr-1"
                       name="time-outline"
                       size={14}
                       color={THEME.colors.textSecondary}
-                      style={{ marginRight: 4 }}
                     />
                     <Text className="text-text font-bold text-sm text-right">
                       {formatBookingTime(booking.time)}
@@ -499,7 +506,7 @@ export default function BookingDetailScreen() {
 
           {/* BOOKING ACTIONS */}
           <AnimatedSection delay={250} className="mb-10">
-            <GlassCard className="bg-card shadow-sm rounded-[22px] p-1">
+            <GlassCard className="bg-card shadow-sm rounded-3xl p-1">
               <Text className="text-textSecondary text-xs font-black uppercase tracking-wider mb-4">
                 Booking Actions
               </Text>
@@ -509,11 +516,13 @@ export default function BookingDetailScreen() {
                   id: booking.id,
                   status: booking.status,
                   no_show: booking.no_show,
-                  slot: booking.slot || {
-                    date: booking.date,
-                    start_time: booking.time,
-                    end_time: booking.time,
-                  },
+                  slot:
+                    booking.slot ||
+                    ({
+                      date: booking.date,
+                      start_time: booking.time,
+                      end_time: booking.time,
+                    } as Slot),
                   salon: booking.business,
                   business_id: booking.business_id,
                   services: booking.services,

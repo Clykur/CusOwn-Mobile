@@ -1,20 +1,21 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, Pressable, FlatList, TextInput, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
-import { Business, BusinessCategory } from '@/types/business.types';
-import { useModal } from '@/hooks/useModal';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useState, useMemo } from 'react';
+import { View, Text, Pressable, FlatList, TextInput, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-
-import { Ionicons } from '@expo/vector-icons';
 import { BrowseCard } from '@/features/customer/components/BrowseCard';
+import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
+import { useModal } from '@/hooks/useModal';
+import { THEME } from '@/theme/theme';
+import { logger, LogTag } from '@/utils/logger';
+
+import type { Business, BusinessCategory } from '@/types/business.types';
 
 export default function CustomerBrowseScreen() {
   const { category, categoryId } = useLocalSearchParams<{
@@ -29,7 +30,16 @@ export default function CustomerBrowseScreen() {
     categoryId || category || null,
   );
 
-  const [userLocation, setUserLocation] = useState<any>(null);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    city?: string;
+    district?: string;
+    region?: string;
+    country?: string;
+    postalCode?: string;
+    street?: string;
+  } | null>(null);
 
   const [locationLoading, setLocationLoading] = useState(false);
 
@@ -42,6 +52,7 @@ export default function CustomerBrowseScreen() {
 
   const { data: categories } = useCategories();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [manualLocation, setManualLocation] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const getUserLocation = async () => {
@@ -80,8 +91,7 @@ export default function CustomerBrowseScreen() {
         postalCode: address?.postalCode || '',
         street: address?.street || '',
       });
-    } catch (error: any) {
-      const { logger, LogTag } = require('@/utils/logger');
+    } catch (error: unknown) {
       logger.error(LogTag.API, 'Location Error:', error);
 
       showModal({
@@ -115,22 +125,26 @@ export default function CustomerBrowseScreen() {
   const filteredBusinesses = useMemo(() => {
     if (!businesses) return [];
 
-    return businesses.filter((business: Business) => {
-      const matchesSearch =
+    // Base filter: search query
+    const searchFiltered = businesses.filter((business: Business) => {
+      return (
         (business.salon_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (business.address || '').toLowerCase().includes(searchQuery.toLowerCase());
+        (business.address || '').toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
 
-      // Manual location search
-      if (!useCurrentLocation) {
-        const matchesManualLocation =
-          !manualLocation ||
-          (business.address || '').toLowerCase().includes(manualLocation.toLowerCase());
+    // Manual location search
+    if (!useCurrentLocation) {
+      return searchFiltered.filter((b: Business) => {
+        return (
+          !manualLocation || (b.address || '').toLowerCase().includes(manualLocation.toLowerCase())
+        );
+      });
+    }
 
-        return matchesSearch && matchesManualLocation;
-      }
-
-      // Current GPS location radius filtering
-      if (useCurrentLocation && userLocation && business.latitude && business.longitude) {
+    // Current GPS location radius filtering
+    const nearby = searchFiltered.filter((business: Business) => {
+      if (userLocation && business.latitude && business.longitude) {
         const distance = calculateDistanceKm(
           userLocation.latitude,
           userLocation.longitude,
@@ -139,13 +153,21 @@ export default function CustomerBrowseScreen() {
         );
 
         // 10 KM radius
-        return matchesSearch && distance <= 10;
+        return distance <= 10;
       }
 
       return false;
     });
+
+    // Fallback: show general list if no nearby salons found
+    if (nearby.length > 0) {
+      return nearby;
+    }
+
+    return searchFiltered;
   }, [businesses, searchQuery, userLocation, manualLocation, useCurrentLocation]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderCategoryChip = ({
     item,
   }: {
@@ -169,6 +191,7 @@ export default function CustomerBrowseScreen() {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const allCategories = useMemo(() => {
     const list: (BusinessCategory | { value: string | null; label: string })[] = [
       { value: null, label: 'All' },
@@ -185,7 +208,7 @@ export default function CustomerBrowseScreen() {
     <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['top']}>
         <View className="px-luxury pt-5 pb-2">
-          <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
             Discover Salons
           </Text>
           <Text className="text-text text-3xl font-black tracking-tight">
@@ -200,7 +223,7 @@ export default function CustomerBrowseScreen() {
 
             {/* Input */}
             <TextInput
-              className="flex-1 text-text text-base mx-3 -mt-2"
+              className="flex-1 text-text text-base mx-3"
               placeholder="Search services, salons..."
               placeholderTextColor={THEME.colors.textSecondary}
               value={useCurrentLocation ? userLocation?.city || '' : searchQuery}

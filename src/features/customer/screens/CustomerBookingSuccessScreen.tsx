@@ -1,33 +1,27 @@
-import { BASE_COLORS, THEME } from '@/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, ActivityIndicator, ScrollView, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { Avatar } from '@/components/ui/Avatar';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { Ionicons } from '@expo/vector-icons';
-import { Avatar } from '@/components/ui/Avatar';
-import { isValidImageUrl } from '@/utils/image';
+import { THEME } from '@/theme/theme';
 
 export default function BookingSuccessScreen() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
   if (!isMounted) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: THEME.colors.background,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <View className="flex-1 bg-background justify-center items-center">
         <ActivityIndicator size="large" color={THEME.colors.primary} />
       </View>
     );
@@ -39,6 +33,8 @@ export default function BookingSuccessScreen() {
 function BookingSuccessScreenInner() {
   const params = useLocalSearchParams();
   const salonName = Array.isArray(params.salonName) ? params.salonName[0] : params.salonName;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const salonImage = Array.isArray(params.salonImage) ? params.salonImage[0] : params.salonImage;
   const serviceName = Array.isArray(params.serviceName)
     ? params.serviceName[0]
@@ -85,14 +81,14 @@ function BookingSuccessScreenInner() {
 
           {/* Booking Summary */}
           <AnimatedSection direction="up" delay={120} className="mb-6">
-            <GlassCard className="bg-card  rounded-[30px] p-2 shadow-sm">
+            <GlassCard className="bg-card  rounded-full p-2 shadow-sm">
               {/* Booking ID */}
               <View className="items-center pb-5 border-b border-border">
-                <Text className="text-textSecondary text-sm font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-textSecondary text-sm font-black uppercase tracking-0.5 mb-2">
                   Appointment ID
                 </Text>
 
-                <Text className="text-text text-base text-[15px] font-black text-center">
+                <Text className="text-text text-base text-base font-black text-center">
                   {bookingId || 'CUSOWN-54923'}
                 </Text>
               </View>
@@ -208,10 +204,10 @@ function BookingSuccessScreenInner() {
               {/* Info Note */}
               <View className="mt-6 bg-border/30  rounded-2xl p-3 flex-row items-start">
                 <Ionicons
+                  className="mt-0.25 mr-2"
                   name="information-circle-outline"
                   size={18}
                   color={THEME.colors.textSecondary}
-                  style={{ marginTop: 1, marginRight: 8 }}
                 />
 
                 <Text className="text-textSecondary text-xs leading-6 flex-1">

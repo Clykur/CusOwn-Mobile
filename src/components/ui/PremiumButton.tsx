@@ -1,7 +1,9 @@
-import { THEME } from '@/theme/theme';
 import React from 'react';
-import { Pressable, Text, PressableProps, View, ActivityIndicator } from 'react-native';
+import { Pressable, Text, View, ActivityIndicator } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+
+import type { PressableProps } from 'react-native';
+import { THEME } from '@/theme/theme';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -13,7 +15,7 @@ interface PremiumButtonProps extends PressableProps {
   loading?: boolean;
 }
 
-export const PremiumButton: React.FC<PremiumButtonProps> = ({
+const PremiumButtonBase: React.FC<PremiumButtonProps> = ({
   title,
   variant = 'primary',
   className = '',
@@ -28,10 +30,12 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
   }));
 
   const onPressIn = () => {
+    // eslint-disable-next-line react-hooks/immutability
     scale.value = withSpring(0.97, { damping: 15, stiffness: 200 });
   };
 
   const onPressOut = () => {
+    // eslint-disable-next-line react-hooks/immutability
     scale.value = withSpring(1, { damping: 15, stiffness: 200 });
   };
 
@@ -39,7 +43,6 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
     switch (variant) {
       case 'outline':
         return 'premium-button-outline';
-      case 'secondary':
       case 'secondary':
         return 'border border-border bg-input h-14 rounded-premium items-center justify-center';
       default:
@@ -69,3 +72,5 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
     </AnimatedPressable>
   );
 };
+
+export const PremiumButton = React.memo(PremiumButtonBase);

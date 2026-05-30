@@ -1,9 +1,22 @@
-import { useState } from 'react';
 import * as Location from 'expo-location';
+import { useState } from 'react';
 import { Alert } from 'react-native';
 
+import { logger, LogTag } from '@/utils/logger';
+
+interface LocationData {
+  latitude: number;
+  longitude: number;
+  city?: string;
+  district?: string;
+  region?: string;
+  country?: string;
+  postalCode?: string;
+  street?: string;
+}
+
 export function useLocation() {
-  const [userLocation, setUserLocation] = useState<any>(null);
+  const [userLocation, setUserLocation] = useState<LocationData | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
 
@@ -40,8 +53,7 @@ export function useLocation() {
         street: address?.street || '',
       });
       return true;
-    } catch (error: any) {
-      const { logger, LogTag } = require('@/utils/logger');
+    } catch (error: unknown) {
       logger.error(LogTag.API, 'Location Error:', error);
 
       if (!silent) Alert.alert('Location Error', 'Failed to fetch your current location');

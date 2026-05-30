@@ -1,5 +1,6 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useMemo, useEffect, useCallback, JSX } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, router } from 'expo-router';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,46 +8,40 @@ import {
   Pressable,
   ActivityIndicator,
   TextInput,
-  Alert,
-  Platform,
   Animated,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import type { JSX } from 'react';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
-import { Ionicons } from '@expo/vector-icons';
-import { useBusinessDetail } from '@/hooks/useBusinesses';
-import { useBookingStore } from '@/store/booking.store';
-import { useSlots } from '@/hooks/useSlots';
-import { useModal } from '@/hooks/useModal';
-import { useAuthStore } from '@/store/auth.store';
-import { apiService } from '@/services/api.service';
-import { Service } from '@/types/business.types';
-import { queryKeys, queryClient } from '@/lib/queryClient';
-import { useBookingDetail, useRescheduleBooking } from '@/hooks/useBookings';
-import { useBusinessHours } from '@/hooks/useBusinessHours';
 import { useRealtimeClock } from '@/features/booking/hooks/useRealtimeClock';
-import { getDefaultBookingDate, getShopLocalDate, getShopLocalNow } from '@/utils/shopTime';
+import { useBookingDetail, useRescheduleBooking } from '@/hooks/useBookings';
+import { useBusinessDetail } from '@/hooks/useBusinesses';
+import { useBusinessHours } from '@/hooks/useBusinessHours';
+import { useModal } from '@/hooks/useModal';
+import { useSlots } from '@/hooks/useSlots';
+import { queryKeys, queryClient } from '@/lib/queryClient';
+import { apiService } from '@/services/api.service';
+import { useAuthStore } from '@/store/auth.store';
+import { useBookingStore } from '@/store/booking.store';
+import { THEME } from '@/theme/theme';
+import { getDefaultBookingDate, getShopLocalNow } from '@/utils/shopTime';
+
+import type { Service } from '@/types/business.types';
 
 export default function BookingScreen() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
   if (!isMounted) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: THEME.colors.background,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <View className="flex-1 bg-background justify-center items-center">
         <ActivityIndicator size="large" color={THEME.colors.primary} />
       </View>
     );
@@ -58,8 +53,10 @@ export default function BookingScreen() {
 function BookingScreenInner(): JSX.Element {
   const { id, bookingId, selectedTime: initialTime } = useLocalSearchParams();
   const { data: business, isLoading: businessLoading } = useBusinessDetail(id as string);
-  const { selectedService, selectedServices: storeSelectedServices } = useBookingStore();
-  const { user, profile } = useAuthStore();
+  const selectedService = useBookingStore((s) => s.selectedService);
+  const storeSelectedServices = useBookingStore((s) => s.selectedServices);
+  const user = useAuthStore((s) => s.user);
+  const profile = useAuthStore((s) => s.profile);
   const { showModal } = useModal();
 
   const { data: existingBooking, isLoading: existingBookingLoading } = useBookingDetail(
@@ -76,7 +73,16 @@ function BookingScreenInner(): JSX.Element {
   // ─── Selected date — starts as today in shop TZ ──────────────────────────────
   const [selectedDate, setSelectedDate] = useState<string>(clock.todayStr);
 
-  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{
+    id: string;
+    business_id?: string;
+    date?: string;
+    time?: string;
+    start_time?: string;
+    end_time?: string;
+    label?: string;
+    is_available?: boolean;
+  } | null>(null);
   const [customerName, setCustomerName] = useState(
     profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || '',
   );
@@ -130,6 +136,7 @@ function BookingScreenInner(): JSX.Element {
       }
       return prev;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clock.todayStr]);
 
   // ─── Default date correction once business hours are known ───────────────────
@@ -162,16 +169,17 @@ function BookingScreenInner(): JSX.Element {
     if (profile?.phone_number && !customerPhone) {
       setCustomerPhone(profile.phone_number);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
   // ─── Fetch services from API ──────────────────────────────────────────────────
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
 
   useEffect(() => {
     if (!id) return;
     apiService
       .getPublicServices(id as string)
-      .then(setServices)
+      .then((res) => setServices(res as unknown as Service[]))
       .catch((err) => console.error('Error fetching services on booking page:', err));
   }, [id]);
 
@@ -180,7 +188,7 @@ function BookingScreenInner(): JSX.Element {
     if (isRescheduling && existingBooking && services.length > 0) {
       const preselectedServices = services.filter(
         (srv) =>
-          existingBooking.services?.some((es: any) => es.id === srv.id) ||
+          existingBooking.services?.some((es: Service) => es.id === srv.id) ||
           existingBooking.service?.id === srv.id,
       );
       if (preselectedServices.length > 0) {
@@ -212,6 +220,7 @@ function BookingScreenInner(): JSX.Element {
     } else if (servicesList.length > 0 && selectedServices.length === 0) {
       setSelectedServices([servicesList[0]]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedService, storeSelectedServices, servicesList]);
 
   const toggleService = (srv: Service) => {
@@ -244,7 +253,15 @@ function BookingScreenInner(): JSX.Element {
   // NOTE: Past-slot filtering is now done server-side in slots.ts (getShopLocalDate/Now).
   // Here we only normalize the shape and apply a client-side guard as a safety net.
   const normalizedSlots = useMemo(() => {
-    let rawSlotsList: any[] = [];
+    let rawSlotsList: {
+      id: string;
+      time?: string;
+      start_time?: string;
+      business_id?: string;
+      date?: string;
+      is_available?: boolean;
+      [key: string]: unknown;
+    }[] = [];
     if (slotsResponse) {
       if (Array.isArray(slotsResponse)) {
         rawSlotsList = slotsResponse;
@@ -253,11 +270,23 @@ function BookingScreenInner(): JSX.Element {
         'slots' in slotsResponse &&
         Array.isArray((slotsResponse as { slots: unknown[] }).slots)
       ) {
-        rawSlotsList = (slotsResponse as { slots: unknown[] }).slots;
+        rawSlotsList = (
+          slotsResponse as {
+            slots: {
+              id: string;
+              time?: string;
+              start_time?: string;
+              business_id?: string;
+              date?: string;
+              is_available?: boolean;
+              [key: string]: unknown;
+            }[];
+          }
+        ).slots;
       }
     }
 
-    const processedSlots: any[] = rawSlotsList.map((slot: any) => {
+    const processedSlots = rawSlotsList.map((slot) => {
       const timeVal = slot.time || slot.start_time || '09:00';
       const [hours, minutes] = timeVal.split(':').map(Number);
       const ampm = hours >= 12 ? 'PM' : 'AM';
@@ -280,19 +309,21 @@ function BookingScreenInner(): JSX.Element {
     if (selectedDate === clock.todayStr) {
       const now = getShopLocalNow(/* business?.timezone */);
       const currentMinutes = now.hour() * 60 + now.minute();
-      return processedSlots.filter((slot: any) => {
+      return processedSlots.filter((slot: { time: string; [key: string]: unknown }) => {
         const [h, m] = slot.time.split(':').map(Number);
         return h * 60 + m > currentMinutes;
       });
     }
 
     return processedSlots;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slotsResponse, selectedDate, clock.todayStr, clock.now]);
 
   // ─── Reset slot selection when date changes ───────────────────────────────────
   useEffect(() => {
     setSelectedSlot(null);
     refetchSlots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
   // ─── Pre-select slot if initialTime provided (rescheduling) ──────────────────
@@ -384,14 +415,18 @@ function BookingScreenInner(): JSX.Element {
           },
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       showModal({
         variant: 'error',
         title: isRescheduling ? 'Rescheduling Failed' : 'Booking Failed',
-        description:
-          err.response?.data?.message ||
-          err.message ||
-          'An error occurred while reserving your slot. Please try again.',
+        description: (() => {
+          if (err instanceof Error) return err.message;
+          const axiosErr = err as { response?: { data?: { message?: string } } };
+          return (
+            axiosErr?.response?.data?.message ||
+            'An error occurred while reserving your slot. Please try again.'
+          );
+        })(),
       });
     } finally {
       setIsSubmitting(false);
@@ -444,7 +479,7 @@ function BookingScreenInner(): JSX.Element {
         ? 'Shop is closed on this day.'
         : 'No slots available for this date.';
       return (
-        <View className=" rounded-[28px] py-14 items-center">
+        <View className=" rounded-full py-14 items-center">
           <Ionicons name="calendar-outline" size={32} color={THEME.colors.textSecondary} />
           <Text className="text-textSecondary font-bold mt-3 text-center px-4">{emptyMsg}</Text>
         </View>
@@ -462,14 +497,14 @@ function BookingScreenInner(): JSX.Element {
               key={slot.id}
               disabled={!isAvailable}
               onPress={() => setSelectedSlot(slot)}
-              className={`w-[31%] py-4 mb-3 rounded-[22px] border items-center justify-center bg-card ${
+              className={`w-1/3 py-4 mb-3 rounded-3xl border items-center justify-center bg-card ${
                 !isAvailable
                   ? 'border-border'
                   : isSelected
                     ? 'border-primary bg-primary/10'
                     : 'border-border'
               }`}
-              style={{ opacity: !isAvailable ? 0.45 : 1 }}
+              style={[{ opacity: !isAvailable ? 0.45 : 1 }]}
             >
               <Text
                 className={`font-black text-sm ${
@@ -479,7 +514,7 @@ function BookingScreenInner(): JSX.Element {
                 {slot.label}
               </Text>
               {!isAvailable && (
-                <Text className="text-textSecondary text-[10px] font-semibold uppercase mt-0.5">
+                <Text className="text-textSecondary text-xs font-semibold uppercase mt-0.5">
                   Booked
                 </Text>
               )}
@@ -504,7 +539,7 @@ function BookingScreenInner(): JSX.Element {
                 router.replace(`/(customer)/browse/salons/${id}`);
               }
             }}
-            className="w-10 h-10 rounded-full items-center justify-center mr-4 bg-border/50"
+            className="w-10 h-10 rounded-full items-center justify-center mr-4"
           >
             <Ionicons name="arrow-back" size={20} color={THEME.colors.text} />
           </Pressable>
@@ -520,27 +555,27 @@ function BookingScreenInner(): JSX.Element {
 
         {/* Shop-closed banner */}
         <Animated.View
-          style={{
-            opacity: bannerAnim,
-            transform: [
-              {
-                translateY: bannerAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-40, 0],
-                }),
-              },
-            ],
-            overflow: 'hidden',
-            backgroundColor: '#E53E3E',
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 20,
-            paddingVertical: isShopClosed ? 10 : 0,
-            maxHeight: isShopClosed ? 50 : 0,
-          }}
+          className="flex-row items-center px-5"
+          style={[
+            {
+              opacity: bannerAnim,
+              transform: [
+                {
+                  translateY: bannerAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-40, 0],
+                  }),
+                },
+              ],
+              overflow: 'hidden',
+              backgroundColor: '#E53E3E',
+              paddingVertical: isShopClosed ? 10 : 0,
+              maxHeight: isShopClosed ? 50 : 0,
+            },
+          ]}
         >
-          <Ionicons name="lock-closed" size={14} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600', flex: 1 }}>
+          <Ionicons className="mr-2" name="lock-closed" size={14} color="#fff" />
+          <Text className="text-sm font-semibold flex-1" style={[{ color: '#fff' }]}>
             Shop is closed. Showing availability for tomorrow.
           </Text>
         </Animated.View>
@@ -552,17 +587,19 @@ function BookingScreenInner(): JSX.Element {
         >
           <View className="px-5 mt-5">
             <View
-              className="rounded-[36px]  overflow-hidden bg-card"
-              style={{
-                shadowColor: THEME.colors.background,
-                shadowOpacity: 0.04,
-                shadowRadius: 14,
-                elevation: 4,
-              }}
+              className="rounded-3xl overflow-hidden bg-card"
+              style={[
+                {
+                  shadowColor: THEME.colors.background,
+                  shadowOpacity: 0.04,
+                  shadowRadius: 14,
+                  elevation: 4,
+                },
+              ]}
             >
               {/* SERVICES */}
               <View className="px-6 pt-6">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-4">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-4">
                   Services
                 </Text>
 
@@ -574,7 +611,7 @@ function BookingScreenInner(): JSX.Element {
                       <Pressable
                         key={service.id}
                         onPress={() => toggleService(service)}
-                        className={`mb-3 rounded-[26px] border p-4 flex-row items-center justify-between bg-card ${
+                        className={`mb-3 rounded-full border p-4 flex-row items-center justify-between bg-card ${
                           isSelected ? 'border-primary bg-primary/5' : 'border-border'
                         }`}
                       >
@@ -607,7 +644,7 @@ function BookingScreenInner(): JSX.Element {
               {/* SLOT SECTION */}
               <View className="px-6 mt-6">
                 <View className="flex-row items-center justify-between mb-4">
-                  <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px]">
+                  <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5">
                     Available Slots
                   </Text>
 
@@ -635,7 +672,7 @@ function BookingScreenInner(): JSX.Element {
 
                 {/* Calendar — past dates disabled */}
                 {showCalendar && (
-                  <View className="mb-5 rounded-[28px]  overflow-hidden bg-card">
+                  <View className="mb-5 rounded-full  overflow-hidden bg-card">
                     <Calendar
                       current={selectedDate}
                       // minDate driven by live clock so it updates at midnight
@@ -679,12 +716,12 @@ function BookingScreenInner(): JSX.Element {
 
               {/* CUSTOMER INFO */}
               <View className="px-6 mt-5 pb-6">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-4">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-4">
                   Customer Details
                 </Text>
 
                 <View className="mb-4">
-                  <View className="h-14 rounded-[22px]  px-4 flex-row items-center bg-input">
+                  <View className="h-14 rounded-3xl  px-4 flex-row items-center bg-input">
                     <Ionicons name="person-outline" size={18} color={THEME.colors.textSecondary} />
                     <TextInput
                       className="flex-1 ml-3 text-text font-bold"
@@ -697,7 +734,7 @@ function BookingScreenInner(): JSX.Element {
                 </View>
 
                 <View>
-                  <View className="h-14 rounded-[22px]  px-4 flex-row items-center bg-input">
+                  <View className="h-14 rounded-3xl  px-4 flex-row items-center bg-input">
                     <Ionicons name="call-outline" size={18} color={THEME.colors.textSecondary} />
                     <TextInput
                       className="flex-1 ml-3 text-text font-bold"
@@ -717,13 +754,15 @@ function BookingScreenInner(): JSX.Element {
         {/* Sticky Confirm Booking Button */}
         <View
           className="absolute bottom-0 left-0 right-0 border-t border-border px-6 pt-4 pb-10 bg-card"
-          style={{
-            shadowColor: THEME.colors.background,
-            shadowOffset: { width: 0, height: -3 },
-            shadowOpacity: 0.08,
-            shadowRadius: 10,
-            elevation: 8,
-          }}
+          style={[
+            {
+              shadowColor: THEME.colors.background,
+              shadowOffset: { width: 0, height: -3 },
+              shadowOpacity: 0.08,
+              shadowRadius: 10,
+              elevation: 8,
+            },
+          ]}
         >
           <View className="flex-row justify-between items-center mb-4">
             <View>

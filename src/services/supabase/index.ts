@@ -12,7 +12,6 @@ export * from './hub';
 export * from './bookings';
 export * from './booking-debug';
 export * from './booking-rpc';
-export * from './booking-errors';
 export * from './services';
 export * from './owner';
 export * from './owner-access';

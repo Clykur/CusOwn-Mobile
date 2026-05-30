@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
-import { parseTimeToMinutes } from '@/utils/time';
 import { getShopLocalDate, getShopLocalNow } from '@/utils/shopTime';
+import { parseTimeToMinutes } from '@/utils/time';
 
 export type EffectiveHours = {
   isClosed: boolean;

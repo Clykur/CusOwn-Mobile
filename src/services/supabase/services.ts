@@ -1,11 +1,11 @@
-import { supabase } from '@/lib/supabase';
-import { Service } from '@/types/business.types';
-import { logger, LogTag } from '@/utils/logger';
-import { mapServiceRow } from './mappers';
 import { getActorUserId } from './booking-rpc';
-import { assertBusinessOwnedByUser, listOwnedBusinessIds } from './owner-access';
 import { logSupabaseFailure } from './errors';
+import { mapServiceRow } from './mappers';
+import { assertBusinessOwnedByUser, listOwnedBusinessIds } from './owner-access';
 import { isMissingColumnError, logQueryFallback } from './select-fallback';
+import { supabase } from '@/lib/supabase';
+
+import type { Service } from '@/types/business.types';
 
 const SERVICE_SELECT =
   'id, business_id, name, description, duration_minutes, price_cents, is_active, created_at, updated_at';

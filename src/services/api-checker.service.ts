@@ -1,14 +1,13 @@
 import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/auth.store';
 import { apiService } from '@/services/api.service';
-import { logger, LogTag } from '@/utils/logger';
+import { useAuthStore } from '@/store/auth.store';
 
 export interface HealthCheckResult {
   id: string;
   name: string;
   status: 'pending' | 'success' | 'error' | 'warning';
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
 export const apiChecker = {
@@ -73,12 +72,12 @@ export const apiChecker = {
           : `Session active (Expires: ${expiresAt.toLocaleString()})`,
         details: { user: session.user.email, id: session.user.id },
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         id: 'auth-session',
         name: 'Supabase Auth Session',
         status: 'error',
-        message: err.message || 'Failed to retrieve session',
+        message: err instanceof Error ? err.message : 'Failed to retrieve session',
       };
     }
   },
@@ -106,6 +105,7 @@ export const apiChecker = {
           zustandUser: zustandUser?.email,
         },
       };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       return {
         id: 'zustand-sync',
@@ -151,12 +151,12 @@ export const apiChecker = {
             : 'Read successful but returned 0 rows (Check RLS)',
         details: data,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         id: 'db-read',
         name: 'DB Read Test',
         status: 'error',
-        message: err.message || 'Failed to read from database',
+        message: err instanceof Error ? err.message : 'Failed to read from database',
       };
     }
   },
@@ -179,12 +179,12 @@ export const apiChecker = {
         message: `Direct Supabase fetch successful in ${duration}ms`,
         details: data,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         id: 'supabase-businesses',
         name: 'Businesses Supabase Fetch',
         status: 'error',
-        message: err.message || 'Supabase request failed',
+        message: err instanceof Error ? err.message : 'Supabase request failed',
       };
     }
   },
@@ -250,12 +250,12 @@ export const apiChecker = {
         status: 'success',
         message: 'Database write (update) verified successfully.',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         id: 'db-write',
         name: 'DB Write Test',
         status: 'error',
-        message: err.message || 'Failed to write to database',
+        message: err instanceof Error ? err.message : 'Failed to write to database',
       };
     }
   },

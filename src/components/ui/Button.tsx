@@ -4,9 +4,10 @@ import {
   Text,
   ActivityIndicator,
   StyleSheet,
-  TouchableOpacityProps,
   useColorScheme,
 } from 'react-native';
+
+import type { TouchableOpacityProps } from 'react-native';
 import { THEME } from '@/constants/theme';
 import { horizontalScale, verticalScale, responsiveFontSize } from '@/utils/responsive';
 
@@ -18,7 +19,7 @@ interface ButtonProps extends TouchableOpacityProps {
   children: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+const ButtonBase: React.FC<ButtonProps> = ({
   variant = 'primary',
   loading = false,
   disabled = false,
@@ -120,3 +121,5 @@ const styles = StyleSheet.create({
   },
   textGhost: {},
 });
+
+export const Button = React.memo(ButtonBase);

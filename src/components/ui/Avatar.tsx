@@ -1,23 +1,24 @@
-import { THEME } from '@/theme/theme';
+import { Image } from 'expo-image';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import { Image } from 'expo-image';
-import { useProfileMedia } from '@/hooks/useProfileMedia';
 
-import CustomerIcon from '../../../assets/Customer.svg';
+import type { StyleProp, ViewStyle } from 'react-native';
 import BusinessIcon from '../../../assets/Business.svg';
+import CustomerIcon from '../../../assets/Customer.svg';
+import { useProfileMedia } from '@/hooks/useProfileMedia';
+import { THEME } from '@/theme/theme';
 
 interface AvatarProps {
   url?: string | null;
   userId?: string | null;
   name?: string;
   size?: number;
-  style?: any;
+  style?: StyleProp<ViewStyle>;
   className?: string;
   type?: 'customer' | 'business' | 'default';
 }
 
-export const Avatar: React.FC<AvatarProps> = ({
+const AvatarBase: React.FC<AvatarProps> = ({
   url,
   userId,
   name = '',
@@ -42,6 +43,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getHashColor = (str: string) => {
     let hash = 0;
 
@@ -100,11 +102,13 @@ export const Avatar: React.FC<AvatarProps> = ({
       ) : (
         <Image
           source={{ uri: resolvedUrl }}
-          style={{
-            width: size,
-            height: size,
-            borderRadius: radius,
-          }}
+          style={[
+            {
+              width: size,
+              height: size,
+              borderRadius: radius,
+            },
+          ]}
           contentFit="cover"
           transition={Platform.OS === 'android' ? 0 : 200}
           onError={() => setHasError(true)}
@@ -126,3 +130,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+export const Avatar = React.memo(AvatarBase);

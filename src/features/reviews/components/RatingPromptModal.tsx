@@ -1,10 +1,9 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, ActivityIndicator, TextInput } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
-
 import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
 import { logger, LogTag } from '@/utils/logger';
 
 interface RatingPromptModalProps {
@@ -17,9 +16,9 @@ interface RatingPromptModalProps {
     service_name?: string | string[];
     service_date?: string;
     service_time?: string;
-    services?: any[];
-    service?: any;
-    [key: string]: any;
+    services?: { id?: string; name?: string; service_name?: string; [key: string]: unknown }[];
+    service?: { id?: string; name?: string; service_name?: string; [key: string]: unknown };
+    [key: string]: unknown;
   };
   onClose: () => void;
   onSuccess: () => void;
@@ -41,11 +40,22 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
 
   const [error, setError] = useState<string | null>(null);
 
-  const [fullBooking, setFullBooking] = useState<any>(booking);
+  const [fullBooking, setFullBooking] = useState<{
+    salon_name?: string;
+    business_name?: string;
+    business?: { salon_name?: string };
+    service_date?: string;
+    service_time?: string;
+    service_name?: string | string[] | { name?: string; service_name?: string };
+    services?: { name?: string; service_name?: string }[];
+    service?: { name?: string; service_name?: string };
+    [key: string]: unknown;
+  }>(booking);
 
   React.useEffect(() => {
     let isMounted = true;
     if (booking) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFullBooking(booking); // Set immediately
 
       // If the booking is missing service details, fetch the full booking
@@ -76,7 +86,14 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
     fullBooking.business?.salon_name ||
     'Premium Studio';
 
-  const getServiceName = (b: any): string => {
+  const getServiceName = (b: {
+    service_date?: string;
+    service_time?: string;
+    service_name?: string | string[] | { name?: string; service_name?: string };
+    services?: { name?: string; service_name?: string }[];
+    service?: { name?: string; service_name?: string };
+    [key: string]: unknown;
+  }): string => {
     const fallback =
       b?.service_date && b?.service_time
         ? `Booking on ${b.service_date} at ${b.service_time.substring(0, 5)}`
@@ -87,19 +104,33 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
     if (Array.isArray(b.service_name) && b.service_name.length > 0) {
       if (typeof b.service_name[0] === 'string') return b.service_name.join(', ');
       return (
-        b.service_name
-          .map((s: any) => s?.name || s?.service_name || '')
+        (b.service_name as unknown[])
+          .map(
+            (s: unknown) =>
+              (s as { name?: string; service_name?: string })?.name ||
+              (s as { name?: string; service_name?: string })?.service_name ||
+              '',
+          )
           .filter(Boolean)
           .join(', ') || fallback
       );
     }
     if (b.service_name && typeof b.service_name === 'object') {
-      return b.service_name.name || b.service_name.service_name || fallback;
+      return (
+        (b.service_name as { name?: string; service_name?: string }).name ||
+        (b.service_name as { name?: string; service_name?: string }).service_name ||
+        fallback
+      );
     }
     if (Array.isArray(b.services) && b.services.length > 0) {
       return (
-        b.services
-          .map((s: any) => s?.name || s?.service_name || '')
+        (b.services as unknown[])
+          .map(
+            (s: unknown) =>
+              (s as { name?: string; service_name?: string })?.name ||
+              (s as { name?: string; service_name?: string })?.service_name ||
+              '',
+          )
           .filter(Boolean)
           .join(', ') || fallback
       );
@@ -128,8 +159,8 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
       logger.info(LogTag.API, `Successfully submitted review for booking: ${booking.id}`);
 
       onSuccess();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to submit review');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Failed to submit review');
     } finally {
       setIsLoading(false);
       setActionType(null);
@@ -147,8 +178,8 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
       logger.info(LogTag.API, `Successfully ignored review for booking: ${booking.id}`);
 
       onSuccess();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to skip review');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Failed to skip review');
     } finally {
       setIsLoading(false);
       setActionType(null);
@@ -159,55 +190,44 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
       <View className="flex-1 justify-center items-center bg-black/80 px-6">
         <View
-          style={{
-            width: '100%',
-            maxWidth: 340,
-            borderRadius: 34,
-            overflow: 'hidden',
-            backgroundColor: '#0B0B0B',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.05)',
-            padding: 24,
-          }}
+          className="w-full rounded-full bg-gray-500 p-6"
+          style={[
+            {
+              maxWidth: 340,
+              overflow: 'hidden',
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.05)',
+            },
+          ]}
         >
           {/* Header */}
           <View className="flex-row justify-between items-start mb-8">
             <View className="flex-1 pr-3">
-              <Text
-                style={{
-                  fontSize: 26,
-                  fontWeight: '900',
-                  color: THEME.colors.primary,
-                  letterSpacing: -1,
-                  marginBottom: 6,
-                }}
-              >
+              <Text className="text-3xl font-black text-primary tracking-tighter mb-1.5">
                 Rate Experience
               </Text>
 
               <Text
-                style={{
-                  color: THEME.colors.textSecondary,
-                  fontSize: 13,
-                  letterSpacing: 2,
-                  textTransform: 'uppercase',
-                }}
+                className="text-textSecondary text-sm tracking-wide"
+                style={[
+                  {
+                    textTransform: 'uppercase',
+                  },
+                ]}
               >
                 {salonName}
               </Text>
             </View>
 
             <Pressable
+              className="w-8 h-8 rounded-full justify-center items-center"
               onPress={onClose}
               disabled={isLoading}
-              style={{
-                width: 34,
-                height: 34,
-                borderRadius: 999,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: 'rgba(255,255,255,0.04)',
-              }}
+              style={[
+                {
+                  backgroundColor: 'rgba(255,255,255,0.04)',
+                },
+              ]}
             >
               <Ionicons name="close" size={18} color={THEME.colors.textSecondary} />
             </Pressable>
@@ -215,15 +235,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
 
           {/* Service Name */}
           <View className="mb-8">
-            <Text
-              style={{
-                fontSize: 30,
-                fontWeight: '900',
-                color: THEME.colors.text,
-                lineHeight: 36,
-                letterSpacing: -1.2,
-              }}
-            >
+            <Text className="text-3xl font-black text-text leading-9 tracking-tighter">
               {serviceName}
             </Text>
 
@@ -231,14 +243,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               <View className="flex-row items-center mt-4">
                 <Ionicons name="calendar-outline" size={14} color={THEME.colors.primary} />
 
-                <Text
-                  style={{
-                    color: THEME.colors.textSecondary,
-                    marginLeft: 8,
-                    fontSize: 13,
-                    fontWeight: '600',
-                  }}
-                >
+                <Text className="text-textSecondary ml-2 text-sm font-semibold">
                   {booking.service_date} • {booking.service_time || ''}
                 </Text>
               </View>
@@ -247,15 +252,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
 
           {/* Rating */}
           <View className="items-center mb-8">
-            <Text
-              style={{
-                color: THEME.colors.textSecondary,
-                fontSize: 13,
-                marginBottom: 18,
-              }}
-            >
-              How was your experience?
-            </Text>
+            <Text className="text-textSecondary text-sm mb-4.5">How was your experience?</Text>
 
             <View className="flex-row">
               {[1, 2, 3, 4, 5].map((star) => {
@@ -285,6 +282,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
           {/* Review */}
           <View className="mb-6">
             <TextInput
+              className="min-h-28 rounded-3xl px-4.5 py-4 text-text"
               value={comment}
               onChangeText={setComment}
               placeholder="Share your feedback..."
@@ -293,28 +291,25 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               numberOfLines={4}
               textAlignVertical="top"
               editable={!isLoading}
-              style={{
-                minHeight: 110,
-                borderRadius: 24,
-                paddingHorizontal: 18,
-                paddingVertical: 16,
-                backgroundColor: 'rgba(255,255,255,0.03)',
-                color: THEME.colors.text,
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.05)',
-              }}
+              style={[
+                {
+                  backgroundColor: 'rgba(255,255,255,0.03)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255,255,255,0.05)',
+                },
+              ]}
             />
           </View>
 
           {/* Error */}
           {error && (
             <Text
-              style={{
-                color: '#ff6b6b',
-                marginBottom: 18,
-                textAlign: 'center',
-                fontSize: 13,
-              }}
+              className="mb-4.5 text-center text-sm"
+              style={[
+                {
+                  color: '#ff6b6b',
+                },
+              ]}
             >
               {error}
             </Text>
@@ -323,26 +318,25 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
           {/* Actions */}
           <View>
             <Pressable
+              className="h-14 rounded-full justify-center items-center"
               onPress={handleSubmit}
               disabled={isLoading || !rating}
-              style={{
-                height: 54,
-                borderRadius: 999,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: rating ? THEME.colors.primary : 'rgba(255,255,255,0.08)',
-              }}
+              style={[
+                {
+                  backgroundColor: rating ? THEME.colors.primary : 'rgba(255,255,255,0.08)',
+                },
+              ]}
             >
               {isLoading && actionType === 'submit' ? (
                 <ActivityIndicator size="small" color="#000" />
               ) : (
                 <Text
-                  style={{
-                    color: rating ? '#000' : THEME.colors.textSecondary,
-                    fontWeight: '900',
-                    letterSpacing: 1,
-                    fontSize: 14,
-                  }}
+                  className="font-black tracking-wide text-sm"
+                  style={[
+                    {
+                      color: rating ? '#000' : THEME.colors.textSecondary,
+                    },
+                  ]}
                 >
                   SUBMIT REVIEW
                 </Text>
@@ -353,14 +347,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
               {isLoading && actionType === 'ignore' ? (
                 <ActivityIndicator size="small" color={THEME.colors.textSecondary} />
               ) : (
-                <Text
-                  style={{
-                    color: THEME.colors.textSecondary,
-                    fontWeight: '700',
-                    letterSpacing: 1,
-                    fontSize: 13,
-                  }}
-                >
+                <Text className="text-textSecondary font-bold tracking-wide text-sm">
                   MAYBE LATER
                 </Text>
               )}

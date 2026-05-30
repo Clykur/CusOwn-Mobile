@@ -1,12 +1,13 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, Modal } from 'react-native';
-
-import { apiService } from '@/services/api.service';
-import { Service } from '@/types/business.types';
-import { useModal } from '@/hooks/useModal';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, Pressable, TextInput, ActivityIndicator, Modal } from 'react-native';
+
 import { GlassCard } from '@/components/ui/GlassCard';
+import { useModal } from '@/hooks/useModal';
+import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
+
+import type { Service } from '@/types/business.types';
 
 interface ServicesManagementProps {
   businessId: string;
@@ -42,6 +43,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
   }, [businessId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchServices();
   }, [fetchServices]);
 
@@ -99,11 +101,11 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
       setShowForm(false);
 
       fetchServices();
-    } catch (e: any) {
+    } catch (e: unknown) {
       showModal({
         variant: 'error',
         title: 'Error',
-        description: e.message || 'Failed to save service',
+        description: e instanceof Error ? e.message : 'Failed to save service',
       });
     } finally {
       setSaving(false);
@@ -124,11 +126,11 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             try {
               await apiService.deleteService(id);
               setServices((prev) => prev.filter((s) => s.id !== id));
-            } catch (e: any) {
+            } catch (e: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
-                description: e.message || 'Failed to delete service',
+                description: e instanceof Error ? e.message : 'Failed to delete service',
               });
             }
           },
@@ -219,15 +221,11 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
         animationType="slide"
         onRequestClose={() => setShowForm(false)}
       >
-        <Pressable
-          className="flex-1 justify-end"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
-          onPress={() => setShowForm(false)}
-        >
+        <Pressable className="flex-1 justify-end bg-black/70" onPress={() => setShowForm(false)}>
           {/* Bottom Sheet */}
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="bg-card rounded-t-[36px] p-6 pb-10 border-t border-border"
+            className="bg-card rounded-t-9 p-6 pb-10 border-t border-border"
           >
             {/* Handle */}
             <View className="w-14 h-1.5 bg-border rounded-full self-center mb-6" />
@@ -245,7 +243,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
             {/* Service Name */}
             <View className="mb-4">
-              <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+              <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
                 Service Name
               </Text>
 
@@ -262,7 +260,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
             <View className="flex-row gap-x-3 mb-6">
               {/* Duration */}
               <View className="flex-1">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
                   Duration
                 </Text>
 
@@ -278,7 +276,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
 
               {/* Price */}
               <View className="flex-1">
-                <Text className="text-textSecondary text-xs font-black uppercase tracking-[2px] mb-2">
+                <Text className="text-textSecondary text-xs font-black uppercase tracking-0.5 mb-2">
                   Price (₹)
                 </Text>
 

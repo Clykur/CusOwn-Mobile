@@ -1,17 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
-
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-
 import Animated, { SlideInRight, SlideOutLeft } from 'react-native-reanimated';
-
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
 
 import card1 from '../../../../assets/Everything-in-one-place-1.svg';
 import card2 from '../../../../assets/Everything-in-one-place-2.svg';
 import card3 from '../../../../assets/Everything-in-one-place-3.svg';
-
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { useOnboardingStore } from '@/store/onboarding.store';
 import { THEME } from '@/theme/theme';
 
@@ -68,47 +64,33 @@ export default function OnboardingScreen() {
             key={currentSlide.id}
             entering={SlideInRight.duration(650).springify().damping(20).stiffness(120)}
             exiting={SlideOutLeft.duration(320)}
-            style={{
-              transform: [{ translateX: 0 }],
-            }}
+            style={[
+              {
+                transform: [{ translateX: 0 }],
+              },
+            ]}
           >
             <View className="items-center">
               {/* SVG */}
               <View
-                style={{
-                  width: width * 0.74,
-                  height: width * 0.74,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginBottom: 50,
-                }}
+                className="justify-center items-center mb-12.5"
+                style={[
+                  {
+                    width: width * 0.74,
+                    height: width * 0.74,
+                  },
+                ]}
               >
                 <currentSlide.image width="100%" height="100%" />
               </View>
 
               {/* Title */}
-              <Text
-                style={{
-                  fontSize: 34,
-                  fontWeight: '900',
-                  color: THEME.colors.primary,
-                  textAlign: 'center',
-                  marginBottom: 18,
-                }}
-              >
+              <Text className="text-4xl font-black text-primary text-center mb-4.5">
                 {currentSlide.title}
               </Text>
 
               {/* Subtitle */}
-              <Text
-                style={{
-                  fontSize: 16,
-                  lineHeight: 30,
-                  color: THEME.colors.textSecondary,
-                  textAlign: 'center',
-                  paddingHorizontal: 10,
-                }}
-              >
+              <Text className="text-base leading-7 text-textSecondary text-center px-2.5">
                 {currentSlide.subtitle}
               </Text>
             </View>
@@ -119,14 +101,15 @@ export default function OnboardingScreen() {
         <View className="flex-row justify-center mb-10">
           {SLIDES.map((_, index) => (
             <View
+              className="h-2 rounded-full mx-1"
               key={index}
-              style={{
-                width: index === activeIndex ? 34 : 8,
-                height: 8,
-                borderRadius: 999,
-                marginHorizontal: 4,
-                backgroundColor: index === activeIndex ? THEME.colors.primary : THEME.colors.border,
-              }}
+              style={[
+                {
+                  width: index === activeIndex ? 34 : 8,
+                  backgroundColor:
+                    index === activeIndex ? THEME.colors.primary : THEME.colors.border,
+                },
+              ]}
             />
           ))}
         </View>
@@ -135,35 +118,12 @@ export default function OnboardingScreen() {
         <View className="flex-row justify-between items-center">
           {/* Skip */}
           <TouchableOpacity onPress={completeFlow}>
-            <Text
-              style={{
-                color: THEME.colors.textSecondary,
-                fontSize: 15,
-                fontWeight: '700',
-                letterSpacing: 1,
-              }}
-            >
-              SKIP
-            </Text>
+            <Text className="text-textSecondary text-base font-bold tracking-wide">SKIP</Text>
           </TouchableOpacity>
 
           {/* Next */}
-          <TouchableOpacity
-            onPress={handleNext}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <Text
-              style={{
-                color: THEME.colors.primary,
-                fontSize: 15,
-                fontWeight: '700',
-                letterSpacing: 1,
-                marginRight: 4,
-              }}
-            >
+          <TouchableOpacity className="flex-row items-center" onPress={handleNext}>
+            <Text className="text-primary text-base font-bold tracking-wide mr-1">
               {activeIndex === SLIDES.length - 1 ? 'START' : 'NEXT'}
             </Text>
 

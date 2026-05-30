@@ -1,17 +1,15 @@
 import React from 'react';
-import { Tabs, Slot, router } from 'expo-router';
-import { useColorScheme, Platform, View, ActivityIndicator } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { Tabs, router } from 'expo-router';
+import { View, ActivityIndicator } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
-import { useOwnerStats } from '@/hooks/useOwner';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useOwnerStats } from '@/hooks/useOwner';
 import { responsiveFontSize, verticalScale } from '@/utils/responsive';
 
 export default function OwnerTabsLayout() {
   const { data: stats, isLoading } = useOwnerStats();
-  const colorScheme = useColorScheme() || 'light';
-  const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.colors : THEME.colors;
+
   const insets = useSafeAreaInsets();
 
   const businessCount = stats?.total_businesses ?? null;
@@ -26,12 +24,12 @@ export default function OwnerTabsLayout() {
   if (isLoading) {
     return (
       <View
-        style={{
-          flex: 1,
-          backgroundColor: '#010409',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
+        className="flex-1 justify-center items-center"
+        style={[
+          {
+            backgroundColor: '#010409',
+          },
+        ]}
       >
         <ActivityIndicator size="large" color="#FFFFFF" />
       </View>
@@ -54,14 +52,20 @@ export default function OwnerTabsLayout() {
         headerTintColor: '#F8FAFC',
         headerShadowVisible: false,
         tabBarStyle: {
-          backgroundColor: '#000000', // pure black
-          borderTopColor: 'rgba(255,255,255,0.05)',
+          backgroundColor: '#000000',
+          borderTopWidth: 0,
+          borderTopColor: 'transparent',
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0,
+          shadowRadius: 0,
+          elevation: 0,
           height: verticalScale(60) + insets.bottom,
           paddingBottom: insets.bottom > 0 ? insets.bottom : verticalScale(12),
           paddingTop: verticalScale(12),
-          elevation: 0,
-          shadowOpacity: 0,
         },
+
+        tabBarBackground: () => <View style={{ flex: 1, backgroundColor: '#000000' }} />,
         tabBarActiveTintColor: '#FFFFFF', // pure white
         tabBarInactiveTintColor: '#64748B',
         tabBarLabelStyle: {
@@ -77,7 +81,7 @@ export default function OwnerTabsLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
             <Ionicons name="grid" size={22} color={color} />
           ),
         }}
@@ -86,7 +90,7 @@ export default function OwnerTabsLayout() {
         name="businesses"
         options={{
           title: 'Businesses',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
             <Ionicons name="business" size={22} color={color} />
           ),
         }}
@@ -95,7 +99,7 @@ export default function OwnerTabsLayout() {
         name="analytics"
         options={{
           title: 'Analytics',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
             <Ionicons name="analytics" size={22} color={color} />
           ),
         }}
@@ -104,7 +108,7 @@ export default function OwnerTabsLayout() {
         name="settings"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
             <Ionicons name="person" size={22} color={color} />
           ),
         }}

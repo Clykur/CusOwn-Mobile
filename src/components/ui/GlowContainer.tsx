@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, ViewProps } from 'react-native';
+import { View } from 'react-native';
+
+import type { ViewProps } from 'react-native';
 
 export const GlowContainer: React.FC<ViewProps & { className?: string }> = ({
   children,

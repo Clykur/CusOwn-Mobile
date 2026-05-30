@@ -1,18 +1,36 @@
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import { router } from 'expo-router';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { THEME } from '@/theme/theme';
-import { GlassCard } from '@/components/ui/GlassCard';
+
 import { Avatar } from '@/components/ui/Avatar';
-import { router } from 'expo-router';
-import dayjs from 'dayjs';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { THEME } from '@/theme/theme';
 
 interface UpcomingBookingCardProps {
-  booking?: any; // The upcoming booking if available
-  lastVisited?: any; // Fallback to last visited salon
+  booking?: {
+    id?: string;
+    status?: string;
+    business?: { salon_name?: string; address?: string; owner_user_id?: string };
+    service?: { name?: string; service_name?: string };
+    services?: { name?: string; service_name?: string }[];
+    date?: string;
+    time?: string;
+    duration?: number;
+    [key: string]: unknown;
+  }; // The upcoming booking if available
+  lastVisited?: {
+    id: string;
+    salon_name?: string;
+    address?: string;
+    rating_avg?: number;
+    owner_user_id?: string;
+    [key: string]: unknown;
+  }; // Fallback to last visited salon
 }
 
-export function UpcomingBookingCard({ booking, lastVisited }: UpcomingBookingCardProps) {
+function UpcomingBookingCardBase({ booking, lastVisited }: UpcomingBookingCardProps) {
   if (!booking && !lastVisited) return null;
 
   return (
@@ -23,7 +41,7 @@ export function UpcomingBookingCard({ booking, lastVisited }: UpcomingBookingCar
         </Text>
       </View>
 
-      <GlassCard className="p-4 bg-card shadow-sm rounded-[28px]">
+      <GlassCard className="p-4 bg-card shadow-sm rounded-full">
         {booking ? (
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
@@ -94,3 +112,5 @@ export function UpcomingBookingCard({ booking, lastVisited }: UpcomingBookingCar
     </View>
   );
 }
+
+export const UpcomingBookingCard = React.memo(UpcomingBookingCardBase);

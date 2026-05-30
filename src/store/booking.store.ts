@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { Business, Service } from '@/types/business.types';
-import { Slot } from '@/types/slot.types';
+
+import type { Business, Service } from '@/types/business.types';
+import type { Slot } from '@/types/slot.types';
 
 interface BookingState {
   selectedBusiness: Business | null;

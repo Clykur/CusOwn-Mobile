@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiService } from '@/services/api.service';
-import { queryKeys } from '@/lib/queryClient';
+
 import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
+import { queryKeys } from '@/lib/queryClient';
+import { apiService } from '@/services/api.service';
 
 export const useBusinesses = (categoryId?: string) => {
   const query = useQuery({

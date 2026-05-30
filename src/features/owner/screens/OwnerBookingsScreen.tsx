@@ -1,7 +1,14 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { View, Text, Pressable, FlatList, Alert, TextInput, Modal, ScrollView } from 'react-native';
+import { View, Text, Pressable, FlatList, TextInput, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { BookingCard } from '@/features/owner/components/BookingCard';
+import { OwnerBookingDetailModal } from '@/features/owner/components/OwnerBookingDetailModal';
 import {
   useBookings,
   useConfirmBooking,
@@ -10,16 +17,11 @@ import {
   useUndoReject,
   useMarkNoShow,
 } from '@/hooks/useBookings';
-import { useOwnerBusinesses } from '@/hooks/useOwner';
 import { useModal } from '@/hooks/useModal';
-import { Booking } from '@/types/booking.types';
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { Ionicons } from '@expo/vector-icons';
-import { BookingCard } from '@/features/owner/components/BookingCard';
-import { OwnerBookingDetailModal } from '@/features/owner/components/OwnerBookingDetailModal';
+import { useOwnerBusinesses } from '@/hooks/useOwner';
+import { THEME } from '@/theme/theme';
+
+import type { Booking } from '@/types/booking.types';
 
 type DateFilterType = 'all' | 'today' | 'week' | 'month' | 'custom';
 
@@ -43,6 +45,7 @@ export default function OwnerBookingsScreen() {
     if (selectedBooking && bookings) {
       const fresh = bookings.find((b) => b.id === selectedBooking.id);
       if (fresh) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedBooking(fresh);
       }
     }
@@ -106,7 +109,10 @@ export default function OwnerBookingsScreen() {
 
   const selectedBusinessName = React.useMemo(() => {
     if (selectedBusinessId === 'all') return 'All Hubs';
-    return businessesData?.find((b: any) => b.id === selectedBusinessId)?.salon_name || 'Business';
+    return (
+      businessesData?.find((b: { id: string; salon_name?: string }) => b.id === selectedBusinessId)
+        ?.salon_name || 'Business'
+    );
   }, [selectedBusinessId, businessesData]);
 
   // Compute exact human-readable date bounds for the filters
@@ -268,7 +274,7 @@ export default function OwnerBookingsScreen() {
         {/* Cinematic Header & Filter Action */}
         <View className="px-luxury pt-5 pb-2 flex-row justify-between items-center">
           <View className="flex-1 mr-4">
-            <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+            <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
               Bookings
             </Text>
             <Text className="text-text text-3xl font-black tracking-tight">Appointments</Text>
@@ -360,11 +366,10 @@ export default function OwnerBookingsScreen() {
           onRequestClose={() => setShowFilter(false)}
         >
           <Pressable
-            className="flex-1 justify-end"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+            className="flex-1 justify-end bg-black/70"
             onPress={() => setShowFilter(false)}
           >
-            <View className="bg-card rounded-t-[40px] p-6 border-t border-border max-h-[90%]">
+            <View className="bg-card rounded-t-3xl p-6 border-t border-border max-h-full flex-1">
               <View className="items-center mb-6">
                 <View className="w-12 h-1.5 bg-border rounded-full mb-6" />
                 <Text className="text-text text-xl font-black uppercase tracking-wider">
@@ -374,7 +379,7 @@ export default function OwnerBookingsScreen() {
 
               <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
                 {/* 1. Business Selection */}
-                <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">
                   Select Business
                 </Text>
 
@@ -403,7 +408,7 @@ export default function OwnerBookingsScreen() {
                   )}
                 </Pressable>
 
-                {businessesData?.map((biz: any) => (
+                {businessesData?.map((biz: { id: string; salon_name: string }) => (
                   <Pressable
                     key={biz.id}
                     onPress={() => setSelectedBusinessId(biz.id)}
@@ -431,10 +436,10 @@ export default function OwnerBookingsScreen() {
                   </Pressable>
                 ))}
 
-                <View className="h-[0.5px] bg-border my-5" />
+                <View className="h-hairline bg-border my-5" />
 
                 {/* 2. Date Selection */}
-                <Text className="text-xs text-textSecondary font-black uppercase tracking-[2px] mb-3">
+                <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">
                   Select Period
                 </Text>
 
@@ -474,7 +479,7 @@ export default function OwnerBookingsScreen() {
                   >
                     <View className="flex-row items-center flex-1 mr-2">
                       <Ionicons
-                        name={period.icon as any}
+                        name={period.icon}
                         size={18}
                         color={
                           dateFilter === period.key

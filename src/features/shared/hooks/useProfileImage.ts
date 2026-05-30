@@ -2,20 +2,20 @@
  * Profile avatar upload via Supabase Storage + media table.
  */
 
-import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { Alert, Platform } from 'react-native';
+import { useState } from 'react';
+import { Platform } from 'react-native';
+
+import { useModal } from '@/hooks/useModal';
+import { queryClient } from '@/lib/queryClient';
 import { apiService } from '@/services/api.service';
 import { resolveMediaPublicUrl } from '@/services/supabase/storage';
-
 import { useAuthStore } from '@/store/auth.store';
 import { logger, LogTag } from '@/utils/logger';
-import { queryClient } from '@/lib/queryClient';
-import { useModal } from '@/hooks/useModal';
 
 export const useProfileImage = () => {
   const [uploading, setUploading] = useState(false);
-  const { refreshProfile } = useAuthStore();
+  const refreshProfile = useAuthStore((s) => s.refreshProfile);
   const { showModal } = useModal();
 
   const pickAndUpload = async (): Promise<string | null> => {

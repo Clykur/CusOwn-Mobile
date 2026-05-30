@@ -1,25 +1,27 @@
-import { THEME } from '@/theme/theme';
-import React from 'react';
-import { View, Text, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import React from 'react';
+import { View, Text, Pressable } from 'react-native';
+
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { Business } from '@/types/business.types';
 import { Avatar } from '@/components/ui/Avatar';
+import { THEME } from '@/theme/theme';
 import { getShopStatus } from '@/utils/time';
+
+import type { Business } from '@/types/business.types';
 
 interface Props {
   item: Business;
   index?: number;
 }
 
-export const BrowseCard = ({ item, index = 0 }: Props) => {
+const BrowseCardBase = ({ item, index = 0 }: Props) => {
   const status = getShopStatus(item.opening_time, item.closing_time);
 
   return (
     <AnimatedSection delay={index * 50} direction="up" className="mb-4">
       <Pressable onPress={() => router.push(`/(customer)/browse/salons/${item.id}`)}>
-        <View className="flex-row items-center bg-card rounded-[28px] p-4">
+        <View className="flex-row items-center bg-card rounded-full p-4">
           {/* Business Image */}
           <View className="mr-4">
             <Avatar
@@ -27,7 +29,7 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
               name={item.salon_name}
               size={76}
               type="business"
-              className="w-[76px] h-[76px] rounded-full"
+              className="w-20 h-20 rounded-full"
             />
           </View>
 
@@ -35,7 +37,7 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
           <View className="flex-1 min-w-0 justify-center">
             {/* Salon Name */}
             <Text
-              className="text-text text-[22px] font-extrabold tracking-tight"
+              className="text-text text-2xl font-extrabold tracking-tight"
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -90,3 +92,5 @@ export const BrowseCard = ({ item, index = 0 }: Props) => {
     </AnimatedSection>
   );
 };
+
+export const BrowseCard = React.memo(BrowseCardBase);

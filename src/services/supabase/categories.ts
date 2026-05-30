@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import { BusinessCategory } from '@/types/business.types';
 import { logger, LogTag } from '@/utils/logger';
+
+import type { BusinessCategory } from '@/types/business.types';
 
 export async function listBusinessCategories(): Promise<BusinessCategory[]> {
   const { data, error } = await supabase

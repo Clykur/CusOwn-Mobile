@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase';
-import { Booking } from '@/types/booking.types';
-import { Business, BusinessCategory, Service } from '@/types/business.types';
 import { logger, LogTag } from '@/utils/logger';
+
+import type { Booking } from '@/types/booking.types';
+import type { Business, BusinessCategory, Service } from '@/types/business.types';
 
 export function mapCategoryRow(row: Record<string, unknown>): BusinessCategory {
   const id = row.id != null ? String(row.id) : undefined;

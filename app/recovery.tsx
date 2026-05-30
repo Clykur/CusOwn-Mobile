@@ -1,16 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { View, Text, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
-
-import { THEME } from '@/theme/theme';
-import { useAuthStore } from '@/store/auth.store';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { apiService } from '@/services/api.service';
+import { useAuthStore } from '@/store/auth.store';
+import { THEME } from '@/theme/theme';
 
 export default function RecoveryScreen() {
   const { profile, refreshProfile, clearSession, role } = useAuthStore();
@@ -28,6 +27,7 @@ export default function RecoveryScreen() {
 
       const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDaysRemaining(diffDays > 0 ? diffDays : 0);
     } else {
       setDaysRemaining(30);
@@ -45,9 +45,10 @@ export default function RecoveryScreen() {
       Alert.alert('Account Restored', 'Welcome back!');
 
       const target = role === 'Owner' ? '/(owner)' : '/(customer)';
-      router.replace(target as any);
-    } catch (err: any) {
-      Alert.alert('Restore Failed', err?.message || 'Could not restore account.');
+      router.replace(target as '/(owner)' | '/(customer)');
+    } catch (err: unknown) {
+      const error = err as Error;
+      Alert.alert('Restore Failed', error?.message || 'Could not restore account.');
     } finally {
       setLoading(false);
     }
@@ -74,8 +75,9 @@ export default function RecoveryScreen() {
               await clearSession();
 
               router.replace('/(public)/welcome');
-            } catch (err: any) {
-              Alert.alert('Deletion Failed', err?.message || 'Could not delete account.');
+            } catch (err: unknown) {
+              const error = err as Error;
+              Alert.alert('Deletion Failed', error?.message || 'Could not delete account.');
 
               setLoading(false);
             }
@@ -89,7 +91,7 @@ export default function RecoveryScreen() {
     <PremiumBackground>
       <SafeAreaView className="flex-1 justify-center px-6">
         <AnimatedSection direction="up">
-          <GlassCard className="p-2 rounded-[32px] border border-border items-center">
+          <GlassCard className="p-2 rounded-full border border-border items-center">
             {/* Icon */}
             <View className="rounded-full items-center justify-center mb-8 mt-6">
               <Ionicons name="trash-outline" size={42} color={THEME.colors.error} />
@@ -120,7 +122,7 @@ export default function RecoveryScreen() {
                 disabled={loading}
                 className="bg-primary rounded-full py-5 items-center justify-center active:opacity-80"
               >
-                <Text className="text-black font-black text-sm uppercase tracking-[2px]">
+                <Text className="text-black font-black text-sm uppercase tracking-0.5">
                   {loading ? 'Processing...' : 'Restore Account'}
                 </Text>
               </Pressable>
@@ -131,7 +133,7 @@ export default function RecoveryScreen() {
                 disabled={loading}
                 className="border border-red-500 rounded-full py-5 items-center justify-center active:opacity-80"
               >
-                <Text className="px-3 text-red-500 font-black text-sm uppercase tracking-[3px]">
+                <Text className="px-3 text-red-500 font-black text-sm uppercase tracking-1">
                   Delete Permanently
                 </Text>
               </Pressable>

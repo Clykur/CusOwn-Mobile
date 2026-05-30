@@ -8,8 +8,6 @@ export interface BusinessCategory {
 }
 
 export interface Service {
-  length: number;
-  map(arg0: (s: any) => any): unknown;
   id: string;
   business_id: string;
   name: string;
@@ -20,7 +18,7 @@ export interface Service {
 
 export interface Business {
   profile_image_url: string;
-  avatar_url: any;
+  avatar_url: string | null;
   phone_number: string;
   cover_photo_url: string | undefined;
   created_at: string | number | Date;

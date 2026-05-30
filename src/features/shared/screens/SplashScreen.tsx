@@ -1,5 +1,6 @@
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { View, Text } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -11,12 +12,13 @@ import Animated, {
   withRepeat,
   interpolate,
 } from 'react-native-reanimated';
-import { router } from 'expo-router';
+
+import type { Session } from '@supabase/supabase-js';
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useOnboardingStore } from '@/store/onboarding.store';
-import { supabase } from '@/lib/supabase';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
 
 const PHRASES = [
   'Book Instantly',
@@ -26,7 +28,7 @@ const PHRASES = [
 ];
 
 export default function Splash() {
-  const { setSession } = useAuthStore();
+  const setSession = useAuthStore((s) => s.setSession);
   const { selectedRole, setSplashShown } = useOnboardingStore();
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
 
@@ -59,20 +61,25 @@ export default function Splash() {
       try {
         const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = await authService.getSession();
         await setSession(session);
 
+        // eslint-disable-next-line react-hooks/immutability
         logoOpacity.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.quad) });
+        // eslint-disable-next-line react-hooks/immutability
         logoScale.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.back(1.5)) });
 
+        // eslint-disable-next-line react-hooks/immutability
         taglineOpacity.value = withDelay(800, withTiming(1, { duration: 1000 }));
 
         timeout1 = setTimeout(() => {
+          // eslint-disable-next-line react-hooks/immutability
           startPhraseRotation();
         }, 1500);
 
         timeout2 = setTimeout(() => {
           setSplashShown(true);
+          // eslint-disable-next-line react-hooks/immutability
           handleNavigation(session);
         }, 4500);
       } catch (error) {
@@ -87,9 +94,11 @@ export default function Splash() {
       clearTimeout(timeout1);
       clearTimeout(timeout2);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const startPhraseRotation = () => {
+    // eslint-disable-next-line react-hooks/immutability
     phraseOpacity.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 600 }),
@@ -101,6 +110,7 @@ export default function Splash() {
         runOnJS(nextPhrase)();
       },
     );
+    // eslint-disable-next-line react-hooks/immutability
     phraseTranslateY.value = withRepeat(
       withSequence(
         withTiming(0, { duration: 600 }),
@@ -112,10 +122,11 @@ export default function Splash() {
 
   const nextPhrase = () => {
     setCurrentPhraseIndex((prev) => (prev + 1) % PHRASES.length);
+    // eslint-disable-next-line react-hooks/immutability
     phraseTranslateY.value = 10;
   };
 
-  const handleNavigation = (session: any) => {
+  const handleNavigation = (session: Session | null) => {
     if (session) {
       const role = session.user.user_metadata?.role || selectedRole;
       router.replace(role === 'Owner' ? '/(owner)' : '/(customer)');
@@ -140,7 +151,7 @@ export default function Splash() {
         </Animated.View>
 
         <Animated.View style={taglineStyle} className="mt-4">
-          <Text className="text-textLight text-lg font-medium tracking-[4px] uppercase text-center">
+          <Text className="text-textLight text-lg font-medium tracking-1 uppercase text-center">
             Elevated Experiences
           </Text>
         </Animated.View>
@@ -160,7 +171,7 @@ export default function Splash() {
         delay={2000}
         className="absolute bottom-16 w-full items-center"
       >
-        <Text className="text-textSecondary/50 text-xs tracking-[8px] uppercase">
+        <Text className="text-textSecondary/50 text-xs tracking-2 uppercase">
           Powered by Gold Protocol
         </Text>
       </AnimatedSection>

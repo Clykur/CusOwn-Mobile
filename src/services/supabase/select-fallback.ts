@@ -1,4 +1,4 @@
-import { PostgrestError } from '@supabase/supabase-js';
+import type { PostgrestError } from '@supabase/supabase-js';
 import { logger, LogTag } from '@/utils/logger';
 
 export function isMissingColumnError(error: PostgrestError | null): boolean {

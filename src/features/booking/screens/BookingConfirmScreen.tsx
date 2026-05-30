@@ -1,16 +1,20 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useColorScheme } from 'react-native';
-import { router } from 'expo-router';
-import { useBookingStore } from '@/store/booking.store';
+
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { THEME } from '@/constants/theme';
 import { useCreateBooking } from '@/hooks/useBookings';
 import { useModal } from '@/hooks/useModal';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { THEME } from '@/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
+import { useBookingStore } from '@/store/booking.store';
 
 export default function ConfirmBookingScreen() {
-  const { selectedBusiness, selectedService, selectedSlot, resetBooking } = useBookingStore();
+  const selectedBusiness = useBookingStore((s) => s.selectedBusiness);
+  const selectedService = useBookingStore((s) => s.selectedService);
+  const selectedSlot = useBookingStore((s) => s.selectedSlot);
+  const resetBooking = useBookingStore((s) => s.resetBooking);
   const { mutateAsync: createBooking, isPending } = useCreateBooking();
   const { showModal } = useModal();
 
@@ -24,8 +28,10 @@ export default function ConfirmBookingScreen() {
         <Text style={[styles.errorMsg, { color: theme.text }]}>
           Incomplete booking workflow state.
         </Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 12 }}>
-          <Text style={{ color: theme.primary, fontWeight: '600' }}>Go Back</Text>
+        <TouchableOpacity className="mt-3" onPress={() => router.back()}>
+          <Text className="font-semibold" style={[{ color: theme.primary }]}>
+            Go Back
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -45,11 +51,13 @@ export default function ConfirmBookingScreen() {
       // Clear wizard selections
       resetBooking();
       router.replace('/booking/success');
-    } catch (err: any) {
+    } catch (err: unknown) {
       showModal({
         variant: 'error',
         title: 'Booking Error',
-        description: err.message || 'Failed to finalize your reservation.',
+        description:
+          (err instanceof Error ? err.message : String(err)) ||
+          'Failed to finalize your reservation.',
       });
     }
   };
@@ -68,7 +76,7 @@ export default function ConfirmBookingScreen() {
         <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
           Review & Confirm
         </Text>
-        <View style={{ width: 22 }} />
+        <View className="w-6" />
       </View>
 
       <ScrollView style={styles.content}>

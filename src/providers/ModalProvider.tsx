@@ -1,7 +1,10 @@
-import React, { useState, useCallback, ReactNode } from 'react';
-import { ModalConfig } from '@/types/modal';
+import React, { useState, useCallback } from 'react';
+
+import type { ReactNode } from 'react';
 import { GlobalModal } from '@/components/ui/Modal/GlobalModal';
 import { ModalContext } from '@/hooks/useModal';
+
+import type { ModalConfig } from '@/types/modal';
 
 export const ModalProvider = ({ children }: { children: ReactNode }) => {
   const [config, setConfig] = useState<ModalConfig | null>(null);

@@ -1,18 +1,18 @@
-import { THEME } from '@/theme/theme';
-import React from 'react';
-import { View, Text, Pressable, Alert, Image } from 'react-native';
-
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { Badge } from '@/components/ui/Badge';
 import { Ionicons } from '@expo/vector-icons';
-import { Booking } from '@/types/booking.types';
 import { router } from 'expo-router';
+import React from 'react';
+import { View, Text, Pressable } from 'react-native';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Avatar } from '@/components/ui/Avatar';
-import { getBookingPrice } from '@/services/api.service';
-import { supabase } from '@/lib/supabase';
+import { Badge } from '@/components/ui/Badge';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { CONFIG } from '@/constants/config';
+import { getBookingPrice } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
 import { formatBookingDate, formatBookingTime } from '@/utils/time';
+
+import type { Booking } from '@/types/booking.types';
 
 interface BookingCardProps {
   item: Booking;
@@ -31,6 +31,8 @@ interface BookingCardProps {
 export const BookingCard: React.FC<BookingCardProps> = ({
   item,
   index,
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   businessImage,
   onPress,
   onAccept,
@@ -42,6 +44,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   const isPast = React.useMemo(() => {
     if (!item.date || !item.time) return false;
     const slotDateTime = new Date(`${item.date}T${item.time}`);
+    // eslint-disable-next-line react-hooks/purity
     return slotDateTime.getTime() < Date.now();
   }, [item.date, item.time]);
 
@@ -57,8 +60,10 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
     const windowMs = (CONFIG.UNDO_WINDOW_MINUTES || 15) * 60 * 1000;
 
+    // eslint-disable-next-line react-hooks/purity
     const updatedAt = new Date(item.updated_at || item.created_at || Date.now()).getTime();
 
+    // eslint-disable-next-line react-hooks/purity
     return !isNaN(updatedAt) && Date.now() - updatedAt < windowMs;
   }, [isPast, item.status, item.updated_at, item.created_at, item.undo_used_at]);
 
@@ -101,7 +106,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                   ellipsizeMode="tail"
                 >
                   {item.services && item.services.length > 0
-                    ? item.services.map((s: any) => s.name).join(', ')
+                    ? item.services.map((s: { name?: string }) => s.name).join(', ')
                     : item.service?.name || 'Standard Slot'}
                 </Text>
               </View>
@@ -112,7 +117,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           </View>
 
           {/* Divider */}
-          <View className="h-[1px] bg-border mb-2" />
+          <View className="h-px bg-border mb-2" />
 
           {/* Footer */}
           <View className="flex-row justify-between items-center">

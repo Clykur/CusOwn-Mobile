@@ -1,10 +1,18 @@
-import { Booking, BookingStatus } from '@/types/booking.types';
-import { Business, Service, BusinessCategory, BusinessStats } from '@/types/business.types';
-import { UserProfile } from '@/types/user.types';
-import { logger, LogTag } from '@/utils/logger';
 import { supabase } from '@/lib/supabase';
-import { SUPABASE_ONLY_MODE } from '@/services/supabase/migration';
-import { listBusinessCategories } from '@/services/supabase/categories';
+import {
+  confirmBooking as confirmBookingSupabase,
+  cancelBooking as cancelBookingSupabase,
+  createBooking as createBookingSupabase,
+  getBookingById as getBookingByIdSupabase,
+  listBookings as listBookingsSupabase,
+  markBookingNoShow,
+  rejectBooking as rejectBookingSupabase,
+  rescheduleBooking as rescheduleBookingSupabase,
+  undoConfirm,
+  undoReject,
+  subscribeToBookings as subscribeToBookingsSupabase,
+} from '@/services/supabase/bookings';
+import { businessHoursService } from '@/services/supabase/business-hours';
 import {
   createBusiness as createBusinessSupabase,
   deleteBusiness as deleteBusinessSupabase,
@@ -17,27 +25,8 @@ import {
   restoreBusiness as restoreBusinessSupabase,
   hardDeleteBusiness as hardDeleteBusinessSupabase,
 } from '@/services/supabase/businesses';
-import {
-  deleteUserAccount,
-  getProfilePayload,
-  updateProfile as updateProfileSupabase,
-  restoreUserAccount,
-  hardDeleteUserAccount,
-} from '@/services/supabase/profiles';
-import {
-  listBusinessMedia,
-  resolveMediaPublicUrl,
-  softDeleteMedia,
-  uploadBusinessGalleryImage,
-  uploadProfileAvatar,
-  type MediaListItem,
-} from '@/services/supabase/storage';
-import {
-  getPendingRatingBookings,
-  getReviewsForBusiness,
-  ignoreReviewPrompt,
-  submitReview,
-} from '@/services/supabase/reviews';
+import { listBusinessCategories } from '@/services/supabase/categories';
+import { checkSupabaseHealth } from '@/services/supabase/health';
 import {
   addBusinessClosure,
   addBusinessHoliday,
@@ -47,18 +36,27 @@ import {
   listBusinessClosures,
   listBusinessHolidays,
 } from '@/services/supabase/hub';
+import { SUPABASE_ONLY_MODE } from '@/services/supabase/migration';
 import {
-  confirmBooking as confirmBookingSupabase,
-  cancelBooking as cancelBookingSupabase,
-  createBooking as createBookingSupabase,
-  getBookingById as getBookingByIdSupabase,
-  listBookings as listBookingsSupabase,
-  markBookingNoShow,
-  rejectBooking as rejectBookingSupabase,
-  rescheduleBooking as rescheduleBookingSupabase,
-  undoConfirm,
-  undoReject,
-} from '@/services/supabase/bookings';
+  getOwnerAnalytics as getOwnerAnalyticsSupabase,
+  getOwnerDashboard as getOwnerDashboardSupabase,
+  getOwnerStats as getOwnerStatsSupabase,
+  type OwnerAnalyticsPayload,
+} from '@/services/supabase/owner';
+import {
+  deleteUserAccount,
+  getProfilePayload,
+  updateProfile as updateProfileSupabase,
+  upsertProfile as upsertProfileSupabase,
+  restoreUserAccount,
+  hardDeleteUserAccount,
+} from '@/services/supabase/profiles';
+import {
+  getPendingRatingBookings,
+  getReviewsForBusiness,
+  ignoreReviewPrompt,
+  submitReview,
+} from '@/services/supabase/reviews';
 import {
   createService as createServiceSupabase,
   deleteService as deleteServiceSupabase,
@@ -66,16 +64,20 @@ import {
   listPublicServices,
   updateService as updateServiceSupabase,
 } from '@/services/supabase/services';
-import {
-  getOwnerAnalytics as getOwnerAnalyticsSupabase,
-  getOwnerDashboard as getOwnerDashboardSupabase,
-  getOwnerStats as getOwnerStatsSupabase,
-  type OwnerAnalyticsPayload,
-} from '@/services/supabase/owner';
 import { listSlotsForBusiness } from '@/services/supabase/slots';
-import { checkSupabaseHealth } from '@/services/supabase/health';
-import { getBookingPrice } from '@/services/supabase/mappers';
-import { businessHoursService } from '@/services/supabase/business-hours';
+import {
+  listBusinessMedia,
+  resolveMediaPublicUrl,
+  softDeleteMedia,
+  uploadBusinessGalleryImage,
+  uploadProfileAvatar,
+  type MediaListItem,
+} from '@/services/supabase/storage';
+import { logger, LogTag } from '@/utils/logger';
+
+import type { Booking, BookingStatus } from '@/types/booking.types';
+import type { Business, Service, BusinessCategory, BusinessStats } from '@/types/business.types';
+import type { UserProfile } from '@/types/user.types';
 
 export { getBookingPrice } from '@/services/supabase/mappers';
 
@@ -104,6 +106,15 @@ export const apiService = {
   }): Promise<UserProfile> => {
     assertSupabaseOnly('updateProfile');
     return updateProfileSupabase(payload);
+  },
+
+  upsertProfile: async (payload: {
+    id: string;
+    user_type: 'customer' | 'owner' | 'both' | 'admin';
+    full_name?: string | null;
+  }): Promise<UserProfile> => {
+    assertSupabaseOnly('upsertProfile');
+    return upsertProfileSupabase(payload);
   },
 
   getSignedUrl: async (mediaId: string) => {
@@ -301,6 +312,15 @@ export const apiService = {
   getBookings: async (role: 'Customer' | 'Owner'): Promise<Booking[]> => {
     assertSupabaseOnly('getBookings');
     return listBookingsSupabase(role);
+  },
+
+  subscribeToBookings: (
+    userId: string,
+    role: 'Customer' | 'Owner',
+    onUpdate: (payload: { new?: Record<string, unknown> }) => void,
+  ) => {
+    assertSupabaseOnly('subscribeToBookings');
+    return subscribeToBookingsSupabase(userId, role, onUpdate);
   },
 
   getBookingById: async (id: string): Promise<Booking> => {

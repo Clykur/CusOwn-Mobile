@@ -1,9 +1,10 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+
+import { THEME } from '@/theme/theme';
 // Note: We need icons, assuming @expo/vector-icons
-import { Ionicons } from '@expo/vector-icons';
 
 interface HeaderProps {
   title?: string;

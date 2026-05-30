@@ -1,4 +1,4 @@
-import { PostgrestError } from '@supabase/supabase-js';
+import type { PostgrestError } from '@supabase/supabase-js';
 import { logger, LogTag } from '@/utils/logger';
 
 export function formatSupabaseError(error: unknown, fallback = 'Something went wrong'): string {

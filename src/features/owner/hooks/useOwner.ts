@@ -1,13 +1,15 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiService } from '@/services/api.service';
-import { queryClient } from '@/lib/queryClient';
-import { CreateServiceFormValues } from '@/schemas/booking.schema';
-import { useAuthStore } from '@/store/auth.store';
-import { supabase } from '@/lib/supabase';
+
 import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
+import { queryClient } from '@/lib/queryClient';
+import { apiService } from '@/services/api.service';
+import { getOwnerDefaultBusinessId } from '@/services/supabase/businesses';
+import { useAuthStore } from '@/store/auth.store';
+
+import type { CreateServiceFormValues } from '@/schemas/booking.schema';
 
 export const useOwnerStats = (businessId?: string) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'stats', user?.id, businessId],
@@ -28,7 +30,7 @@ export const useOwnerAnalytics = (params: {
   endDate?: string;
   aggregated?: boolean;
 }) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   return useQuery({
     queryKey: ['owner', 'analytics', user?.id, params],
@@ -51,28 +53,18 @@ export const useOwnerServices = (businessId?: string) => {
 };
 
 export const useCreateService = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   return useMutation({
     mutationFn: async (payload: CreateServiceFormValues) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      // We still need the business_id for some backend endpoints if they are not session-aware
-      // But ideally the backend knows who the user is from the JWT.
-      // Keeping the business_id lookup for now if the backend requires it.
-      const { data: business, error } = await supabase
-        .from('businesses')
-        .select('id')
-        .eq('owner_user_id', user.id)
-        .single();
+      // Fetch the default business_id via the service layer (no direct supabase access in hooks)
+      const businessId = await getOwnerDefaultBusinessId(user.id);
 
-      if (error || !business) throw new Error('No business found for this owner');
-
-      // The backend should probably have a POST /api/owner/services
-      // For now we'll assume the apiService handles it.
       return apiService.createService({
         ...payload,
-        business_id: business.id,
+        business_id: businessId,
       });
     },
     onSuccess: () => {
@@ -85,7 +77,7 @@ export const useOwnerDashboard = (params?: {
   fromDate?: string;
   toDate?: string;
 }) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'dashboard', user?.id, params],
@@ -104,7 +96,7 @@ export const useOwnerDashboard = (params?: {
   return query;
 };
 export const useOwnerBusiness = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'business', user?.id],
@@ -120,7 +112,7 @@ export const useOwnerBusiness = () => {
 };
 
 export const useOwnerBusinesses = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'businesses', user?.id],
@@ -136,7 +128,7 @@ export const useOwnerBusinesses = () => {
 
 export const useUpdateBusiness = () => {
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: Record<string, unknown> }) =>
       apiService.updateBusiness(id, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['owner', 'businesses'] });
@@ -156,7 +148,7 @@ export const useDeleteBusiness = () => {
 };
 
 export const useDeletedOwnerBusinesses = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const query = useQuery({
     queryKey: ['owner', 'businesses', 'deleted', user?.id],

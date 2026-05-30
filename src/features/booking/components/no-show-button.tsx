@@ -1,12 +1,10 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useState } from 'react';
-
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
 import { useModal } from '@/hooks/useModal';
-
 import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
 
 interface NoShowButtonProps {
   bookingId: string;
@@ -45,11 +43,12 @@ export default function NoShowButton({ bookingId, onMarked }: NoShowButtonProps)
               if (onMarked) {
                 onMarked();
               }
-            } catch (error: any) {
+            } catch (error: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
-                description: error?.message || 'Failed to mark no-show',
+                description:
+                  (error instanceof Error ? error.message : undefined) || 'Failed to mark no-show',
               });
             } finally {
               setLoading(false);
@@ -58,6 +57,7 @@ export default function NoShowButton({ bookingId, onMarked }: NoShowButtonProps)
         },
       ],
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId, loading, marked, onMarked]);
 
   if (marked) {

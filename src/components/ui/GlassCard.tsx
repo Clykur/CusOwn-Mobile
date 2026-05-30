@@ -1,7 +1,9 @@
-import React from 'react';
-import { View, ViewProps, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
+import React from 'react';
+import { View, Platform } from 'react-native';
 import { cssInterop } from 'react-native-css-interop';
+
+import type { ViewProps } from 'react-native';
 
 cssInterop(BlurView, {
   className: 'style',
@@ -39,10 +41,12 @@ export const GlassCard: React.FC<GlassCardProps> = ({
       ) : (
         <View
           className="absolute inset-0"
-          style={{
-            // Elevated dark surface with slight transparency for depth
-            backgroundColor: 'rgba(20,20,20,0.97)',
-          }}
+          style={[
+            {
+              // Elevated dark surface with slight transparency for depth
+              backgroundColor: 'rgba(20,20,20,0.97)',
+            },
+          ]}
         />
       )}
       <View className="p-6 relative">{children}</View>

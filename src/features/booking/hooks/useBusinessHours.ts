@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiService } from '@/services/api.service';
-import { queryKeys } from '@/lib/queryClient';
+
 import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
+import { queryKeys } from '@/lib/queryClient';
+import { apiService } from '@/services/api.service';
+
 import type { EffectiveHours } from '@/services/supabase/business-hours';
 
 export const useBusinessHours = (businessId: string | null, date: string) => {

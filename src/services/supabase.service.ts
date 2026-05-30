@@ -1,6 +1,15 @@
 /**
  * @deprecated Prefer `@/services/supabase` (folder). Kept for backward-compatible imports.
  */
+import { supabase } from '@/lib/supabase';
+import * as supabaseModules from '@/services/supabase';
+import { logger, LogTag } from '@/utils/logger';
+
+import type { CreateServiceFormValues } from '@/schemas/booking.schema';
+import type { Booking, CreateBookingPayload, BookingStatus } from '@/types/booking.types';
+import type { Service, BusinessStats } from '@/types/business.types';
+import type { UserProfile } from '@/types/user.types';
+
 export {
   SUPABASE_ONLY_MODE,
   enrichBusinessesWithImages,
@@ -14,14 +23,6 @@ export {
   getProfilePayload,
   resolveMediaPublicUrl,
 } from '@/services/supabase';
-
-import * as supabaseModules from '@/services/supabase';
-import { supabase } from '@/lib/supabase';
-import { Booking, CreateBookingPayload, BookingStatus } from '@/types/booking.types';
-import { Business, Service, BusinessCategory, BusinessStats } from '@/types/business.types';
-import { UserProfile } from '@/types/user.types';
-import { CreateServiceFormValues } from '@/schemas/booking.schema';
-import { logger, LogTag } from '@/utils/logger';
 
 /** Legacy object — migrate callers to `@/services/supabase/*` modules. */
 export const supabaseService = {

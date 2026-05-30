@@ -1,11 +1,10 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
   Pressable,
-  Alert,
   ActivityIndicator,
   TextInput,
   KeyboardAvoidingView,
@@ -13,24 +12,27 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '@/hooks/useAuth';
-import { useAuthStore } from '@/store/auth.store';
-import { apiService } from '@/services/api.service';
-import { Ionicons } from '@expo/vector-icons';
-import { useProfileImage } from '@/features/shared/hooks/useProfileImage';
-import { useProfileMedia } from '@/hooks/useProfileMedia';
-import { isValidImageUrl } from '@/utils/image';
-import { useModal } from '@/hooks/useModal';
-// New UI Components
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
+
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { PremiumButton } from '@/components/ui/PremiumButton';
 import { Avatar } from '@/components/ui/Avatar';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { PremiumButton } from '@/components/ui/PremiumButton';
+import { useProfileImage } from '@/features/shared/hooks/useProfileImage';
+import { useAuth } from '@/hooks/useAuth';
+import { useModal } from '@/hooks/useModal';
+import { useProfileMedia } from '@/hooks/useProfileMedia';
+import { apiService } from '@/services/api.service';
+import { useAuthStore } from '@/store/auth.store';
+import { THEME } from '@/theme/theme';
+import { isValidImageUrl } from '@/utils/image';
+// New UI Components
 
 export default function OwnerProfileScreen() {
   const { signOut } = useAuth();
-  const { user, profile, profileImageUrl } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const profile = useAuthStore((s) => s.profile);
+  const profileImageUrl = useAuthStore((s) => s.profileImageUrl);
   const { pickAndUpload, uploading } = useProfileImage();
   const { data: mediaUrl } = useProfileMedia(user?.id);
   const { showModal } = useModal();
@@ -39,7 +41,27 @@ export default function OwnerProfileScreen() {
   const [updating, setUpdating] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
-  const [profileData, setProfileData] = useState<any>(profile ? { profile } : null);
+  const [profileData, setProfileData] = useState<{
+    profile?: {
+      full_name?: string;
+      phone_number?: string;
+      user_type?: string;
+      created_at?: string;
+    } | null;
+    user?: { email?: string; created_at?: string } | null;
+    created_at?: string;
+  } | null>(
+    profile
+      ? {
+          profile: profile as unknown as {
+            full_name?: string;
+            phone_number?: string;
+            user_type?: string;
+            created_at?: string;
+          },
+        }
+      : null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -48,7 +70,9 @@ export default function OwnerProfileScreen() {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProfile = async () => {
@@ -57,7 +81,7 @@ export default function OwnerProfileScreen() {
     try {
       const data = await apiService.getProfile();
 
-      setProfileData(data);
+      setProfileData(data as unknown as typeof profileData);
 
       if (data?.profile) {
         setFormData({
@@ -65,8 +89,8 @@ export default function OwnerProfileScreen() {
           phone_number: data.profile.phone_number || '',
         });
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load profile');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Failed to load profile');
     } finally {
       setLoading(false);
     }
@@ -97,11 +121,12 @@ export default function OwnerProfileScreen() {
       });
       setEditMode(false);
       fetchProfile();
-    } catch (err: any) {
+    } catch (err: unknown) {
       showModal({
         variant: 'error',
         title: 'Update Failed',
-        description: err.message || 'Could not update profile',
+        description:
+          (err instanceof Error ? err.message : String(err)) || 'Could not update profile',
       });
     } finally {
       setUpdating(false);
@@ -131,7 +156,8 @@ export default function OwnerProfileScreen() {
             try {
               await apiService.deleteAccount('User requested deletion via mobile app');
               signOut();
-            } catch (err: any) {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (err: unknown) {
               showModal({
                 variant: 'error',
                 title: 'Error',
@@ -160,6 +186,7 @@ export default function OwnerProfileScreen() {
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const formatDate = (date: string) => {
     if (!date) return 'N/A';
     return new Date(date).toLocaleDateString('en-US', {
@@ -193,7 +220,7 @@ export default function OwnerProfileScreen() {
               paddingBottom: 40,
             }}
           >
-            <View className="h-[360px] w-full relative">
+            <View className="h-96 w-full relative">
               {isValidImageUrl(mediaUrl || profileImageUrl) ? (
                 <Image
                   source={{
@@ -240,14 +267,14 @@ export default function OwnerProfileScreen() {
               <AnimatedSection direction="up">
                 <GlassCard className="p-2 border border-border bg-card shadow-sm rounded-3xl">
                   <View className="flex-row items-center justify-between mb-1">
-                    <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px]">
+                    <Text className="text-textSecondary text-xs font-black uppercase tracking-1">
                       Manage your account
                     </Text>
 
                     <View className="flex-row items-center">
                       <View className="w-2 h-2 rounded-full bg-success mr-2" />
 
-                      <Text className="text-success text-[10px] font-black uppercase tracking-[2px]">
+                      <Text className="text-success text-xs font-black uppercase tracking-0.5">
                         Verified
                       </Text>
                     </View>
@@ -292,7 +319,7 @@ export default function OwnerProfileScreen() {
                   <View>
                     {/* Full Name */}
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[90px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-24">
                         Name
                       </Text>
 
@@ -320,7 +347,7 @@ export default function OwnerProfileScreen() {
 
                     {/* Email */}
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[90px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-24">
                         Email
                       </Text>
 
@@ -334,7 +361,7 @@ export default function OwnerProfileScreen() {
 
                     {/* Phone */}
                     <View className="flex-row items-center justify-between py-5">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[90px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-24">
                         Phone
                       </Text>
 
@@ -370,7 +397,7 @@ export default function OwnerProfileScreen() {
                   <View className="flex-row gap-4 mb-6">
                     <View className="flex-1">
                       <PremiumButton
-                        title={updating ? 'Saving...' : 'Save Changes'}
+                        title={updating ? 'Saving...' : 'Save'}
                         onPress={handleUpdateProfile}
                         disabled={updating}
                         className="h-12 bg-primary rounded-2xl"
@@ -397,7 +424,7 @@ export default function OwnerProfileScreen() {
 
                   <View>
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[120px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-32">
                         Type
                       </Text>
                       <View className="flex-1 items-end">
@@ -414,26 +441,29 @@ export default function OwnerProfileScreen() {
                     </View>
 
                     <View className="flex-row items-center justify-between py-5 border-b border-border">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[120px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-32">
                         Created
                       </Text>
                       <View className="flex-1 items-end">
                         <Text className="text-base text-text font-bold text-right">
-                          {new Date(
-                            profileData?.profile?.created_at ||
+                          {(() => {
+                            const createdStr =
+                              profileData?.profile?.created_at ||
                               profileData?.created_at ||
-                              user?.created_at,
-                          ).toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
+                              user?.created_at;
+                            const createdDate = createdStr ? new Date(createdStr) : new Date();
+                            return createdDate.toLocaleDateString('en-US', {
+                              month: 'long',
+                              day: 'numeric',
+                              year: 'numeric',
+                            });
+                          })()}
                         </Text>
                       </View>
                     </View>
 
                     <View className="flex-row items-center justify-between py-5">
-                      <Text className="text-textSecondary text-xs uppercase tracking-[2px] font-black w-[120px]">
+                      <Text className="text-textSecondary text-xs uppercase tracking-0.5 font-black w-32">
                         Last Login
                       </Text>
                       <View className="flex-1 items-end">
@@ -467,7 +497,7 @@ export default function OwnerProfileScreen() {
               <AnimatedSection direction="up" delay={500}>
                 <GlassCard className="p-2 border border-error/30 bg-error/5 rounded-3xl mb-6">
                   <View className="flex-row items-center mb-3">
-                    <Text className="text-error text-xl font-black uppercase tracking-[2px]">
+                    <Text className="text-error text-xl font-black uppercase tracking-0.5">
                       Danger Zone
                     </Text>
                   </View>
@@ -481,7 +511,7 @@ export default function OwnerProfileScreen() {
                     onPress={handleDeleteAccount}
                     className="flex-row items-center justify-center border border-error/40 bg-error/10 rounded-2xl h-14 active:bg-error/20"
                   >
-                    <Text className="text-error font-black text-sm uppercase tracking-[2px]">
+                    <Text className="text-error font-black text-sm uppercase tracking-0.5">
                       Delete Account
                     </Text>
                   </Pressable>

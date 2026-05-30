@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
-
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
+import BusinessIcon from '../../../../assets/Business.svg';
+import CustomerIcon from '../../../../assets/Customer.svg';
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
-
-import CustomerIcon from '../../../../assets/Customer.svg';
-import BusinessIcon from '../../../../assets/Business.svg';
-
-import { useOnboardingStore, UserRole } from '@/store/onboarding.store';
-import { useActiveRoleStore } from '@/store/active-role.store';
 import { useAuth } from '@/hooks/useAuth';
-
+import { useActiveRoleStore } from '@/store/active-role.store';
+import { useOnboardingStore } from '@/store/onboarding.store';
 import { THEME } from '@/theme/theme';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
+
+import type { UserRole } from '@/store/onboarding.store';
 
 const RoleItem = ({
   selected,
@@ -39,9 +37,11 @@ const RoleItem = ({
     <Pressable
       onPress={onPress}
       onPressIn={() => {
+        // eslint-disable-next-line react-hooks/immutability
         scale.value = withSpring(0.98);
       }}
       onPressOut={() => {
+        // eslint-disable-next-line react-hooks/immutability
         scale.value = withSpring(1);
       }}
     >
@@ -57,14 +57,7 @@ const RoleItem = ({
       >
         <View className="flex-row items-center">
           {/* Icon */}
-          <View
-            style={{
-              width: 88,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 18,
-            }}
-          >
+          <View className="w-22 items-center justify-center mr-4.5">
             {type === 'customer' ? (
               <CustomerIcon width={72} height={72} color={THEME.colors.primary} />
             ) : (
@@ -73,42 +66,14 @@ const RoleItem = ({
           </View>
 
           {/* Content */}
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                fontSize: 24,
-                fontWeight: '900',
-                color: THEME.colors.primary,
-                marginBottom: 8,
-                letterSpacing: -1,
-              }}
-            >
-              {title}
-            </Text>
+          <View className="flex-1">
+            <Text className="text-2xl font-black text-primary mb-2 tracking-tighter">{title}</Text>
 
-            <Text
-              style={{
-                fontSize: 15,
-                lineHeight: 26,
-                color: THEME.colors.textSecondary,
-              }}
-            >
-              {description}
-            </Text>
+            <Text className="text-base leading-6 text-textSecondary">{description}</Text>
           </View>
 
           {/* Active */}
-          {selected && (
-            <View
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: 999,
-                backgroundColor: THEME.colors.primary,
-                marginLeft: 10,
-              }}
-            />
-          )}
+          {selected && <View className="w-2.5 h-2.5 rounded-full bg-primary ml-2.5" />}
         </View>
       </Animated.View>
     </Pressable>
@@ -138,33 +103,24 @@ export default function RoleSelectionScreen() {
       <View className="flex-1 px-7 pt-24 pb-14">
         {/* Header */}
         <View className="mb-14">
-          <Text
-            style={{
-              fontSize: 42,
-              fontWeight: '900',
-              color: THEME.colors.primary,
-              lineHeight: 48,
-              letterSpacing: -2,
-              marginBottom: 14,
-            }}
-          >
+          <Text className="text-4xl font-black text-primary leading-12 tracking-tighter mb-3.5">
             Choose Your{'\n'}Experience
           </Text>
 
           <Text
-            style={{
-              fontSize: 16,
-              lineHeight: 30,
-              color: THEME.colors.textSecondary,
-              maxWidth: '90%',
-            }}
+            className="text-base leading-7 text-textSecondary"
+            style={[
+              {
+                maxWidth: '90%',
+              },
+            ]}
           >
             Pick your role to get started
           </Text>
         </View>
 
         {/* Options */}
-        <View style={{ flex: 1 }}>
+        <View className="flex-1">
           <RoleItem
             type="customer"
             title="Customer"
@@ -195,12 +151,12 @@ export default function RoleSelectionScreen() {
 
             <View className="items-center mt-5">
               <Text
-                style={{
-                  fontSize: 10,
-                  letterSpacing: 3,
-                  textTransform: 'uppercase',
-                  color: THEME.colors.textSecondary,
-                }}
+                className="text-xs tracking-wide text-textSecondary"
+                style={[
+                  {
+                    textTransform: 'uppercase',
+                  },
+                ]}
               >
                 Secure Authentication
               </Text>

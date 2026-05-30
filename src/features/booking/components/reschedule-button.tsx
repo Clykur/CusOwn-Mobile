@@ -1,4 +1,5 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import {
   View,
@@ -10,11 +11,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
 import { useModal } from '@/hooks/useModal';
-import { apiService } from '@/services/api.service';
 import { useSlots } from '@/hooks/useSlots';
-import dayjs from 'dayjs';
+import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
 
 interface CurrentSlot {
   id: string;
@@ -72,23 +72,44 @@ export default function RescheduleButton({
     if (!rawSlots) return [];
     return rawSlots
       .filter(
-        (s: any) =>
-          s.id !== currentSlot?.id && (s.is_available === true || s.status === 'available'),
+        (s: {
+          id: string;
+          service_id?: string;
+          date?: string;
+          start_time?: string;
+          time?: string;
+          end_time?: string;
+          is_available?: boolean;
+          status?: string;
+          [key: string]: unknown;
+        }) => s.id !== currentSlot?.id && (s.is_available === true || s.status === 'available'),
       )
-      .map((s: any) => ({
-        id: s.id,
-        date: s.date,
-        start_time: s.start_time || s.time,
-        end_time: s.end_time,
-        label: (() => {
-          const t = s.start_time || s.time || '';
-          const [h, m] = t.split(':').map(Number);
-          if (isNaN(h)) return t;
-          const ampm = h >= 12 ? 'PM' : 'AM';
-          const disp = h % 12 === 0 ? 12 : h % 12;
-          return `${disp}:${String(m ?? 0).padStart(2, '0')} ${ampm}`;
-        })(),
-      }));
+      .map(
+        (s: {
+          id: string;
+          service_id?: string;
+          date?: string;
+          start_time?: string;
+          time?: string;
+          end_time?: string;
+          is_available?: boolean;
+          status?: string;
+          [key: string]: unknown;
+        }) => ({
+          id: s.id,
+          date: s.date,
+          start_time: s.start_time || s.time,
+          end_time: s.end_time,
+          label: (() => {
+            const t = s.start_time || s.time || '';
+            const [h, m] = t.split(':').map(Number);
+            if (isNaN(h)) return t;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const disp = h % 12 === 0 ? 12 : h % 12;
+            return `${disp}:${String(m ?? 0).padStart(2, '0')} ${ampm}`;
+          })(),
+        }),
+      );
   }, [rawSlots, currentSlot]);
 
   const handleReschedule = async () => {
@@ -110,11 +131,12 @@ export default function RescheduleButton({
         description: 'Booking rescheduled successfully',
       });
       onRescheduled?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       showGlobalModal({
         variant: 'error',
         title: 'Reschedule Failed',
-        description: error?.message || 'Failed to reschedule booking',
+        description:
+          (error instanceof Error ? error.message : undefined) || 'Failed to reschedule booking',
       });
     } finally {
       setLoading(false);
@@ -154,11 +176,8 @@ export default function RescheduleButton({
 
       {/* Bottom Sheet Modal */}
       <Modal visible={showModal} transparent animationType="slide">
-        <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <View
-            className="rounded-t-[32px] p-5"
-            style={{ backgroundColor: THEME.colors.card, maxHeight: '90%' }}
-          >
+        <View className="flex-1 justify-end bg-black/70">
+          <View className="rounded-t-2xl p-5 bg-card max-h-full">
             {/* Handle bar */}
             <View className="w-12 h-1 rounded-full bg-border self-center mb-5" />
 
@@ -213,7 +232,7 @@ export default function RescheduleButton({
             <Text className="text-textSecondary text-xs font-black uppercase tracking-widest mb-3">
               Available Slots
             </Text>
-            <ScrollView style={{ maxHeight: 220 }} showsVerticalScrollIndicator={false}>
+            <ScrollView className="max-h-56" showsVerticalScrollIndicator={false}>
               {slotsLoading ? (
                 <View className="items-center py-8">
                   <ActivityIndicator color={THEME.colors.primary} />
@@ -258,8 +277,7 @@ export default function RescheduleButton({
               placeholder="Reason for rescheduling (optional)"
               placeholderTextColor={THEME.colors.textSecondary}
               multiline
-              className="border border-border rounded-2xl px-4 py-3 mt-4 text-text bg-input"
-              style={{ minHeight: 72, textAlignVertical: 'top', color: THEME.colors.text }}
+              className="border border-border rounded-2xl px-4 py-3 mt-4 text-text bg-input min-h-20 align-top"
             />
 
             {/* Action Buttons */}

@@ -1,13 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
-import { THEME } from '@/theme/theme';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { THEME } from '@/theme/theme';
+
+import type { Business } from '@/features/shared/types/business.types';
 
 export interface TrendingService {
-  business: any;
+  business?: Business | null;
   id: string;
   name: string;
   category: string;
@@ -24,21 +26,23 @@ interface TrendingServiceCardProps {
   onPress?: () => void;
 }
 
-export function TrendingServiceCard({ item, index = 0, onPress }: TrendingServiceCardProps) {
+function TrendingServiceCardBase({ item, index = 0, onPress }: TrendingServiceCardProps) {
   const salonName = item.business?.salon_name || item.salon_name;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const rating = item.business?.rating_avg || item.rating_avg;
 
   return (
     <AnimatedSection delay={index * 100} direction="left" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-[190px] p-2 bg-card shadow-sm rounded-[24px] items-center justify-center">
+        <GlassCard className="w-48 p-2 bg-card shadow-sm rounded-3xl items-center justify-center">
           {/* Icon */}
           <View className="items-center justify-center mb-3">
             <Ionicons name="trending-up" size={30} color={THEME.colors.primary} />
           </View>
 
           {/* Category */}
-          <Text className="text-primary text-[10px] font-bold uppercase tracking-[2px] text-center mb-1">
+          <Text className="text-primary text-xs font-bold uppercase tracking-0.5 text-center mb-1">
             {item.category}
           </Text>
 
@@ -64,7 +68,7 @@ export function TrendingServiceCard({ item, index = 0, onPress }: TrendingServic
 
           {/* Price */}
           <View className="items-center justify-center mt-4">
-            <Text className="text-textSecondary text-[10px] uppercase font-bold tracking-wider text-center mb-0.5">
+            <Text className="text-textSecondary text-xs uppercase font-bold tracking-wider text-center mb-0.5">
               Starts At
             </Text>
 
@@ -75,3 +79,5 @@ export function TrendingServiceCard({ item, index = 0, onPress }: TrendingServic
     </AnimatedSection>
   );
 }
+
+export const TrendingServiceCard = React.memo(TrendingServiceCardBase);

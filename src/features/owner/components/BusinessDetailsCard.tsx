@@ -1,9 +1,11 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
+
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Business } from '@/types/business.types';
-import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '@/theme/theme';
+
+import type { Business } from '@/types/business.types';
 
 interface BusinessDetailsCardProps {
   business: Business;
@@ -19,12 +21,12 @@ const DetailField = ({
 }: {
   label: string;
   value: string | number;
-  icon: any;
+  icon: keyof typeof Ionicons.glyphMap;
 }) => (
   <View className="mb-4">
     <View className="flex-row items-center mb-1">
       <Ionicons name={icon} size={14} color={THEME.colors.textSecondary} className="mr-2" />
-      <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px]">{label}</Text>
+      <Text className="text-slate-400 text-xs font-black uppercase tracking-0.5">{label}</Text>
     </View>
     <Text className="text-slate-900 text-base font-semibold ml-6">{value}</Text>
   </View>

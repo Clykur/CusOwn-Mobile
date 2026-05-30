@@ -1,18 +1,19 @@
-import { supabase } from '@/lib/supabase';
-import { Booking, BookingStatus, CreateBookingPayload } from '@/types/booking.types';
-import { Business } from '@/types/business.types';
-import { enrichBusinessesWithImages, mapBooking } from './mappers';
 import { isRlsDenial, logBookingDebug, logBookingError } from './booking-debug';
 import { BookingSupabaseError } from './booking-errors';
-import { parseTimeToMinutes } from '@/utils/time';
-import { logger, LogTag } from '@/utils/logger';
-
-export { BookingSupabaseError } from './booking-errors';
+import { businessHoursService } from './business-hours';
+import { logSupabaseFailure } from './errors';
+import { enrichBusinessesWithImages, mapBooking } from './mappers';
+import { listOwnedBusinessIds } from './owner-access';
 import { BOOKING_RPC, getActorUserId, invokeRpc } from './rpc';
 import { resolveSlotIdForBooking } from './slots';
-import { listOwnedBusinessIds } from './owner-access';
-import { logSupabaseFailure } from './errors';
-import { businessHoursService } from './business-hours';
+import { parseTimeToMinutes } from '@/utils/time';
+import { logger, LogTag } from '@/utils/logger';
+import { supabase } from '@/lib/supabase';
+
+import type { Booking, CreateBookingPayload } from '@/types/booking.types';
+import type { Business } from '@/types/business.types';
+
+export { BookingSupabaseError } from './booking-errors';
 
 /** List views — fetch business, slot, and booking_services to map service names. */
 const BOOKING_LIST_SELECT = `
@@ -101,7 +102,7 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
       return;
     }
 
-    const servicesByBusiness: Record<string, any[]> = {};
+    const servicesByBusiness: Record<string, Record<string, unknown>[]> = {};
     services?.forEach((s) => {
       if (!servicesByBusiness[s.business_id]) {
         servicesByBusiness[s.business_id] = [];
@@ -136,17 +137,20 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
       if (matchedService) {
         b.services = [
           {
-            ...matchedService,
-            price: Number(matchedService.price_cents || 0) / 100,
-          } as any,
+            id: String(matchedService.id ?? ''),
+            name: String(matchedService.name ?? ''),
+            price: Number(matchedService.price_cents ?? 0) / 100,
+            duration: Number(totalDuration ?? matchedService.duration_minutes ?? 30),
+            business_id: String(b.business_id),
+          },
         ];
         b.service = {
-          id: String(matchedService.id),
-          name: String(matchedService.name),
-          price: b.price || Number(matchedService.price_cents || 0) / 100,
+          id: String(matchedService.id ?? ''),
+          name: String(matchedService.name ?? ''),
+          price: b.price || Number(matchedService.price_cents ?? 0) / 100,
           duration: Number(totalDuration ?? matchedService.duration_minutes ?? 30),
           business_id: String(b.business_id),
-        } as any;
+        };
       } else {
         const fallbackName = b.business?.salon_name
           ? `${b.business.salon_name} Session`
@@ -158,7 +162,7 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
             price: b.price || 0,
             duration: Number(totalDuration ?? 30),
             business_id: String(b.business_id),
-          } as any,
+          },
         ];
         b.service = {
           id: '',
@@ -166,7 +170,7 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
           price: b.price || 0,
           duration: Number(totalDuration ?? 30),
           business_id: String(b.business_id),
-        } as any;
+        };
       }
     }
   } catch (err) {
@@ -174,7 +178,7 @@ async function enrichBookingsWithServices(bookings: Booking[]): Promise<void> {
   }
 }
 
-function isBookingTimePassed(booking: any): boolean {
+function isBookingTimePassed(booking: Booking): boolean {
   if (!booking.date || !booking.time) return false;
 
   // Clean date YYYY-MM-DD
@@ -513,7 +517,7 @@ export async function createBooking(input: MobileCreateBookingInput): Promise<Bo
 
 export async function confirmBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.confirm, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.confirm, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -525,7 +529,7 @@ export async function confirmBooking(bookingId: string): Promise<Booking> {
 
 export async function rejectBooking(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.reject, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.reject, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -537,7 +541,7 @@ export async function rejectBooking(bookingId: string): Promise<Booking> {
 
 export async function undoConfirm(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.undoConfirm, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.undoConfirm, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -549,7 +553,7 @@ export async function undoConfirm(bookingId: string): Promise<Booking> {
 
 export async function undoReject(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.undoReject, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.undoReject, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -561,7 +565,7 @@ export async function undoReject(bookingId: string): Promise<Booking> {
 
 export async function markBookingNoShow(bookingId: string): Promise<Booking> {
   const actorId = await getActorUserId();
-  const result = await invokeRpc<any>(BOOKING_RPC.markNoShow, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.markNoShow, {
     p_booking_id: bookingId,
     p_actor_id: actorId,
   });
@@ -578,7 +582,7 @@ export async function cancelBooking(
   reason?: string,
   cancelledBy: 'customer' | 'owner' = 'customer',
 ): Promise<Booking> {
-  const result = await invokeRpc<any>(BOOKING_RPC.cancel, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.cancel, {
     p_booking_id: bookingId,
     p_cancelled_by: cancelledBy,
     p_cancellation_reason: reason || '',
@@ -655,7 +659,7 @@ export async function rescheduleBooking(
     }
   }
 
-  const result = await invokeRpc<any>(BOOKING_RPC.reschedule, {
+  const result = await invokeRpc<Record<string, unknown>>(BOOKING_RPC.reschedule, {
     p_booking_id: bookingId,
     p_new_slot_id: slotId,
     p_rescheduled_by: payload.rescheduled_by ?? 'customer',
@@ -667,4 +671,29 @@ export async function rescheduleBooking(
   }
 
   return getBookingById(bookingId);
+}
+
+export function subscribeToBookings(
+  userId: string,
+  role: 'Customer' | 'Owner',
+  onUpdate: (payload: { new?: Record<string, unknown> }) => void,
+) {
+  const channelId = `bookings-${role}-${userId}-${Math.random().toString(36).substr(2, 6)}`;
+  const filterOptions = {
+    event: '*' as const,
+    schema: 'public',
+    table: 'bookings',
+    ...(role === 'Customer' && { filter: `customer_user_id=eq.${userId}` }),
+  };
+
+  const channel = supabase
+    .channel(channelId)
+    .on('postgres_changes', filterOptions, (payload) => {
+      onUpdate(payload);
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }

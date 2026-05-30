@@ -1,7 +1,8 @@
-import { supabase } from '@/lib/supabase';
-import { BookingSupabaseError } from './booking-errors';
 import { isRlsDenial, isRpcNotFound, logBookingDebug, logBookingError } from './booking-debug';
-import { RpcResponse } from './types';
+import { BookingSupabaseError } from './booking-errors';
+
+import type { RpcResponse } from './types';
+import { supabase } from '@/lib/supabase';
 
 /** Verified production RPC function names (PostgREST schema). */
 export const BOOKING_RPC = {

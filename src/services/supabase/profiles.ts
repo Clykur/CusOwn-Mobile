@@ -1,8 +1,9 @@
-import { supabase } from '@/lib/supabase';
-import { UserProfile } from '@/types/user.types';
-import { logger, LogTag } from '@/utils/logger';
 import { invokeBookingRpc } from './booking-rpc';
 import { resolveMediaPublicUrl } from './storage';
+import { supabase } from '@/lib/supabase';
+import { logger, LogTag } from '@/utils/logger';
+
+import type { UserProfile } from '@/types/user.types';
 
 const ACCOUNT_RPC = {
   softDeleteUser: 'soft_delete_user_account',
@@ -121,8 +122,11 @@ export async function updateProfile(payload: {
     try {
       const { url } = await resolveMediaPublicUrl(data.profile_media_id);
       profileImageUrl = url;
-    } catch (err: any) {
-      logger.warn(LogTag.API, `Failed to resolve media for updated profile: ${err.message}`);
+    } catch (err: unknown) {
+      logger.warn(
+        LogTag.API,
+        `Failed to resolve media for updated profile: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
@@ -223,4 +227,30 @@ export async function recoverUserAccount(): Promise<void> {
     logger.error(LogTag.API, 'recover_user_account failed', { rpcError, userId });
     throw rpcError;
   }
+}
+
+export async function upsertProfile(payload: {
+  id: string;
+  user_type: 'customer' | 'owner' | 'both' | 'admin';
+  full_name?: string | null;
+}): Promise<UserProfile> {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .upsert(
+      {
+        id: payload.id,
+        user_type: payload.user_type,
+        full_name: payload.full_name,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' },
+    )
+    .select('*')
+    .single();
+
+  if (error) {
+    logger.error(LogTag.API, 'Failed to upsert user profile', error);
+    throw error;
+  }
+  return data as unknown as UserProfile;
 }

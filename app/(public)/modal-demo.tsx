@@ -1,11 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, View, Text } from 'react-native';
-import { Stack } from 'expo-router';
-import { useModal } from '@/hooks/useModal';
-import { THEME } from '@/constants/theme';
-import { horizontalScale, verticalScale, responsiveFontSize } from '@/utils/responsive';
+
 import { Button } from '@/components/ui/Button';
-import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '@/constants/theme';
+import { useModal } from '@/hooks/useModal';
+import { horizontalScale, verticalScale, responsiveFontSize } from '@/utils/responsive';
 
 export default function ModalDemoScreen() {
   const { showModal } = useModal();

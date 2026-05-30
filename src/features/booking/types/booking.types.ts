@@ -1,5 +1,5 @@
-import { Business, Service } from '@/features/shared/types/business.types';
-import { Slot } from './slot.types';
+import type { Slot } from './slot.types';
+import type { Business, Service } from '@/features/shared/types/business.types';
 
 export type BookingStatus =
   | 'pending'
@@ -41,16 +41,24 @@ export interface Booking {
   customer_profile?: {
     id: string;
     full_name: string | null;
+    phone?: string | null;
+    email?: string | null;
     profile_media?: {
       id: string;
       bucket_name: string;
       storage_path: string;
     } | null;
   } | null;
+  /** Backend sometimes returns additional display fields */
+  notes?: string | null;
+  instructions?: string | null;
+  payment_status?: string | null;
+  salon?: Business; // Backend alias for business
+  duration?: number;
 }
 
 export type BookingWithDetails = Booking & {
-  salon?: any; // Backend sometimes uses salon
+  salon?: Business; // Backend sometimes uses 'salon' as an alias for business
   services?: { id: string; name: string }[];
   review?: {
     rating: number;

@@ -1,20 +1,23 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, Pressable, FlatList, RefreshControl, Alert, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect } from 'expo-router';
-import { useBookings, useUpdateBookingStatus } from '@/hooks/useBookings';
-import { getBookingPrice } from '@/services/api.service';
-import { Badge } from '@/components/ui/Badge';
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
-import { formatBookingDate, formatBookingTime } from '@/utils/time';
+import { router } from 'expo-router';
+import React, { useState, useMemo } from 'react';
+import { View, Text, Pressable, FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Avatar } from '@/components/ui/Avatar';
-import { isValidImageUrl } from '@/utils/image';
+import { Badge } from '@/components/ui/Badge';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { useBookings } from '@/hooks/useBookings';
+import { getBookingPrice } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
+import { formatBookingDate, formatBookingTime } from '@/utils/time';
+
+import type { Booking } from '@/features/booking/types/booking.types';
+import type { Service } from '@/features/shared/types/business.types';
 
 type BookingFilterType = 'upcoming' | 'completed' | 'cancelled';
 
@@ -27,7 +30,7 @@ export default function CustomerBookingsScreen() {
     if (!bookings) return [];
     const now = dayjs();
 
-    return bookings.filter((b: any) => {
+    return bookings.filter((b: Booking) => {
       let status = (b.status || 'pending').toLowerCase();
       const bookingDateTime = dayjs(`${b.date} ${b.time}`);
       const bookingEndTime = bookingDateTime.add(b.duration || 60, 'minutes'); // Default to 60 mins if duration not present
@@ -72,11 +75,12 @@ export default function CustomerBookingsScreen() {
     setRefreshing(false);
   };
 
-  const renderBookingCard = ({ item, index }: { item: any; index: number }) => {
+  const renderBookingCard = ({ item, index }: { item: Booking; index: number }) => {
     const salonName = item.business?.salon_name || item.salon?.salon_name || 'Business Partner';
 
     const salonAddress = item.business?.address || item.salon?.address || 'Premium Suite';
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const salonImage =
       item.business?.owner_image ||
       item.business?.image_url ||
@@ -88,7 +92,8 @@ export default function CustomerBookingsScreen() {
 
     return (
       <AnimatedSection delay={index * 30} direction="up" className="mb-3">
-        <GlassCard className="bg-card rounded-[22px] p-1 shadow-sm overflow-hidden">
+        <GlassCard className="bg-card rounded-3xl p-1 shadow-sm overflow-hidden">
+          {/* Tappable top section → booking detail */}
           <Pressable onPress={() => router.push(`/booking-detail/${item.id}`)}>
             {/* Top */}
             <View className="flex-row items-center">
@@ -99,7 +104,7 @@ export default function CustomerBookingsScreen() {
                   name={salonName}
                   size={70}
                   type="business"
-                  className="w-[70px] h-[70px] rounded-full"
+                  className="w-20 h-20 rounded-full"
                 />
               </View>
 
@@ -111,7 +116,7 @@ export default function CustomerBookingsScreen() {
                     {salonName}
                   </Text>
 
-                  <Badge status={item.status as any} />
+                  <Badge status={item.status as Booking['status']} />
                 </View>
                 {/* Location */}
                 <View className="flex-row items-center mt-1">
@@ -129,13 +134,13 @@ export default function CustomerBookingsScreen() {
             <View className="flex-row items-start justify-between">
               {/* Service */}
               <View className="flex-1">
-                <Text className="text-[11px] uppercase tracking-[2px] text-textSecondary font-black">
+                <Text className="text-xs uppercase tracking-0.5 text-textSecondary font-black">
                   Service
                 </Text>
 
                 <Text className="text-text text-xl font-bold mt-1" numberOfLines={1}>
                   {item.services && item.services.length > 0
-                    ? item.services.map((s: any) => s.name).join(', ')
+                    ? item.services.map((s: Service) => s.name).join(', ')
                     : item.service?.name || 'Curated Session'}
                 </Text>
               </View>
@@ -149,7 +154,7 @@ export default function CustomerBookingsScreen() {
             </View>
           </Pressable>
 
-          {/* Bottom */}
+          {/* Bottom — date/time + rebook, isolated from the card press */}
           <View className="flex-row items-center justify-between pt-2 border-t border-border">
             {/* Date & Time */}
             <Pressable
@@ -170,11 +175,9 @@ export default function CustomerBookingsScreen() {
               item.status === 'rejected' ||
               item.status === 'no_show') && (
               <Pressable
-                onPress={(e) => {
-                  e.stopPropagation();
-
+                onPress={() => {
                   const serviceIds =
-                    item.services?.map((s: any) => s.id).join(',') || item.service?.id || '';
+                    item.services?.map((s: Service) => s.id).join(',') || item.service?.id || '';
 
                   router.push({
                     pathname: '/(customer)/book/[id]',
@@ -186,9 +189,7 @@ export default function CustomerBookingsScreen() {
                 }}
                 className="px-4 py-2 rounded-full border border-text"
               >
-                <Text className="text-text text-xs font-black uppercase tracking-[1.5px]">
-                  Rebook
-                </Text>
+                <Text className="text-text text-xs font-black uppercase tracking-wide">Rebook</Text>
               </Pressable>
             )}
           </View>
@@ -202,7 +203,7 @@ export default function CustomerBookingsScreen() {
       <SafeAreaView className="flex-1" edges={['top']}>
         {/* Cinematic Page Title */}
         <View className="px-luxury pt-5 pb-2">
-          <Text className="text-textSecondary text-xs font-black uppercase tracking-[3px] mb-1">
+          <Text className="text-textSecondary text-xs font-black uppercase tracking-1 mb-1">
             My Bookings
           </Text>
           <Text className="text-text text-3xl font-black tracking-tight">

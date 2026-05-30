@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiService } from '@/services/api.service';
+
 import { queryKeys } from '@/lib/queryClient';
+import { apiService } from '@/services/api.service';
 
 export const useSlots = (businessId: string | null, date: string, serviceIds?: string) => {
   return useQuery({

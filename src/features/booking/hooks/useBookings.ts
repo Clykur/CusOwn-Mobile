@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { apiService } from '@/services/api.service';
+import { useEffect } from 'react';
+
+import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
 import { queryKeys, queryClient } from '@/lib/queryClient';
-import { CreateBookingPayload, BookingStatus } from '@/types/booking.types';
+import { apiService } from '@/services/api.service';
 import { useAuthStore } from '@/store/auth.store';
 import { logger, LogTag } from '@/utils/logger';
-import { useQueryLogger } from '@/features/shared/hooks/useQueryLogger';
+
+import type { CreateBookingPayload, BookingStatus } from '@/types/booking.types';
 
 export const useBookings = (roleInput?: 'Customer' | 'Owner') => {
-  const { user, role: authRole } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const authRole = useAuthStore((s) => s.role);
   const role = roleInput || (authRole as 'Customer' | 'Owner');
 
   const query = useQuery({
@@ -31,36 +33,23 @@ export const useBookings = (roleInput?: 'Customer' | 'Owner') => {
 
   useQueryLogger('useBookings', query, { role });
 
-  // Real-time subscription (Keep this via Supabase as requested)
+  // Real-time subscription
   useEffect(() => {
     if (!user?.id) return;
 
-    const channelId = `bookings-${role}-${user.id}-${Math.random().toString(36).substr(2, 6)}`;
-    const filterOptions = {
-      event: '*' as const,
-      schema: 'public',
-      table: 'bookings',
-      ...(role === 'Customer' && { filter: `customer_user_id=eq.${user.id}` }),
-      // Owner: no column filter — RLS limits rows; avoids wrong customer_id filter on prod schema.
-    };
+    const unsubscribe = apiService.subscribeToBookings(user.id, role, (payload) => {
+      logger.info(LogTag.API, '🔔 Real-time update received for bookings', payload);
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
 
-    const channel = supabase
-      .channel(channelId)
-      .on('postgres_changes', filterOptions, (payload) => {
-        logger.info(LogTag.API, '🔔 Real-time update received for bookings', payload);
-        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
+      const newRecord = payload.new as Record<string, unknown>;
+      if (newRecord && newRecord.id) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.bookings.detail(newRecord.id as string),
+        });
+      }
+    });
 
-        if (payload.new && (payload.new as any).id) {
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.bookings.detail((payload.new as any).id),
-          });
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return unsubscribe;
   }, [user?.id, role]);
 
   return query;
@@ -75,7 +64,7 @@ export const useBookingDetail = (id: string) => {
 };
 
 export const useCreateBooking = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   return useMutation({
     mutationFn: (payload: CreateBookingPayload) => {
@@ -100,7 +89,7 @@ export const useUpdateBookingStatus = () => {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: BookingStatus }) =>
       apiService.updateBookingStatus(id, status),
-    onSuccess: (_: any, variables: { id: string; status: BookingStatus }) => {
+    onSuccess: (_, variables: { id: string; status: BookingStatus }) => {
       logger.info(LogTag.API, `✅ Booking status updated to ${variables.status}`, {
         id: variables.id,
       });
@@ -119,8 +108,13 @@ export const useUpdateBookingStatus = () => {
 
 export const useRescheduleBooking = () => {
   return useMutation({
-    mutationFn: ({ bookingId, payload }: { bookingId: string; payload: any }) =>
-      apiService.rescheduleBooking(bookingId, payload),
+    mutationFn: ({
+      bookingId,
+      payload,
+    }: {
+      bookingId: string;
+      payload: Parameters<typeof apiService.rescheduleBooking>[1];
+    }) => apiService.rescheduleBooking(bookingId, payload),
     onSuccess: (_, variables) => {
       logger.info(
         LogTag.API,

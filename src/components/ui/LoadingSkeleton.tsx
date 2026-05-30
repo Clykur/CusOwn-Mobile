@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, DimensionValue, ViewStyle, StyleProp } from 'react-native';
+import { Animated } from 'react-native';
+
+import type { DimensionValue, ViewStyle, StyleProp } from 'react-native';
 
 interface LoadingSkeletonProps {
   width?: DimensionValue;
@@ -16,6 +18,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   className = '',
   style,
 }) => {
+  // eslint-disable-next-line react-hooks/refs
   const opacityAnim = useRef(new Animated.Value(0.2)).current;
 
   useEffect(() => {

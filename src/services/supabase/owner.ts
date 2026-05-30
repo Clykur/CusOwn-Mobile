@@ -1,10 +1,12 @@
-import { Booking } from '@/types/booking.types';
-import { Business, BusinessStats } from '@/types/business.types';
-import { getActorUserId, invokeBookingRpc } from './booking-rpc';
+import { getActorUserId } from './booking-rpc';
 import { listOwnerBookings } from './bookings';
 import { listOwnerBusinesses } from './businesses';
 import { logger, LogTag } from '@/utils/logger';
 
+import type { Booking } from '@/types/booking.types';
+import type { Business, BusinessStats } from '@/types/business.types';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const OWNER_ANALYTICS_RPC = 'get_owner_analytics_advanced';
 
 function bookingDateKey(b: Booking): string {
@@ -119,22 +121,22 @@ export type OwnerAnalyticsOverview = {
   pendingBookings?: number;
   conversionRate?: number;
   noShowRate?: number;
-  services?: Array<{ name?: string; serviceName?: string; bookingCount?: number; count?: number }>;
+  services?: { name?: string; serviceName?: string; bookingCount?: number; count?: number }[];
   [key: string]: unknown;
 };
 
 export type OwnerAnalyticsPayload = {
   overview?: OwnerAnalyticsOverview;
-  daily?: Array<{ date: string; totalBookings?: number; revenue?: number }>;
-  peakHours?: Array<{ hour: number; bookingCount?: number }>;
+  daily?: { date: string; totalBookings?: number; revenue?: number }[];
+  peakHours?: { hour: number; bookingCount?: number }[];
   advanced?: {
-    peakHoursHeatmap?: Array<{ hour: number; bookingCount?: number }>;
-    servicePopularityRanking?: Array<{
+    peakHoursHeatmap?: { hour: number; bookingCount?: number }[];
+    servicePopularityRanking?: {
       serviceName?: string;
       name?: string;
       bookingCount?: number;
       count?: number;
-    }>;
+    }[];
     [key: string]: unknown;
   };
   [key: string]: unknown;
@@ -152,6 +154,7 @@ export async function getOwnerAnalytics(params: {
     const targetBusinessId =
       params.businessId && params.businessId !== 'all' ? params.businessId : undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [businesses, allBookings] = await Promise.all([
       listOwnerBusinesses(ownerId),
       listOwnerBookings(ownerId, targetBusinessId),
@@ -202,7 +205,7 @@ export async function getOwnerAnalytics(params: {
       hourCounts[h] = 0;
     }
     for (const b of bookings) {
-      const slotStart = (b as any).slot_start || b.time || (b.slot as any)?.start_time;
+      const slotStart = b.time || b.slot?.start_time;
       if (slotStart) {
         const hour = parseInt(String(slotStart).split(':')[0], 10);
         if (!isNaN(hour)) {
@@ -223,9 +226,9 @@ export async function getOwnerAnalytics(params: {
       { date: string; totalBookings: number; revenueCents: number }
     > = {};
 
-    let datesToFill: string[] = [];
+    const datesToFill: string[] = [];
     if (params.startDate && params.endDate) {
-      let curr = new Date(params.startDate);
+      const curr = new Date(params.startDate);
       const end = new Date(params.endDate);
       let limit = 0;
       while (curr <= end && limit < 40) {

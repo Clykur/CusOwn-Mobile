@@ -1,13 +1,16 @@
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { THEME } from '@/theme/theme';
-import { GlassCard } from '@/components/ui/GlassCard';
+
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import dayjs from 'dayjs';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { THEME } from '@/theme/theme';
+
+import type { Business } from '@/features/shared/types/business.types';
 
 export interface FlashDeal {
-  business: any;
+  business?: Business | null;
   id: string;
   business_id: string;
   salon_name: string;
@@ -22,13 +25,13 @@ interface DealCardProps {
   onPress?: () => void;
 }
 
-export function DealCard({ item, index = 0, onPress }: DealCardProps) {
+function DealCardBase({ item, index = 0, onPress }: DealCardProps) {
   const isExpiringSoon = dayjs(item.expires_at).diff(dayjs(), 'hours') < 24;
 
   return (
     <AnimatedSection delay={index * 100} direction="up" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-[250px] p-0 rounded-[24px] border border-primary/20">
+        <GlassCard className="w-64 p-0 rounded-3xl border border-primary/20">
           <View className="px-4 py-3 flex-row justify-between items-center">
             <View className="flex-row items-center">
               <Ionicons name="pricetag-outline" size={16} color={THEME.colors.primary} />
@@ -41,7 +44,7 @@ export function DealCard({ item, index = 0, onPress }: DealCardProps) {
                 color={isExpiringSoon ? THEME.colors.error : THEME.colors.textSecondary}
               />
               <Text
-                className={`text-[10px] font-bold ml-1 ${isExpiringSoon ? 'text-error' : 'text-textSecondary'}`}
+                className={`text-xs font-bold ml-1 ${isExpiringSoon ? 'text-error' : 'text-textSecondary'}`}
               >
                 {isExpiringSoon ? 'Ends Soon' : dayjs(item.expires_at).format('MMM D')}
               </Text>
@@ -67,3 +70,5 @@ export function DealCard({ item, index = 0, onPress }: DealCardProps) {
     </AnimatedSection>
   );
 }
+
+export const DealCard = React.memo(DealCardBase);
