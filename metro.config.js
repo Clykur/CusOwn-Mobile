@@ -2,6 +2,14 @@ const path = require('path');
 const { getDefaultConfig } = require('expo/metro-config');
 const { withNativeWind } = require('nativewind/metro');
 
+// Polyfill for Node 18 compatibility since Metro/Expo requires Node 20+ array methods
+if (typeof Array.prototype.toReversed !== 'function') {
+  // eslint-disable-next-line no-extend-native
+  Array.prototype.toReversed = function () {
+    return this.slice().reverse();
+  };
+}
+
 const defaultConfig = getDefaultConfig(__dirname);
 
 // React Native SVG Transformer configuration
