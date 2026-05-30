@@ -1,12 +1,13 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, Modal } from 'react-native';
-
-import { apiService } from '@/services/api.service';
-import { Service } from '@/types/business.types';
-import { useModal } from '@/hooks/useModal';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, Pressable, TextInput, ActivityIndicator, Modal } from 'react-native';
+
 import { GlassCard } from '@/components/ui/GlassCard';
+import { useModal } from '@/hooks/useModal';
+import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
+
+import type { Service } from '@/types/business.types';
 
 interface ServicesManagementProps {
   businessId: string;
@@ -42,6 +43,7 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
   }, [businessId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchServices();
   }, [fetchServices]);
 

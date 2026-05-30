@@ -1,5 +1,6 @@
-import React from 'react';
 import { Redirect } from 'expo-router';
+import React from 'react';
+
 import { useAuthStore } from '@/store/auth.store';
 import { useOnboardingStore } from '@/store/onboarding.store';
 

@@ -1,8 +1,9 @@
-import { THEME } from '@/theme/theme';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+
+import { THEME } from '@/theme/theme';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -41,6 +42,7 @@ export async function registerForPushNotificationsAsync() {
       token = await Notifications.getExpoPushTokenAsync({
         projectId: Constants.expoConfig?.extra?.eas?.projectId || 'cusown-mobile-parity',
       });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       console.log('Token capture fallback executed locally.');
     }

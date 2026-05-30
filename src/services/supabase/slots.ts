@@ -1,10 +1,10 @@
+import dayjs from 'dayjs';
+
+import { BookingSupabaseError } from './booking-errors';
+import { businessHoursService } from './business-hours';
+import { logSupabaseFailure } from './errors';
 import { supabase } from '@/lib/supabase';
 import { logger, LogTag } from '@/utils/logger';
-import { isMissingColumnError, logQueryFallback } from './select-fallback';
-import { logSupabaseFailure } from './errors';
-import { BookingSupabaseError } from './booking-errors';
-import dayjs from 'dayjs';
-import { businessHoursService } from './business-hours';
 import { getShopLocalDate, getShopLocalNow } from '@/utils/shopTime';
 
 export function normalizeTimeHHmm(raw: string): string {
@@ -169,7 +169,7 @@ export async function resolveSlotIdForBooking(params: {
     return BOOKABLE_STATUSES.has(row.status);
   };
 
-  let matches = sameTime.filter(isBookable);
+  const matches = sameTime.filter(isBookable);
   if (matches.length === 0 && sameTime.length > 0) {
     const existingStatus = sameTime[0].status;
     if (existingStatus === 'booked') {

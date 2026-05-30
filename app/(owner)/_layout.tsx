@@ -1,17 +1,15 @@
 import React from 'react';
-import { Tabs, Slot, router } from 'expo-router';
-import { useColorScheme, Platform, View, ActivityIndicator } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { Tabs, router } from 'expo-router';
+import { View, ActivityIndicator } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
-import { useOwnerStats } from '@/hooks/useOwner';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useOwnerStats } from '@/hooks/useOwner';
 import { responsiveFontSize, verticalScale } from '@/utils/responsive';
 
 export default function OwnerTabsLayout() {
   const { data: stats, isLoading } = useOwnerStats();
-  const colorScheme = useColorScheme() || 'light';
-  const isDark = colorScheme === 'dark';
-  const theme = isDark ? THEME.colors : THEME.colors;
+
   const insets = useSafeAreaInsets();
 
   const businessCount = stats?.total_businesses ?? null;
@@ -83,7 +81,7 @@ export default function OwnerTabsLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
             <Ionicons name="grid" size={22} color={color} />
           ),
         }}
@@ -92,7 +90,7 @@ export default function OwnerTabsLayout() {
         name="businesses"
         options={{
           title: 'Businesses',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
             <Ionicons name="business" size={22} color={color} />
           ),
         }}
@@ -101,7 +99,7 @@ export default function OwnerTabsLayout() {
         name="analytics"
         options={{
           title: 'Analytics',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
             <Ionicons name="analytics" size={22} color={color} />
           ),
         }}
@@ -110,7 +108,7 @@ export default function OwnerTabsLayout() {
         name="settings"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
             <Ionicons name="person" size={22} color={color} />
           ),
         }}

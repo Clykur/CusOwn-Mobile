@@ -1,4 +1,5 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, router } from 'expo-router';
 import React from 'react';
 import {
   View,
@@ -9,14 +10,14 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { EditBusinessForm } from '@/features/owner/components/EditBusinessForm';
 import { useOwnerBusinesses } from '@/hooks/useOwner';
-import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '@/theme/theme';
 
 export default function EditBusinessScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

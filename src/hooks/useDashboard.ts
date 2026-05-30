@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { dashboardService } from '@/services/dashboard.service';
-import { NearbySalon } from '@/features/customer/components/NearbySalonCard';
-import { TrendingService } from '@/features/customer/components/TrendingServiceCard';
-import { FlashDeal } from '@/features/customer/components/DealCard';
+
+import type { FlashDeal } from '@/features/customer/components/DealCard';
+import type { NearbySalon } from '@/features/customer/components/NearbySalonCard';
+import type { TrendingService } from '@/features/customer/components/TrendingServiceCard';
 
 export const useDashboard = (lat?: number | null, lng?: number | null) => {
   const nearbyQuery = useQuery({

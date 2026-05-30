@@ -1,8 +1,9 @@
-import { supabase } from '@/lib/supabase';
-import { UserProfile } from '@/types/user.types';
-import { logger, LogTag } from '@/utils/logger';
 import { invokeBookingRpc } from './booking-rpc';
 import { resolveMediaPublicUrl } from './storage';
+import { supabase } from '@/lib/supabase';
+import { logger, LogTag } from '@/utils/logger';
+
+import type { UserProfile } from '@/types/user.types';
 
 const ACCOUNT_RPC = {
   softDeleteUser: 'soft_delete_user_account',

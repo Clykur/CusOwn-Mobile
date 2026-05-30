@@ -1,9 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { RatingPromptProvider } from '@/features/reviews/components/RatingPromptProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { RatingPromptProvider } from '@/features/reviews/components/RatingPromptProvider';
 import { responsiveFontSize, verticalScale } from '@/utils/responsive';
 
 export default function CustomerTabsLayout() {
@@ -66,7 +67,7 @@ export default function CustomerTabsLayout() {
           options={{
             title: 'Home',
             headerTitle: 'SIGNATURE',
-            tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+            tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
               <Ionicons name="home" size={22} color={color} />
             ),
           }}
@@ -86,7 +87,7 @@ export default function CustomerTabsLayout() {
           options={{
             title: 'Bookings',
             headerTitle: 'RESERVATIONS',
-            tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+            tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
               <Ionicons name="calendar" size={22} color={color} />
             ),
           }}
@@ -96,7 +97,7 @@ export default function CustomerTabsLayout() {
           options={{
             title: 'Profile',
             headerTitle: 'MAESTRO',
-            tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+            tabBarIcon: ({ color, size: _size }: { color: string; size: number }) => (
               <Ionicons name="person" size={22} color={color} />
             ),
           }}

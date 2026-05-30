@@ -1,5 +1,7 @@
 import React from 'react';
-import { FlatList, FlatListProps } from 'react-native';
+import { FlatList } from 'react-native';
+
+import type { FlatListProps } from 'react-native';
 import { Screen } from './Screen';
 import { useGridColumns } from '@/utils/grid';
 

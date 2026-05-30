@@ -1,22 +1,23 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, Pressable, FlatList, RefreshControl, Alert, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect } from 'expo-router';
-import { useBookings, useUpdateBookingStatus } from '@/hooks/useBookings';
-import { getBookingPrice } from '@/services/api.service';
-import { Badge } from '@/components/ui/Badge';
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { Booking } from '@/features/booking/types/booking.types';
-import { Service } from '@/features/shared/types/business.types';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
-import { formatBookingDate, formatBookingTime } from '@/utils/time';
+import { router } from 'expo-router';
+import React, { useState, useMemo } from 'react';
+import { View, Text, Pressable, FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Avatar } from '@/components/ui/Avatar';
-import { isValidImageUrl } from '@/utils/image';
+import { Badge } from '@/components/ui/Badge';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { useBookings } from '@/hooks/useBookings';
+import { getBookingPrice } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
+import { formatBookingDate, formatBookingTime } from '@/utils/time';
+
+import type { Booking } from '@/features/booking/types/booking.types';
+import type { Service } from '@/features/shared/types/business.types';
 
 type BookingFilterType = 'upcoming' | 'completed' | 'cancelled';
 
@@ -79,6 +80,7 @@ export default function CustomerBookingsScreen() {
 
     const salonAddress = item.business?.address || item.salon?.address || 'Premium Suite';
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const salonImage =
       item.business?.owner_image ||
       item.business?.image_url ||

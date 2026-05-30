@@ -1,5 +1,5 @@
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { RealtimeChannel } from '@supabase/supabase-js';
 
 export const bookingService = {
   subscribeToBookings: (

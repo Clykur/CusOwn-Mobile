@@ -1,15 +1,17 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import { router } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+
+import { ServiceRow } from './ServiceRow';
+import { PremiumButton } from '@/components/ui/PremiumButton';
+import { useModal } from '@/hooks/useModal';
 import { apiService } from '@/services/api.service';
 import { useAuthStore } from '@/store/auth.store';
-import { useModal } from '@/hooks/useModal';
-import { PremiumButton } from '@/components/ui/PremiumButton';
-import { ServiceRow } from './ServiceRow';
-import { BusinessCategory } from '@/types/business.types';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { THEME } from '@/theme/theme';
+
+import type { BusinessCategory, Business } from '@/types/business.types';
 
 interface ServiceDraftRow {
   name: string;
@@ -18,7 +20,7 @@ interface ServiceDraftRow {
 }
 
 interface CreateBusinessFormProps {
-  onSuccess?: (data: import('@/types/business.types').Business) => void;
+  onSuccess?: (data: Business) => void;
   loading?: boolean;
 }
 
@@ -78,7 +80,9 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
   ]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     loadCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadCategories = async () => {
@@ -121,7 +125,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
   const handleUseLocation = async () => {
     setLoading(true);
     try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         showModal({
           variant: 'error',
@@ -131,10 +135,10 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
+      const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
 
-      let reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
+      const reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
       if (reverseGeocode.length > 0) {
         const addr = reverseGeocode[0];
         setFormData((prev) => ({

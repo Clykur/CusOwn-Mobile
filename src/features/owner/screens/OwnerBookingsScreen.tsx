@@ -1,7 +1,14 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { View, Text, Pressable, FlatList, Alert, TextInput, Modal, ScrollView } from 'react-native';
+import { View, Text, Pressable, FlatList, TextInput, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { BookingCard } from '@/features/owner/components/BookingCard';
+import { OwnerBookingDetailModal } from '@/features/owner/components/OwnerBookingDetailModal';
 import {
   useBookings,
   useConfirmBooking,
@@ -10,16 +17,11 @@ import {
   useUndoReject,
   useMarkNoShow,
 } from '@/hooks/useBookings';
-import { useOwnerBusinesses } from '@/hooks/useOwner';
 import { useModal } from '@/hooks/useModal';
-import { Booking } from '@/types/booking.types';
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { Ionicons } from '@expo/vector-icons';
-import { BookingCard } from '@/features/owner/components/BookingCard';
-import { OwnerBookingDetailModal } from '@/features/owner/components/OwnerBookingDetailModal';
+import { useOwnerBusinesses } from '@/hooks/useOwner';
+import { THEME } from '@/theme/theme';
+
+import type { Booking } from '@/types/booking.types';
 
 type DateFilterType = 'all' | 'today' | 'week' | 'month' | 'custom';
 
@@ -43,6 +45,7 @@ export default function OwnerBookingsScreen() {
     if (selectedBooking && bookings) {
       const fresh = bookings.find((b) => b.id === selectedBooking.id);
       if (fresh) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedBooking(fresh);
       }
     }

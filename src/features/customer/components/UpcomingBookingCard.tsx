@@ -1,11 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import { router } from 'expo-router';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { THEME } from '@/theme/theme';
-import { GlassCard } from '@/components/ui/GlassCard';
+
 import { Avatar } from '@/components/ui/Avatar';
-import { router } from 'expo-router';
-import dayjs from 'dayjs';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { THEME } from '@/theme/theme';
 
 interface UpcomingBookingCardProps {
   booking?: {

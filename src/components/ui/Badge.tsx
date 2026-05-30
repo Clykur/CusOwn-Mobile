@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+
 import { responsiveFontSize } from '@/utils/responsive';
-import { BookingStatus } from '@/types/booking.types';
+
+import type { BookingStatus } from '@/types/booking.types';
 
 interface BadgeProps {
   status: BookingStatus;

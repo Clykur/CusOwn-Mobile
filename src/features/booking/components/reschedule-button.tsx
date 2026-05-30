@@ -1,4 +1,5 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import {
   View,
@@ -10,11 +11,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
 import { useModal } from '@/hooks/useModal';
-import { apiService } from '@/services/api.service';
 import { useSlots } from '@/hooks/useSlots';
-import dayjs from 'dayjs';
+import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
 
 interface CurrentSlot {
   id: string;

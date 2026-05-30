@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import React from 'react';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { THEME } from '@/theme/theme';
 
 const SERVICE_CATEGORIES = [

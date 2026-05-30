@@ -21,11 +21,11 @@ export interface CreateBookingIdempotentParams {
   p_customer_phone: string;
   p_booking_id: string;
   p_customer_user_id: string;
-  p_service_data: Array<{
+  p_service_data: {
     service_id: string;
     price_cents: number;
     name: string;
-  }>;
+  }[];
   p_services_count: number;
   p_total_duration_minutes: number;
   p_total_price_cents: number;

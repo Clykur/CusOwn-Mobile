@@ -1,10 +1,11 @@
+import { router } from 'expo-router';
 import React from 'react';
 import { ScrollView, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
-import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
+
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { CreateBusinessForm } from '@/features/owner/components/setup/CreateBusinessForm';
 
 export default function CreateBusinessScreen() {

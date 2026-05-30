@@ -1,15 +1,14 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import React from 'react';
 import { View, Text, Pressable, ScrollView, Dimensions } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-
-import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '@/theme/theme';
 
 const { width, height } = Dimensions.get('window');

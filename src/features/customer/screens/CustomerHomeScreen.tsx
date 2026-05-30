@@ -1,26 +1,31 @@
-import { THEME } from '@/theme/theme';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable, FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
-import { useAuthStore } from '@/store/auth.store';
-import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
-import { useBookings } from '@/hooks/useBookings';
-import { useDashboard } from '@/hooks/useDashboard';
-import { useLocation } from '@/hooks/useLocation';
-import { Business, BusinessCategory } from '@/types/business.types';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { Ionicons } from '@expo/vector-icons';
-
-// New Components
+import { BusinessCard } from '@/features/customer/components/BusinessCard';
+import { DealCard } from '@/features/customer/components/DealCard';
 import { HomeSearchBar } from '@/features/customer/components/HomeSearchBar';
 import { NearbySalonCard } from '@/features/customer/components/NearbySalonCard';
 import { TrendingServiceCard } from '@/features/customer/components/TrendingServiceCard';
-import { DealCard, FlashDeal } from '@/features/customer/components/DealCard';
-import { BusinessCard } from '@/features/customer/components/BusinessCard';
+import { useBookings } from '@/hooks/useBookings';
+import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
+import { useDashboard } from '@/hooks/useDashboard';
+import { useLocation } from '@/hooks/useLocation';
+import { useAuthStore } from '@/store/auth.store';
+import { THEME } from '@/theme/theme';
+
+import type { FlashDeal } from '@/features/customer/components/DealCard';
+import type { TrendingService } from '@/features/customer/components/TrendingServiceCard';
+import type { Booking } from '@/types/booking.types';
+import type { Business } from '@/types/business.types';
+
+// New Components
 
 const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
@@ -40,9 +45,13 @@ const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: num
 export default function CustomerHomeScreen() {
   const { user, profile } = useAuthStore();
   const { data: businesses, refetch } = useBusinesses();
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: categories } = useCategories();
   const {
     data: bookings,
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isLoading: bookingsLoading,
     refetch: refetchBookings,
   } = useBookings('Customer');
@@ -108,17 +117,15 @@ export default function CustomerHomeScreen() {
 
   const enrichedTrendingServices = useMemo(() => {
     if (!trendingServices) return [];
-    return trendingServices.map(
-      (service: import('@/features/customer/components/TrendingServiceCard').TrendingService) => {
-        const business = businesses?.find((b) => b.id === service.business_id);
-        return {
-          ...service,
-          business: business || service.business || null,
-          salon_name: business?.salon_name || service.salon_name,
-          rating_avg: business?.rating_avg || service.rating_avg,
-        };
-      },
-    );
+    return trendingServices.map((service: TrendingService) => {
+      const business = businesses?.find((b) => b.id === service.business_id);
+      return {
+        ...service,
+        business: business || service.business || null,
+        salon_name: business?.salon_name || service.salon_name,
+        rating_avg: business?.rating_avg || service.rating_avg,
+      };
+    });
   }, [trendingServices, businesses]);
 
   const filteredTrendingServices = useMemo(() => {
@@ -156,7 +163,7 @@ export default function CustomerHomeScreen() {
 
   const enrichedFlashDeals = useMemo(() => {
     if (!flashDeals) return [];
-    return flashDeals.map((deal: import('@/features/customer/components/DealCard').FlashDeal) => {
+    return flashDeals.map((deal: FlashDeal) => {
       const business = businesses?.find((b) => b.id === deal.business_id);
       return {
         ...deal,
@@ -220,7 +227,7 @@ export default function CustomerHomeScreen() {
   const normalizedBookings = useMemo(() => {
     if (!bookings) return [];
     const now = dayjs();
-    return bookings.map((b: import('@/types/booking.types').Booking) => {
+    return bookings.map((b: Booking) => {
       let status = (b.status || 'pending').toLowerCase();
       const bookingDateTime = dayjs(`${b.date} ${b.time}`);
       const bookingEndTime = bookingDateTime.add(b.duration || 60, 'minutes');
@@ -237,9 +244,10 @@ export default function CustomerHomeScreen() {
     });
   }, [bookings]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const upcomingBooking = useMemo(() => {
     return normalizedBookings.find(
-      (b: import('@/types/booking.types').Booking & { normalizedStatus?: string }) =>
+      (b: Booking & { normalizedStatus?: string }) =>
         b.normalizedStatus === 'pending' || b.normalizedStatus === 'confirmed',
     );
   }, [normalizedBookings]);
@@ -247,23 +255,16 @@ export default function CustomerHomeScreen() {
   const favouriteSalons = useMemo(() => {
     if (!normalizedBookings || !businesses) return [];
     const completedBookings = normalizedBookings.filter(
-      (b: import('@/types/booking.types').Booking & { normalizedStatus?: string }) =>
-        b.normalizedStatus === 'completed',
+      (b: Booking & { normalizedStatus?: string }) => b.normalizedStatus === 'completed',
     );
-    const sortedBookings = [...completedBookings].sort(
-      (a: import('@/types/booking.types').Booking, b: import('@/types/booking.types').Booking) => {
-        const dateA = dayjs(`${a.date} ${a.time}`);
-        const dateB = dayjs(`${b.date} ${b.time}`);
-        return dateB.isAfter(dateA) ? 1 : -1;
-      },
-    );
+    const sortedBookings = [...completedBookings].sort((a: Booking, b: Booking) => {
+      const dateA = dayjs(`${a.date} ${a.time}`);
+      const dateB = dayjs(`${b.date} ${b.time}`);
+      return dateB.isAfter(dateA) ? 1 : -1;
+    });
 
     const visitedBusinessIds = Array.from(
-      new Set(
-        sortedBookings
-          .map((b: import('@/types/booking.types').Booking) => b.business_id || b.business?.id)
-          .filter(Boolean),
-      ),
+      new Set(sortedBookings.map((b: Booking) => b.business_id || b.business?.id).filter(Boolean)),
     );
     return visitedBusinessIds
       .map((id) => businesses.find((b) => b.id === id))
@@ -335,7 +336,9 @@ export default function CustomerHomeScreen() {
             setSearchQuery={setSearchQuery}
             useCurrentLocation={useCurrentLocation}
             setUseCurrentLocation={setUseCurrentLocation}
-            userLocation={userLocation}
+            userLocation={
+              userLocation as unknown as { latitude: number; longitude: number; city?: string }
+            }
             locationLoading={locationLoading}
             onLocate={getUserLocation}
           />

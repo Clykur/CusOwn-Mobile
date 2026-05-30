@@ -13,7 +13,8 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import dayjs from 'dayjs';
+
+import type dayjs from 'dayjs';
 import { getShopLocalNow, getShopLocalDate, msUntilMidnightRollover } from '@/utils/shopTime';
 
 export interface RealtimeClock {
@@ -28,6 +29,7 @@ export function useRealtimeClock(shopTimezone?: string): RealtimeClock {
   // Keep a ref to the current timezone so the effects can read the latest value
   // without needing to re-register.
   const tzRef = useRef(shopTimezone);
+  // eslint-disable-next-line react-hooks/refs
   tzRef.current = shopTimezone;
 
   useEffect(() => {

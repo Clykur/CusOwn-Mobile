@@ -1,4 +1,4 @@
-import { Slot } from '@/types/slot.types';
+import type { Slot } from '@/types/slot.types';
 
 const PENDING_BOOKING_KEY = 'pendingBooking';
 

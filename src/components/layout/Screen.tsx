@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, ViewProps } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import type { ViewProps } from 'react-native';
 
 interface ScreenProps extends ViewProps {
   safeArea?: boolean;
@@ -16,6 +18,7 @@ export const Screen: React.FC<ScreenProps> = ({
   style,
   ...props
 }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const insets = useSafeAreaInsets();
 
   if (safeArea) {

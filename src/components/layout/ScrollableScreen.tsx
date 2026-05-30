@@ -1,5 +1,7 @@
 import React from 'react';
-import { ScrollView, ScrollViewProps } from 'react-native';
+import { ScrollView } from 'react-native';
+
+import type { ScrollViewProps } from 'react-native';
 import { Screen } from './Screen';
 
 interface ScrollableScreenProps extends ScrollViewProps {

@@ -1,6 +1,7 @@
+import type { AuthTokenResponsePassword, AuthResponse, OAuthResponse } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { LoginFormValues, RegisterFormValues } from '@/schemas/auth.schema';
-import { AuthTokenResponsePassword, AuthResponse, OAuthResponse } from '@supabase/supabase-js';
+
+import type { LoginFormValues, RegisterFormValues } from '@/schemas/auth.schema';
 
 export const authService = {
   signInWithEmail: async (values: LoginFormValues): Promise<AuthTokenResponsePassword> => {

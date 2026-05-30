@@ -1,5 +1,7 @@
 import React from 'react';
-import { KeyboardAvoidingView, Platform, KeyboardAvoidingViewProps } from 'react-native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
+
+import type { KeyboardAvoidingViewProps } from 'react-native';
 import { ScrollableScreen } from './ScrollableScreen';
 
 interface KeyboardScreenProps extends Omit<KeyboardAvoidingViewProps, 'behavior'> {

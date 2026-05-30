@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
-
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
+import BusinessIcon from '../../../../assets/Business.svg';
+import CustomerIcon from '../../../../assets/Customer.svg';
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
-
-import CustomerIcon from '../../../../assets/Customer.svg';
-import BusinessIcon from '../../../../assets/Business.svg';
-
-import { useOnboardingStore, UserRole } from '@/store/onboarding.store';
-import { useActiveRoleStore } from '@/store/active-role.store';
 import { useAuth } from '@/hooks/useAuth';
-
+import { useActiveRoleStore } from '@/store/active-role.store';
+import { useOnboardingStore } from '@/store/onboarding.store';
 import { THEME } from '@/theme/theme';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
+
+import type { UserRole } from '@/store/onboarding.store';
 
 const RoleItem = ({
   selected,
@@ -39,9 +37,11 @@ const RoleItem = ({
     <Pressable
       onPress={onPress}
       onPressIn={() => {
+        // eslint-disable-next-line react-hooks/immutability
         scale.value = withSpring(0.98);
       }}
       onPressOut={() => {
+        // eslint-disable-next-line react-hooks/immutability
         scale.value = withSpring(1);
       }}
     >

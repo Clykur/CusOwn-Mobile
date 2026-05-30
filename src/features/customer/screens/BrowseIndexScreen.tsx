@@ -1,20 +1,21 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, Pressable, FlatList, TextInput, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
-import { Business, BusinessCategory } from '@/types/business.types';
-import { useModal } from '@/hooks/useModal';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useState, useMemo } from 'react';
+import { View, Text, Pressable, FlatList, TextInput, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-
-import { Ionicons } from '@expo/vector-icons';
 import { BrowseCard } from '@/features/customer/components/BrowseCard';
+import { useBusinesses, useCategories } from '@/hooks/useBusinesses';
+import { useModal } from '@/hooks/useModal';
+import { THEME } from '@/theme/theme';
+import { logger, LogTag } from '@/utils/logger';
+
+import type { Business, BusinessCategory } from '@/types/business.types';
 
 export default function CustomerBrowseScreen() {
   const { category, categoryId } = useLocalSearchParams<{
@@ -29,7 +30,16 @@ export default function CustomerBrowseScreen() {
     categoryId || category || null,
   );
 
-  const [userLocation, setUserLocation] = useState<any>(null);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    city?: string;
+    district?: string;
+    region?: string;
+    country?: string;
+    postalCode?: string;
+    street?: string;
+  } | null>(null);
 
   const [locationLoading, setLocationLoading] = useState(false);
 
@@ -42,6 +52,7 @@ export default function CustomerBrowseScreen() {
 
   const { data: categories } = useCategories();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [manualLocation, setManualLocation] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const getUserLocation = async () => {
@@ -81,7 +92,6 @@ export default function CustomerBrowseScreen() {
         street: address?.street || '',
       });
     } catch (error: unknown) {
-      const { logger, LogTag } = require('@/utils/logger');
       logger.error(LogTag.API, 'Location Error:', error);
 
       showModal({
@@ -157,6 +167,7 @@ export default function CustomerBrowseScreen() {
     return searchFiltered;
   }, [businesses, searchQuery, userLocation, manualLocation, useCurrentLocation]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderCategoryChip = ({
     item,
   }: {
@@ -180,6 +191,7 @@ export default function CustomerBrowseScreen() {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const allCategories = useMemo(() => {
     const list: (BusinessCategory | { value: string | null; label: string })[] = [
       { value: null, label: 'All' },

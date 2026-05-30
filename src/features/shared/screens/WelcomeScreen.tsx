@@ -1,12 +1,11 @@
-import React from 'react';
-import { View, Text, Image } from 'react-native';
 import { router } from 'expo-router';
+import React from 'react';
+import { View, Text } from 'react-native';
+
+import CusOwnIcon from '../../../../assets/Cusown.svg';
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { THEME } from '@/theme/theme';
-import CusOwnIcon from '../../../../assets/Cusown.svg';
 
 export default function WelcomeScreen() {
   return (

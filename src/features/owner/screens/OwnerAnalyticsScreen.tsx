@@ -1,13 +1,7 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { Ionicons } from '@expo/vector-icons';
-import { useOwnerBusinesses, useOwnerAnalytics } from '@/hooks/useOwner';
 import Svg, {
   Path,
   Circle,
@@ -19,6 +13,13 @@ import Svg, {
   G,
   Text as SvgText,
 } from 'react-native-svg';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { useOwnerBusinesses, useOwnerAnalytics } from '@/hooks/useOwner';
+import { THEME } from '@/theme/theme';
 
 type DateFilterType = 'all' | 'today' | 'week' | 'month' | 'custom';
 type TrendTabType = 'bookings' | 'revenue';

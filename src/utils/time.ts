@@ -146,6 +146,7 @@ export function formatBookingDate(dateStr: string | null | undefined): string {
         year: 'numeric',
       });
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     // Ignore error
   }

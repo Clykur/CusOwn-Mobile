@@ -1,12 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
-import { THEME } from '@/theme/theme';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { THEME } from '@/theme/theme';
 
-import { Business } from '@/features/shared/types/business.types';
+import type { Business } from '@/features/shared/types/business.types';
 
 export interface TrendingService {
   business?: Business | null;
@@ -28,6 +28,8 @@ interface TrendingServiceCardProps {
 
 function TrendingServiceCardBase({ item, index = 0, onPress }: TrendingServiceCardProps) {
   const salonName = item.business?.salon_name || item.salon_name;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const rating = item.business?.rating_avg || item.rating_avg;
 
   return (

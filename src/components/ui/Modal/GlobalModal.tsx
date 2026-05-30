@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform, Modal } from 'react-native';
 import Animated, {
@@ -8,20 +10,19 @@ import Animated, {
   runOnJS,
   withSpring,
 } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
-import { Ionicons } from '@expo/vector-icons';
-import { THEME } from '@/constants/theme';
-import { horizontalScale, verticalScale, responsiveFontSize } from '@/utils/responsive';
-import { ModalContext } from '@/hooks/useModal';
-import { ModalButton } from './ModalButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { ModalButton } from './ModalButton';
+import { THEME } from '@/constants/theme';
+import { ModalContext } from '@/hooks/useModal';
+import { horizontalScale, verticalScale, responsiveFontSize } from '@/utils/responsive';
 
 export const GlobalModal = () => {
   const context = React.useContext(ModalContext);
 
-  if (!context) return null;
-
-  const { config, isVisible, hideModal } = context;
+  const config = context?.config || null;
+  const isVisible = context?.isVisible || false;
+  const hideModal = context?.hideModal || (() => {});
 
   const [renderConfig, setRenderConfig] = useState(config);
 
@@ -33,6 +34,7 @@ export const GlobalModal = () => {
   // Keep rendering last config while animating out
   useEffect(() => {
     if (config) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRenderConfig(config);
     }
   }, [config]);
@@ -65,6 +67,7 @@ export const GlobalModal = () => {
         easing: Easing.in(Easing.ease),
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);
 
   const animatedBackdropStyle = useAnimatedStyle(() => ({

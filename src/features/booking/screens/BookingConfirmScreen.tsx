@@ -1,13 +1,14 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useColorScheme } from 'react-native';
-import { router } from 'expo-router';
-import { useBookingStore } from '@/store/booking.store';
+
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { THEME } from '@/constants/theme';
 import { useCreateBooking } from '@/hooks/useBookings';
 import { useModal } from '@/hooks/useModal';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { THEME } from '@/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
+import { useBookingStore } from '@/store/booking.store';
 
 export default function ConfirmBookingScreen() {
   const selectedBusiness = useBookingStore((s) => s.selectedBusiness);

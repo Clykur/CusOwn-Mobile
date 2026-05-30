@@ -1,17 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
-
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-
 import Animated, { SlideInRight, SlideOutLeft } from 'react-native-reanimated';
-
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
 
 import card1 from '../../../../assets/Everything-in-one-place-1.svg';
 import card2 from '../../../../assets/Everything-in-one-place-2.svg';
 import card3 from '../../../../assets/Everything-in-one-place-3.svg';
-
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { useOnboardingStore } from '@/store/onboarding.store';
 import { THEME } from '@/theme/theme';
 

@@ -1,25 +1,18 @@
-import { THEME } from '@/theme/theme';
-import React from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  Linking,
-  Alert,
-  TouchableOpacity,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Booking } from '@/types/booking.types';
-import { Service } from '@/types/business.types';
+import React from 'react';
+import { Modal, View, Text, Pressable, ScrollView, Linking, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { CONFIG } from '@/constants/config';
 import { useModal } from '@/hooks/useModal';
 import { getBookingPrice } from '@/services/api.service';
-import { CONFIG } from '@/constants/config';
+import { THEME } from '@/theme/theme';
 import { formatBookingDate, formatBookingTime } from '@/utils/time';
+
+import type { Booking } from '@/types/booking.types';
+import type { Service } from '@/types/business.types';
 
 interface OwnerBookingDetailModalProps {
   visible: boolean;
@@ -44,33 +37,35 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
 }) => {
   const insets = useSafeAreaInsets();
   const { showModal } = useModal();
-  if (!booking) return null;
-
-  const b = booking;
-
-  const price = getBookingPrice(b);
+  const price = booking ? getBookingPrice(booking) : 0;
 
   const isPast = React.useMemo(() => {
-    if (!b.date || !b.time) return false;
-    const slotDateTime = new Date(`${b.date}T${b.time}`);
+    if (!booking || !booking.date || !booking.time) return false;
+    const slotDateTime = new Date(`${booking.date}T${booking.time}`);
+    // eslint-disable-next-line react-hooks/purity
     return slotDateTime.getTime() < Date.now();
-  }, [b.date, b.time]);
+  }, [booking]);
 
   // Determine if confirmation can be undone based on updated_at
   const canUndo = React.useMemo(() => {
-    if (b.status !== 'confirmed' && b.status !== 'rejected') {
+    if (!booking) return false;
+    if (booking.status !== 'confirmed' && booking.status !== 'rejected') {
       return false;
     }
-    if (b.undo_used_at) {
+    if (booking.undo_used_at) {
       return false;
     }
     const windowMs = (CONFIG.UNDO_WINDOW_MINUTES || 15) * 60 * 1000;
-    const updatedAt = new Date(b.updated_at || Date.now()).getTime();
+    // eslint-disable-next-line react-hooks/purity
+    const updatedAt = new Date(booking.updated_at || Date.now()).getTime();
+    // eslint-disable-next-line react-hooks/purity
     return Date.now() - updatedAt < windowMs;
-  }, [isPast, b.status, b.updated_at, b.undo_used_at]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPast, booking]);
 
   const handleCall = () => {
-    const phone = b.customer_phone || b.customer_profile?.phone;
+    if (!booking) return;
+    const phone = booking.customer_phone || booking.customer_profile?.phone;
     if (!phone) return;
     Linking.openURL(`tel:${phone}`).catch(() => {
       showModal({
@@ -82,7 +77,8 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
   };
 
   const handleWhatsApp = () => {
-    const phone = b.customer_phone || b.customer_profile?.phone;
+    if (!booking) return;
+    const phone = booking.customer_phone || booking.customer_profile?.phone;
     if (!phone) return;
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     const formattedPhone =
@@ -97,18 +93,22 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
   };
 
   const serviceNames = React.useMemo(() => {
-    if (b.services && b.services.length > 0) {
-      return b.services.map((s: Service) => s.name).join(', ');
+    if (!booking) return 'Standard Slot';
+    if (booking.services && booking.services.length > 0) {
+      return booking.services.map((s: Service) => s.name).join(', ');
     }
-    return b.service?.name || 'Standard Slot';
-  }, [b.services, b.service]);
+    return booking.service?.name || 'Standard Slot';
+  }, [booking]);
 
   const serviceDuration = React.useMemo(() => {
-    if (b.services && b.services.length > 0) {
-      return b.services.reduce((sum: number, s: Service) => sum + (s.duration || 30), 0);
+    if (!booking) return 30;
+    if (booking.services && booking.services.length > 0) {
+      return booking.services.reduce((sum: number, s: Service) => sum + (s.duration || 30), 0);
     }
-    return b.service?.duration || b.total_duration_minutes || 30;
-  }, [b.services, b.service, b.total_duration_minutes]);
+    return booking.service?.duration || booking.total_duration_minutes || 30;
+  }, [booking]);
+
+  if (!booking) return null;
 
   return (
     <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
@@ -152,10 +152,10 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                   Booking Reference
                 </Text>
                 <Text className="text-text font-extrabold text-sm mt-0.5">
-                  {b.reference || b.booking_id || 'REF-N/A'}
+                  {booking.reference || booking.booking_id || 'REF-N/A'}
                 </Text>
               </View>
-              <Badge status={b.status} />
+              <Badge status={booking.status} />
             </View>
 
             {/* Customer Information section */}
@@ -166,25 +166,25 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
 
               <View className="flex-row items-center gap-x-4">
                 <Avatar
-                  userId={b.customer_user_id}
-                  name={b.customer_name || 'Client Direct'}
+                  userId={booking.customer_user_id}
+                  name={booking.customer_name || 'Client Direct'}
                   size={52}
                 />
 
                 <View className="flex-1">
                   <Text className="text-text font-extrabold text-base">
-                    {b.customer_name || 'Client Direct'}
+                    {booking.customer_name || 'Client Direct'}
                   </Text>
 
-                  {(b.customer_phone || b.customer_profile?.phone) && (
+                  {(booking.customer_phone || booking.customer_profile?.phone) && (
                     <Text className="text-textSecondary text-xs mt-1">
-                      Phone: {b.customer_phone || b.customer_profile?.phone}
+                      Phone: {booking.customer_phone || booking.customer_profile?.phone}
                     </Text>
                   )}
 
-                  {(b.customer_email || b.customer_profile?.email) && (
+                  {(booking.customer_email || booking.customer_profile?.email) && (
                     <Text className="text-textSecondary text-xs mt-0.5" numberOfLines={1}>
-                      Email: {b.customer_email || b.customer_profile?.email}
+                      Email: {booking.customer_email || booking.customer_profile?.email}
                     </Text>
                   )}
                 </View>
@@ -207,9 +207,9 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
               {/* Service Details */}
               <View className="mb-4">
                 <Text className="text-text font-extrabold text-base">{serviceNames}</Text>
-                {b.service?.description && (
+                {booking.service?.description && (
                   <Text className="text-textSecondary text-xs mt-1 leading-relaxed">
-                    {b.service.description}
+                    {booking.service.description}
                   </Text>
                 )}
               </View>
@@ -222,14 +222,18 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                   <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider mb-1.5">
                     Date
                   </Text>
-                  <Text className="text-text font-bold text-sm">{formatBookingDate(b.date)}</Text>
+                  <Text className="text-text font-bold text-sm">
+                    {formatBookingDate(booking.date)}
+                  </Text>
                 </View>
 
                 <View className="flex-1">
                   <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider mb-1.5">
                     Arrival Slot
                   </Text>
-                  <Text className="text-text font-bold text-sm">{formatBookingTime(b.time)}</Text>
+                  <Text className="text-text font-bold text-sm">
+                    {formatBookingTime(booking.time)}
+                  </Text>
                 </View>
               </View>
 
@@ -247,7 +251,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                     Assigned specialist
                   </Text>
                   <Text className="text-text font-bold text-sm">
-                    {b.business?.owner_name || b.salon?.owner_name || 'Main Specialist'}
+                    {booking.business?.owner_name || booking.salon?.owner_name || 'Main Specialist'}
                   </Text>
                 </View>
               </View>
@@ -270,7 +274,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                 <View>
                   <Text className="text-text font-extrabold text-base">Total Amount</Text>
                   <Text className="text-textSecondary text-xs font-bold uppercase tracking-wider mt-0.5">
-                    {b.payment_status === 'paid' ? 'Paid via App' : 'Pay at Venue'}
+                    {booking.payment_status === 'paid' ? 'Paid via App' : 'Pay at Venue'}
                   </Text>
                 </View>
                 <Text className="text-primary font-black text-xl">₹{price.toFixed(0)}</Text>
@@ -283,18 +287,20 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                 Special Instructions & Notes
               </Text>
               <Text className="text-textSecondary text-xs leading-relaxed font-medium">
-                {b.notes || b.instructions || 'No special requirements specified by client.'}
+                {booking.notes ||
+                  booking.instructions ||
+                  'No special requirements specified by client.'}
               </Text>
             </View>
 
             {/* Owner Actions */}
             <View className="pt-2">
               {/* Pending Actions */}
-              {b.status === 'pending' && onAccept && onReject && (
+              {booking.status === 'pending' && onAccept && onReject && (
                 <View className="flex-row gap-x-3">
                   <TouchableOpacity
                     onPress={() => {
-                      onReject(b.id);
+                      onReject(booking.id);
                       onClose();
                     }}
                     className="flex-1 h-12 rounded-xl border border-error/40 bg-error/10 items-center justify-center active:bg-error/20"
@@ -306,7 +312,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
 
                   <TouchableOpacity
                     onPress={() => {
-                      onAccept(b.id);
+                      onAccept(booking.id);
                       onClose();
                     }}
                     className="flex-1 h-12 rounded-xl bg-primary items-center justify-center active:opacity-80"
@@ -319,12 +325,12 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
               )}
 
               {/* Confirmed Actions */}
-              {b.status === 'confirmed' && (
+              {booking.status === 'confirmed' && (
                 <View className="gap-y-3">
-                  {onNoShow && !b.no_show && (
+                  {onNoShow && !booking.no_show && (
                     <TouchableOpacity
                       onPress={() => {
-                        onNoShow(b.id);
+                        onNoShow(booking.id);
                         onClose();
                       }}
                       disabled={isPast}
@@ -347,7 +353,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                   {onUndoAccept && canUndo && (
                     <TouchableOpacity
                       onPress={() => {
-                        onUndoAccept(b.id);
+                        onUndoAccept(booking.id);
                         onClose();
                       }}
                       disabled={isPast}
@@ -377,10 +383,10 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
               )}
 
               {/* Rejected Actions */}
-              {b.status === 'rejected' && onUndoReject && canUndo && (
+              {booking.status === 'rejected' && onUndoReject && canUndo && (
                 <TouchableOpacity
                   onPress={() => {
-                    onUndoReject(b.id);
+                    onUndoReject(booking.id);
                     onClose();
                   }}
                   className="w-full h-12 rounded-xl border border-border bg-input items-center justify-center active:bg-card flex-row gap-x-2"

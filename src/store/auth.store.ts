@@ -1,11 +1,12 @@
 import { create } from 'zustand';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
-import { UserProfile, DBUserType } from '@/types/user.types';
-import { useOnboardingStore } from './onboarding.store';
+
+import type { User, Session } from '@supabase/supabase-js';
 import { useActiveRoleStore } from './active-role.store';
-import { logger, LogTag } from '@/utils/logger';
+import { useOnboardingStore } from './onboarding.store';
 import { resolveMediaPublicUrl } from '@/services/supabase/storage';
+import { logger, LogTag } from '@/utils/logger';
+
+import type { UserProfile, DBUserType } from '@/types/user.types';
 
 export type Role = 'Customer' | 'Owner' | null;
 

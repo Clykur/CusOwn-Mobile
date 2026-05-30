@@ -1,13 +1,14 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
-import { THEME } from '@/theme/theme';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { Avatar } from '@/components/ui/Avatar';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { Business } from '@/types/business.types';
+import { Avatar } from '@/components/ui/Avatar';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { THEME } from '@/theme/theme';
 import { getShopStatus } from '@/utils/time';
+
+import type { Business } from '@/types/business.types';
 
 export interface NearbySalon extends Business {
   distance_km?: number;

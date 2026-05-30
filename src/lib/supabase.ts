@@ -1,13 +1,13 @@
 import 'react-native-get-random-values';
+import 'react-native-url-polyfill/auto';
+
+import { createClient } from '@supabase/supabase-js';
+import * as SecureStore from 'expo-secure-store';
+import * as WebBrowser from 'expo-web-browser';
+
 import { ensureWebCryptoForSupabasePkce } from '@/lib/webCryptoPolyfill';
 
 ensureWebCryptoForSupabasePkce();
-
-import 'react-native-url-polyfill/auto';
-import { createClient } from '@supabase/supabase-js';
-import * as SecureStore from 'expo-secure-store';
-
-import * as WebBrowser from 'expo-web-browser';
 
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => {
@@ -50,6 +50,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // Set a custom URL opener for OAuth flows
 // This allows Supabase to handle the "redirectTo" logic internally
 // while using Expo's WebBrowser for the actual window.
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 supabase.auth.onAuthStateChange((event, session) => {
   // Just to ensure connectivity
 });

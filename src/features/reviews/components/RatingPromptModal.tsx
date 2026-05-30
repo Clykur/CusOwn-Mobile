@@ -1,10 +1,9 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, ActivityIndicator, TextInput } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
-
 import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
 import { logger, LogTag } from '@/utils/logger';
 
 interface RatingPromptModalProps {
@@ -56,6 +55,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
   React.useEffect(() => {
     let isMounted = true;
     if (booking) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFullBooking(booking); // Set immediately
 
       // If the booking is missing service details, fetch the full booking

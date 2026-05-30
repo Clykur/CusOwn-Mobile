@@ -1,21 +1,22 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
+import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
+
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { Ionicons } from '@expo/vector-icons';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { useModal } from '@/hooks/useModal';
 import {
   useOwnerBusinesses,
   useDeletedOwnerBusinesses,
   useRestoreBusiness,
   useHardDeleteBusiness,
 } from '@/hooks/useOwner';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { useModal } from '@/hooks/useModal';
+import { THEME } from '@/theme/theme';
 
 export default function OwnerBusinessesScreen() {
   const { data: businesses, isLoading, isError, refetch } = useOwnerBusinesses();

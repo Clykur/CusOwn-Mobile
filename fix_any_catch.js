@@ -1,5 +1,5 @@
-const { Project, SyntaxKind } = require('ts-morph');
 const path = require('path');
+const { Project, SyntaxKind } = require('ts-morph');
 
 const project = new Project({
   tsConfigFilePath: path.join(__dirname, 'tsconfig.json'),

@@ -1,12 +1,13 @@
-import { supabase } from '@/lib/supabase';
-import { Business } from '@/types/business.types';
-import { logger, LogTag } from '@/utils/logger';
-import { enrichBusinessesWithImages, mapBusinessRow, mapServiceRow } from './mappers';
 import { getActorUserId, invokeBookingRpc } from './booking-rpc';
-import { createService, listPublicServices } from './services';
+import { logSupabaseFailure } from './errors';
+import { enrichBusinessesWithImages, mapBusinessRow, mapServiceRow } from './mappers';
 import { assertBusinessOwnedByUser, listOwnedBusinessIds } from './owner-access';
 import { isMissingColumnError, logQueryFallback } from './select-fallback';
-import { logSupabaseFailure } from './errors';
+import { createService, listPublicServices } from './services';
+import { logger, LogTag } from '@/utils/logger';
+import { supabase } from '@/lib/supabase';
+
+import type { Business } from '@/types/business.types';
 
 /** List/browse: avoid nested embeds that rely on unregistered FK relationships. */
 // NOTE: business_categories join is intentionally excluded — PostgREST cannot find the

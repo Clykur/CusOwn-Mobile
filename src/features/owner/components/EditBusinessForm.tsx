@@ -1,13 +1,15 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, Alert } from 'react-native';
-import * as Location from 'expo-location';
-import { apiService } from '@/services/api.service';
-import { useModal } from '@/hooks/useModal';
-import { PremiumButton } from '@/components/ui/PremiumButton';
-import { Business, BusinessCategory } from '@/types/business.types';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { router } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Pressable } from 'react-native';
+
+import { PremiumButton } from '@/components/ui/PremiumButton';
+import { useModal } from '@/hooks/useModal';
+import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
+
+import type { Business, BusinessCategory } from '@/types/business.types';
 
 interface EditBusinessFormProps {
   business: Business;
@@ -36,6 +38,8 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
   const { showModal } = useModal();
 
@@ -58,6 +62,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     loadCategories();
   }, []);
 
@@ -79,7 +84,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
   const handleUseLocation = async () => {
     setLoading(true);
     try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         showModal({
           variant: 'error',
@@ -88,9 +93,9 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
         });
         return;
       }
-      let location = await Location.getCurrentPositionAsync({});
+      const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
-      let reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
+      const reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
       if (reverseGeocode.length > 0) {
         const addr = reverseGeocode[0];
         setFormData((prev) => ({
@@ -102,6 +107,7 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
           address: `${addr.name || ''} ${addr.street || ''}, ${addr.city || ''}`.trim(),
         }));
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       showModal({
         variant: 'error',

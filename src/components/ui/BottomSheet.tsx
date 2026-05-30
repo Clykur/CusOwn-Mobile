@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, View, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { THEME } from '@/constants/theme';
 
 interface BottomSheetProps {

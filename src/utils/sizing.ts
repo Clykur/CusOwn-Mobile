@@ -1,6 +1,8 @@
 import { Dimensions } from 'react-native';
+
 import { getColumns } from './grid';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Global spacing token scale to be used in calculation

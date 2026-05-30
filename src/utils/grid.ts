@@ -1,4 +1,3 @@
-import { useWindowDimensions } from 'react-native';
 import { useDeviceType } from '@/hooks/useDeviceType';
 
 export const useGridColumns = (defaultColumns?: number) => {

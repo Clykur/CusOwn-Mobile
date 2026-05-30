@@ -1,20 +1,21 @@
-import { BASE_COLORS, THEME } from '@/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, ActivityIndicator, ScrollView, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { Avatar } from '@/components/ui/Avatar';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { Ionicons } from '@expo/vector-icons';
-import { Avatar } from '@/components/ui/Avatar';
-import { isValidImageUrl } from '@/utils/image';
+import { THEME } from '@/theme/theme';
 
 export default function BookingSuccessScreen() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
@@ -32,6 +33,8 @@ export default function BookingSuccessScreen() {
 function BookingSuccessScreenInner() {
   const params = useLocalSearchParams();
   const salonName = Array.isArray(params.salonName) ? params.salonName[0] : params.salonName;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const salonImage = Array.isArray(params.salonImage) ? params.salonImage[0] : params.salonImage;
   const serviceName = Array.isArray(params.serviceName)
     ? params.serviceName[0]

@@ -1,7 +1,7 @@
-import { supabase } from '@/lib/supabase';
 import { getActorUserId, invokeBookingRpc } from './booking-rpc';
-import { logger, LogTag } from '@/utils/logger';
 import { isMissingColumnError, logQueryFallback } from './select-fallback';
+import { supabase } from '@/lib/supabase';
+import { logger, LogTag } from '@/utils/logger';
 
 const REVIEW_RPC = {
   create: 'create_review_atomically',

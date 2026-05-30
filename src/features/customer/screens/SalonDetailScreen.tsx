@@ -1,22 +1,24 @@
-import { THEME } from '@/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, Linking, ActivityIndicator, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Pressable, Linking, ActivityIndicator } from 'react-native';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { Avatar } from '@/components/ui/Avatar';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { PremiumButton } from '@/components/ui/PremiumButton';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { Avatar } from '@/components/ui/Avatar';
-import { Ionicons } from '@expo/vector-icons';
 import { useBusinessDetail } from '@/hooks/useBusinesses';
-import { useBookingStore } from '@/store/booking.store';
 import { useModal } from '@/hooks/useModal';
-import { Service } from '@/types/business.types';
-import { apiService } from '@/services/api.service';
-import { getShopStatus } from '@/utils/time';
-import { isValidImageUrl } from '@/utils/image';
 import { useProfileMedia } from '@/hooks/useProfileMedia';
+import { apiService } from '@/services/api.service';
+import { useBookingStore } from '@/store/booking.store';
+import { THEME } from '@/theme/theme';
+import { isValidImageUrl } from '@/utils/image';
+import { getShopStatus } from '@/utils/time';
+
+import type { Service } from '@/types/business.types';
 
 export default function SalonDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -27,8 +29,20 @@ export default function SalonDetailsScreen() {
   const { showModal } = useModal();
 
   // States for API fetched data
-  const [services, setServices] = useState<any[]>([]);
-  const [reviewsData, setReviewsData] = useState<any>(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [reviewsData, setReviewsData] = useState<{
+    reviews: {
+      id: string;
+      rating?: number | string;
+      customer?: { full_name?: string; avatar_url?: string };
+      customer_name?: string;
+      name?: string;
+      comment?: string;
+      created_at?: string;
+      date?: string;
+      user_id?: string;
+    }[];
+  } | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [loadingExtra, setLoadingExtra] = useState(false);
   const { data: ownerImage } = useProfileMedia(business?.owner_user_id ?? null);
@@ -41,11 +55,11 @@ export default function SalonDetailsScreen() {
 
         // 1. Fetch real public services
         const svc = await apiService.getPublicServices(business.id);
-        setServices(svc);
+        setServices(svc as unknown as Service[]);
 
         // 2. Fetch real reviews
         const rev = await apiService.getReviews(business.id);
-        setReviewsData(rev);
+        setReviewsData(rev as unknown as typeof reviewsData);
 
         // 3. Fetch real media and signed URLs
         const media = await apiService.getBusinessMedia(business.id);
@@ -219,6 +233,8 @@ export default function SalonDetailsScreen() {
     : [];
 
   // Ratings calculation based on API response
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const displayRatingAvg =
     business.rating_avg && Number(business.rating_avg) > 0
       ? Number(business.rating_avg).toFixed(1)

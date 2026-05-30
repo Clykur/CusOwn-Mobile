@@ -1,38 +1,39 @@
 import '../global.css';
+import { QueryClientProvider } from '@tanstack/react-query';
+import Constants from 'expo-constants';
+import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from 'react';
 import { Platform, View, ActivityIndicator } from 'react-native';
-import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
-import Constants from 'expo-constants';
-import * as SplashScreen from 'expo-splash-screen';
-import { QueryClientProvider } from '@tanstack/react-query';
+
 import { queryClient } from '@/lib/queryClient';
-import { useAuthStore, Role } from '@/store/auth.store';
-import { useOnboardingStore } from '@/store/onboarding.store';
 import { supabase } from '@/lib/supabase';
-import { logger, LogTag } from '@/utils/logger';
 import { ModalProvider } from '@/providers/ModalProvider';
+import { useAuthStore } from '@/store/auth.store';
+import { useOnboardingStore } from '@/store/onboarding.store';
+import { logger, LogTag } from '@/utils/logger';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-// NOTE: expo-notifications remote notifications are not supported in Expo Go (SDK 53+).
-let Notifications: typeof import('expo-notifications') | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Notifications: any = null;
 
 const isExpoGo = Constants?.executionEnvironment === 'storeClient';
 
 if (!isExpoGo) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    Notifications = require('expo-notifications');
-    Notifications?.setNotificationHandler?.({
-      handleNotification: async () =>
-        ({
+    import('expo-notifications').then((mod) => {
+      Notifications = mod;
+      Notifications?.setNotificationHandler?.({
+        handleNotification: async () => ({
           shouldShowAlert: true,
           shouldPlaySound: true,
           shouldSetBadge: false,
           shouldShowBanner: true,
           shouldShowList: true,
-        }) as any,
+        }),
+      });
     });
   } catch {
     Notifications = null;
@@ -72,7 +73,7 @@ export default function RootLayout() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [setSession]);
 
   // ─── Routing & Protection ─────────────────────────────────────────────
   useEffect(() => {
@@ -131,9 +132,10 @@ export default function RootLayout() {
       // Only redirect if they are currently in the public/auth screens (except callback) or the recovery screen
       if ((isPublic || isAuth || isRecovery) && !isCallback) {
         logger.info(LogTag.AUTH, `🚀 RootLayout: Navigating to ${target}`);
-        router.replace(target as any);
+        router.replace(target as '/(owner)' | '/(customer)');
       }
 
+      // eslint-disable-next-line react-hooks/immutability
       registerForPushNotificationsAsync();
     }
     // 2. Handle Not Signed In

@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
 import {
   View,
@@ -8,14 +10,14 @@ import {
   useColorScheme,
   FlatList,
 } from 'react-native';
-import { router } from 'expo-router';
-import { useBookingStore } from '@/store/booking.store';
-import { useBusinessDetail } from '@/hooks/useBusinesses';
-import { Service } from '@/types/business.types';
+
 import { Card } from '@/components/ui/Card';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { THEME } from '@/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
+import { useBusinessDetail } from '@/hooks/useBusinesses';
+import { useBookingStore } from '@/store/booking.store';
+
+import type { Service } from '@/types/business.types';
 
 export default function SelectServiceScreen() {
   const selectedBusiness = useBookingStore((s) => s.selectedBusiness);

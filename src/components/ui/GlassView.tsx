@@ -1,7 +1,9 @@
-import React from 'react';
-import { View, ViewProps, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
+import React from 'react';
+import { View, Platform } from 'react-native';
 import { cssInterop } from 'react-native-css-interop';
+
+import type { ViewProps } from 'react-native';
 
 cssInterop(BlurView, {
   className: 'style',

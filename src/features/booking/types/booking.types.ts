@@ -1,5 +1,5 @@
-import { Business, Service } from '@/features/shared/types/business.types';
-import { Slot } from './slot.types';
+import type { Slot } from './slot.types';
+import type { Business, Service } from '@/features/shared/types/business.types';
 
 export type BookingStatus =
   | 'pending'

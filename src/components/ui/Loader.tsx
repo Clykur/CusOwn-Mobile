@@ -1,6 +1,7 @@
-import { THEME } from '@/theme/theme';
 import React from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
+
+import { THEME } from '@/theme/theme';
 
 interface LoaderProps {
   message?: string;

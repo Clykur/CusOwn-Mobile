@@ -1,6 +1,6 @@
 import { colors, BASE_COLORS } from './colors';
-import { spacing } from './spacing';
 import { radius } from './radius';
+import { spacing } from './spacing';
 import { typography } from './typography';
 
 export { BASE_COLORS };

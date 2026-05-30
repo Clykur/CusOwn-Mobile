@@ -1,9 +1,10 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '@/theme/theme';
 
 const { width } = Dimensions.get('window');
 

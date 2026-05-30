@@ -1,5 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, TouchableOpacityProps, View, ViewProps, ViewStyle } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
+
+import type { ViewProps, ViewStyle } from 'react-native';
 import { GlassCard } from '@/components/ui/GlassCard'; // Assuming GlassCard is the underlying material style
 import { useDeviceType } from '@/hooks/useDeviceType';
 
@@ -23,6 +25,7 @@ export const AppCard: React.FC<AppCardProps> = ({
   style,
   ...props
 }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isTablet } = useDeviceType();
 
   // Unified Base styling: same radius, same shadow, same glass effect padding

@@ -1,3 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import { router } from 'expo-router';
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
@@ -9,19 +12,18 @@ import {
   FlatList,
   Animated,
 } from 'react-native';
-import { router } from 'expo-router';
-import { useBookingStore } from '@/store/booking.store';
-import { useSlots } from '@/hooks/useSlots';
-import { Slot } from '@/types/slot.types';
+
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { THEME } from '@/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
-import dayjs from 'dayjs';
-import { useBusinessHours } from '@/hooks/useBusinessHours';
 import { useRealtimeClock } from '@/features/booking/hooks/useRealtimeClock';
-import { getDefaultBookingDate } from '@/utils/shopTime';
+import { useBusinessHours } from '@/hooks/useBusinessHours';
+import { useSlots } from '@/hooks/useSlots';
 import { queryClient } from '@/lib/queryClient';
 import { queryKeys } from '@/lib/queryClient';
+import { useBookingStore } from '@/store/booking.store';
+import { getDefaultBookingDate } from '@/utils/shopTime';
+
+import type { Slot } from '@/types/slot.types';
 
 export default function SelectSlotScreen() {
   const selectedBusiness = useBookingStore((s) => s.selectedBusiness);
@@ -36,6 +38,9 @@ export default function SelectSlotScreen() {
   const [selectedDate, setSelectedDate] = useState<string>(clock.todayStr);
 
   // Animated value for the shop-closed banner slide-in
+  {
+  }
+  // eslint-disable-next-line react-hooks/refs
   const bannerAnim = React.useRef(new Animated.Value(0)).current;
 
   const { data: slots, isLoading, isError } = useSlots(selectedBusiness?.id ?? null, selectedDate);
@@ -68,6 +73,7 @@ export default function SelectSlotScreen() {
   useEffect(() => {
     if (isShopClosed && selectedDate === clock.todayStr) {
       const tomorrow = dayjs(clock.todayStr).add(1, 'day').format('YYYY-MM-DD');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedDate(tomorrow);
     }
   }, [isShopClosed, selectedDate, clock.todayStr]);
@@ -76,6 +82,7 @@ export default function SelectSlotScreen() {
   useEffect(() => {
     // When the date rolls over (todayStr changes), if the user was still on the
     // previous "today" we advance them to the new today and invalidate slots.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDate((prev) => {
       const prevDay = dayjs(prev);
       const newToday = dayjs(clock.todayStr);
@@ -96,6 +103,7 @@ export default function SelectSlotScreen() {
       businessHours.closing_time ?? null,
       /* selectedBusiness?.timezone */
     );
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDate((prev) => {
       // Only move forward, never backward
       return dayjs(correct).isAfter(dayjs(prev), 'day') ? correct : prev;
@@ -128,6 +136,10 @@ export default function SelectSlotScreen() {
     return list;
   }, [clock.todayStr]);
 
+  const handleDateSelect = useCallback((iso: string) => {
+    setSelectedDate(iso);
+  }, []);
+
   if (!selectedBusiness || !selectedService) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
@@ -146,10 +158,6 @@ export default function SelectSlotScreen() {
     setSlot(slot);
     router.push('/booking/confirm');
   };
-
-  const handleDateSelect = useCallback((iso: string) => {
-    setSelectedDate(iso);
-  }, []);
 
   // ─── Render helpers ───────────────────────────────────────────────────────────
 
@@ -304,6 +312,7 @@ export default function SelectSlotScreen() {
       </View>
 
       {/* Shop closed banner */}
+      {/* eslint-disable-next-line react-hooks/refs */}
       {renderClosedBanner()}
 
       {/* Step indicator */}

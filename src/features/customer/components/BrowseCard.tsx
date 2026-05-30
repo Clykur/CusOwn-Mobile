@@ -1,12 +1,14 @@
-import { THEME } from '@/theme/theme';
-import React from 'react';
-import { View, Text, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import React from 'react';
+import { View, Text, Pressable } from 'react-native';
+
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { Business } from '@/types/business.types';
 import { Avatar } from '@/components/ui/Avatar';
+import { THEME } from '@/theme/theme';
 import { getShopStatus } from '@/utils/time';
+
+import type { Business } from '@/types/business.types';
 
 interface Props {
   item: Business;

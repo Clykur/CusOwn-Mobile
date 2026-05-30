@@ -11,7 +11,7 @@ export interface UserProfile {
   /** Optional media embed from profile fetch */
   media?:
     | { url?: string | null; signed_url?: string | null }
-    | Array<{ url?: string | null; signed_url?: string | null }>
+    | { url?: string | null; signed_url?: string | null }[]
     | null;
   created_at?: string;
   updated_at?: string;

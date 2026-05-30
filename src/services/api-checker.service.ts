@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/auth.store';
 import { apiService } from '@/services/api.service';
-import { logger, LogTag } from '@/utils/logger';
+import { useAuthStore } from '@/store/auth.store';
 
 export interface HealthCheckResult {
   id: string;
@@ -106,6 +105,7 @@ export const apiChecker = {
           zustandUser: zustandUser?.email,
         },
       };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       return {
         id: 'zustand-sync',

@@ -1,16 +1,17 @@
-import { useState } from 'react';
-import { Alert, Platform } from 'react-native';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as AuthSession from 'expo-auth-session';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
+import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
-import { logger, LogTag } from '@/utils/logger';
+import { useState } from 'react';
+import { Alert } from 'react-native';
+
+import { STRINGS } from '@/constants/strings';
+import { parseOAuthParamsFromUrl } from '@/lib/oauthParams';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
-import { LoginFormValues, RegisterFormValues } from '@/schemas/auth.schema';
-import { STRINGS } from '@/constants/strings';
-import { router } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { parseOAuthParamsFromUrl } from '@/lib/oauthParams';
+import { logger, LogTag } from '@/utils/logger';
+
+import type { LoginFormValues, RegisterFormValues } from '@/schemas/auth.schema';
 
 const OAUTH_PENDING_ROLE_KEY = 'oauth_pending_role';
 const NATIVE_GOOGLE_CALLBACK = 'cusown://google-callback';

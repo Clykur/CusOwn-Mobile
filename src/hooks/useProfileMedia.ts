@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { getUserProfileMedia } from '@/services/supabase/storage';
 import { logger, LogTag } from '@/utils/logger';
 

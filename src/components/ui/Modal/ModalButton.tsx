@@ -1,15 +1,12 @@
+import * as Haptics from 'expo-haptics';
 import React from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  ActivityIndicator,
-  StyleSheet,
-  TouchableOpacityProps,
-} from 'react-native';
+import { TouchableOpacity, Text, ActivityIndicator, StyleSheet } from 'react-native';
+
+import type { TouchableOpacityProps, GestureResponderEvent } from 'react-native';
 import { THEME } from '@/constants/theme';
 import { horizontalScale, verticalScale, responsiveFontSize } from '@/utils/responsive';
-import * as Haptics from 'expo-haptics';
-import { ModalActionVariant } from '@/types/modal';
+
+import type { ModalActionVariant } from '@/types/modal';
 
 interface ModalButtonProps extends TouchableOpacityProps {
   variant?: ModalActionVariant;
@@ -27,7 +24,7 @@ export const ModalButton: React.FC<ModalButtonProps> = ({
 }) => {
   const theme = THEME.colors;
 
-  const handlePress = (e: import('react-native').GestureResponderEvent) => {
+  const handlePress = (e: GestureResponderEvent) => {
     if (variant === 'danger') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     } else {

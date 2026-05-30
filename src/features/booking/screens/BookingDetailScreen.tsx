@@ -1,22 +1,25 @@
-import { THEME } from '@/theme/theme';
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, Linking } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useBookingDetail, useUpdateBookingStatus } from '@/hooks/useBookings';
-import { getBookingPrice } from '@/services/api.service';
-import { useModal } from '@/hooks/useModal';
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { buildBookingWhatsAppUrl } from '@/lib/whatsapp';
-import { logger, LogTag } from '@/utils/logger';
+
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { Avatar } from '@/components/ui/Avatar';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { BookingActions } from '@/features/booking/components/booking-status/booking-actions';
+import { useBookingDetail, useUpdateBookingStatus } from '@/hooks/useBookings';
+import { useModal } from '@/hooks/useModal';
+import { buildBookingWhatsAppUrl } from '@/lib/whatsapp';
+import { getBookingPrice } from '@/services/api.service';
 import { apiService } from '@/services/api.service';
+import { THEME } from '@/theme/theme';
+import { logger, LogTag } from '@/utils/logger';
 import { formatBookingDate, formatBookingTime } from '@/utils/time';
+
+import type { Slot } from '@/features/booking/types/slot.types';
 
 function getStatusConfig(status: string) {
   switch (status.toLowerCase()) {
@@ -86,11 +89,14 @@ export default function BookingDetailScreen() {
   const { data: booking, isLoading, isError } = useBookingDetail(id || '');
 
   const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [whatsappLoading, setWhatsappLoading] = useState(false);
-  const [slots, setSlots] = useState<any[]>([]);
+  const [slots, setSlots] = useState<Slot[]>([]);
 
   const cancellationMinHoursMs = 2 * 60 * 60 * 1000;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mutate: updateBookingStatus, isPending: isCancelling } = useUpdateBookingStatus();
 
   /* ---------------- WHATSAPP ---------------- */
@@ -109,6 +115,7 @@ export default function BookingDetailScreen() {
       booking.status === 'completed';
 
     if (isPastOrCancelled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWhatsappUrl(null);
       return;
     }
@@ -141,6 +148,7 @@ export default function BookingDetailScreen() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [booking?.id, booking?.booking_id, booking?.status]);
 
   /* ---------------- AVAILABLE SLOTS ---------------- */
@@ -170,6 +178,7 @@ export default function BookingDetailScreen() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [booking?.id]);
 
   /* ---------------- ACTIONS ---------------- */
@@ -513,7 +522,7 @@ export default function BookingDetailScreen() {
                       date: booking.date,
                       start_time: booking.time,
                       end_time: booking.time,
-                    } as import('@/features/booking/types/slot.types').Slot),
+                    } as Slot),
                   salon: booking.business,
                   business_id: booking.business_id,
                   services: booking.services,

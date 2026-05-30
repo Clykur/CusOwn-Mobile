@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuthStore } from '@/store/auth.store';
-import { apiService } from '@/services/api.service';
+
 import { RatingPromptModal } from './RatingPromptModal';
+import { apiService } from '@/services/api.service';
+import { useAuthStore } from '@/store/auth.store';
 import { logger, LogTag } from '@/utils/logger';
+
+import type { Booking } from '@/types/booking.types';
 
 export const RatingPromptProvider: React.FC = () => {
   const session = useAuthStore((s) => s.session);
-  const [pendingBookings, setPendingBookings] = useState<any[]>([]);
+  const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
   const [dismissedBookingIds, setDismissedBookingIds] = useState<string[]>([]);
   const [visible, setVisible] = useState(false);
 
@@ -24,11 +27,9 @@ export const RatingPromptProvider: React.FC = () => {
       if (Array.isArray(bookings)) {
         const filtered = bookings.filter(
           (b) =>
-            (b as { id?: string }) &&
-            (b as { id?: string }).id &&
-            !dismissedBookingIds.includes((b as { id: string }).id),
+            (b as Booking) && (b as Booking).id && !dismissedBookingIds.includes((b as Booking).id),
         );
-        setPendingBookings(filtered);
+        setPendingBookings(filtered as Booking[]);
         setVisible(filtered.length > 0);
       }
     } catch (error) {
@@ -39,6 +40,7 @@ export const RatingPromptProvider: React.FC = () => {
   }, [session?.user?.id, dismissedBookingIds]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPendingRatings();
   }, [fetchPendingRatings]);
 
@@ -74,7 +76,17 @@ export const RatingPromptProvider: React.FC = () => {
   return (
     <RatingPromptModal
       visible={visible}
-      booking={pendingBooking}
+      booking={
+        pendingBooking as unknown as {
+          id: string;
+          booking_id?: string;
+          salon_name?: string;
+          business_name?: string;
+          service_name?: string | string[];
+          service_date?: string;
+          service_time?: string;
+        }
+      }
       onClose={handleModalClose}
       onSuccess={handleSuccess}
     />

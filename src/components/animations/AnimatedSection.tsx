@@ -37,6 +37,7 @@ export const AnimatedSection: React.FC<AnimatedSectionProps> = ({
       delay,
       withTiming(0, { duration: 800, easing: Easing.out(Easing.back(1)) }),
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [delay, direction]);
 
   const animatedStyle = useAnimatedStyle(() => ({

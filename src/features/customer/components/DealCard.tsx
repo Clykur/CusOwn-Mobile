@@ -1,12 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { THEME } from '@/theme/theme';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
-import dayjs from 'dayjs';
 
-import { Business } from '@/features/shared/types/business.types';
+import { AnimatedSection } from '@/components/animations/AnimatedSection';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { THEME } from '@/theme/theme';
+
+import type { Business } from '@/features/shared/types/business.types';
 
 export interface FlashDeal {
   business?: Business | null;

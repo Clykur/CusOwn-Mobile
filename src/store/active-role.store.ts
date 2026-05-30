@@ -1,7 +1,8 @@
+import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
-import { Role } from './auth.store';
+
+import type { Role } from './auth.store';
 
 interface ActiveRoleState {
   activeRole: Role;

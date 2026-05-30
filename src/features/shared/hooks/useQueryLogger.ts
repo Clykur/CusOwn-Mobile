@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { logger, LogTag } from '@/utils/logger';
+
 import { formatSupabaseError } from '@/services/supabase/errors';
+import { logger, LogTag } from '@/utils/logger';
 
 /**
  * Logs React Query failures with a stable label (Metro / device debugging).

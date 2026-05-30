@@ -1,6 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, TextInput, Pressable, ActivityIndicator, Keyboard, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+
 import { THEME } from '@/theme/theme';
 
 interface HomeSearchBarProps {

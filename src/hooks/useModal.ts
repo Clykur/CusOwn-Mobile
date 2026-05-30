@@ -1,5 +1,6 @@
-import React, { createContext, useContext } from 'react';
-import { ModalConfig } from '@/types/modal';
+import { createContext, useContext } from 'react';
+
+import type { ModalConfig } from '@/types/modal';
 
 interface ModalContextType {
   config: ModalConfig | null;

@@ -1,9 +1,11 @@
-import { THEME } from '@/theme/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
+
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Business } from '@/types/business.types';
-import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '@/theme/theme';
+
+import type { Business } from '@/types/business.types';
 
 interface BusinessDetailsCardProps {
   business: Business;

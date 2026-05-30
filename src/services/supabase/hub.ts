@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase';
 import { getActorUserId } from './booking-rpc';
-import { logger, LogTag } from '@/utils/logger';
 import { logSupabaseFailure } from './errors';
 import { assertBusinessOwnedByUser } from './owner-access';
+import { logger, LogTag } from '@/utils/logger';
+import { supabase } from '@/lib/supabase';
 
 async function assertBusinessOwner(businessId: string): Promise<string> {
   const ownerId = await getActorUserId();

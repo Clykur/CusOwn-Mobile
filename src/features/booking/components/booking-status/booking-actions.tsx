@@ -1,15 +1,15 @@
-import { THEME } from '@/theme/theme';
-import React, { memo, useState, useCallback } from 'react';
-import { Alert, Text, Pressable, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import React, { memo, useState, useCallback } from 'react';
+import { Text, Pressable, View } from 'react-native';
 
 import RescheduleButton from '@/features/booking/components/reschedule-button';
 import { useModal } from '@/hooks/useModal';
-
-import { Slot } from '@/types/slot.types';
 import { useOptimisticMutation } from '@/hooks/useOptimisticMutation';
 import { apiService } from '@/services/api.service';
-import { Ionicons } from '@expo/vector-icons';
+import { THEME } from '@/theme/theme';
+
+import type { Slot } from '@/types/slot.types';
 
 interface BookingActionsProps {
   booking: {
@@ -23,7 +23,7 @@ interface BookingActionsProps {
       id: string;
     };
     business_id: string;
-    services?: Array<{ id: string; name: string }>;
+    services?: { id: string; name: string }[];
     service?: { id: string; name: string };
   };
   salon_id?: string;
@@ -36,6 +36,8 @@ interface BookingActionsProps {
 function BookingActionsComponent({
   booking,
   availableSlots,
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   cancellationMinHoursMs,
   onCancelled,
   onRescheduled,
@@ -67,7 +69,8 @@ function BookingActionsComponent({
   })();
 
   const msUntilAppointment = appointmentDateTime
-    ? appointmentDateTime.getTime() - Date.now()
+    ? // eslint-disable-next-line react-hooks/purity
+      appointmentDateTime.getTime() - Date.now()
     : Number.POSITIVE_INFINITY;
 
   const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
@@ -110,13 +113,18 @@ function BookingActionsComponent({
   const handleRebook = useCallback(() => {
     const serviceIds =
       booking.services?.map((s: { id: string }) => s.id).join(',') || booking.service?.id || '';
-    router.push({
-      pathname: '/(customer)/book/[id]',
-      params: {
-        id: booking.business_id,
-        serviceIds,
-      },
-    });
+
+    router.dismissAll();
+
+    setTimeout(() => {
+      router.push({
+        pathname: '/(customer)/book/[id]',
+        params: {
+          id: booking.business_id,
+          serviceIds,
+        },
+      });
+    }, 10);
   }, [booking.business_id, booking.services, booking.service]);
 
   const displayStatus = optimisticStatus || booking.status;

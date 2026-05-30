@@ -1,9 +1,10 @@
-import { THEME } from '@/theme/theme';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, Alert } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
+import { THEME } from '@/theme/theme';
 import { logger, LogTag } from '@/utils/logger';
 
 /**
@@ -123,6 +124,7 @@ export default function GoogleCallbackScreen() {
     }
 
     handleCallback();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, error, error_description, session, role, isAuthLoading]);
 
   return (

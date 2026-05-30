@@ -4,9 +4,10 @@ import {
   Text,
   ActivityIndicator,
   StyleSheet,
-  TouchableOpacityProps,
   useColorScheme,
 } from 'react-native';
+
+import type { TouchableOpacityProps } from 'react-native';
 import { THEME } from '@/constants/theme';
 import { horizontalScale, verticalScale, responsiveFontSize } from '@/utils/responsive';
 
