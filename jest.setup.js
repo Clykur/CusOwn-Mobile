@@ -6,5 +6,6 @@ if (typeof process.env.EXPO_OS === 'undefined') {
 }
 
 if (typeof global.WebSocket === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   global.WebSocket = require('ws');
 }
