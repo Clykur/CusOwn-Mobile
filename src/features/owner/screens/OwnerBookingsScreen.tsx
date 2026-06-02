@@ -48,7 +48,9 @@ export default function OwnerBookingsScreen() {
     if (bookingId && bookings) {
       const b = bookings.find((b) => b.id === bookingId);
       if (b) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedBooking(b);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowDetailModal(true);
         // Clear param so it doesn't reopen on subsequent renders
         router.setParams({ bookingId: '' });

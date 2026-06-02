@@ -7,7 +7,7 @@ export class NotificationAnalyticsService {
    * Tracks when a user opens the app via a push notification tap.
    * Finds the most recent successful log for that event/url and marks it as opened.
    */
-  static async trackNotificationOpen(payloadData: any) {
+  static async trackNotificationOpen(payloadData: Record<string, unknown>) {
     if (!payloadData || !payloadData.event) return;
 
     try {

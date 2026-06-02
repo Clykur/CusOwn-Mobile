@@ -16,7 +16,7 @@ import { useOnboardingStore } from '@/store/onboarding.store';
 import { logger, LogTag } from '@/utils/logger';
 import { NotificationService } from '@/services/notification.service';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
-import { NotificationPayload } from '@/types/notification.types';
+import type { NotificationPayload } from '@/types/notification.types';
 import { getRouteForNotification } from '@/constants/notification-routes';
 import { NotificationAnalyticsService } from '@/services/notificationAnalytics.service';
 
@@ -25,7 +25,7 @@ try {
   SplashScreen.preventAutoHideAsync().catch(() => {
     // Ignore missing splash screen error
   });
-} catch (e) {
+} catch {
   // Ignore synchronous errors
 }
 
@@ -46,7 +46,7 @@ export default function RootLayout() {
   usePushNotifications();
 
   // Listen for Notification Taps (Deep Linking)
-  const responseListener = useRef<any>(null);
+  const responseListener = useRef<Notifications.Subscription | null>(null);
 
   useEffect(() => {
     if (!isExpoGo) {
@@ -67,7 +67,7 @@ export default function RootLayout() {
           if (url && isNavigationReady) {
             // Add a small delay to ensure routing stack is ready if app was completely closed
             setTimeout(() => {
-              router.push(url as any);
+              router.push(url as `/${string}`);
             }, 100);
           }
         },
@@ -115,7 +115,7 @@ export default function RootLayout() {
     if (!isLoading && isNavigationReady) {
       try {
         SplashScreen.hideAsync().catch(() => {});
-      } catch (e) {}
+      } catch {}
     }
   }, [isLoading, isNavigationReady]);
 

@@ -21,5 +21,5 @@ export interface NotificationPayload {
   event: NotificationType;
   bookingId?: string;
   url?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }

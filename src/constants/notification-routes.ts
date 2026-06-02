@@ -1,11 +1,9 @@
 // src/constants/notification-routes.ts
-import {
-  NotificationType,
-  CustomerNotificationType,
-  OwnerNotificationType,
-} from '@/types/notification.types';
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import { CustomerNotificationType, OwnerNotificationType } from '@/types/notification.types';
+import type { NotificationType } from '@/types/notification.types';
 
-export type RouteResolver = (payload: any) => string;
+export type RouteResolver = (payload: Record<string, unknown>) => string;
 
 const customerRoutes: Record<CustomerNotificationType, RouteResolver> = {
   [CustomerNotificationType.BOOKING_CONFIRMED]: (payload) => `/booking-detail/${payload.id}`,
@@ -28,7 +26,10 @@ export const NotificationRouteRegistry: Record<NotificationType, RouteResolver> 
   ...ownerRoutes,
 };
 
-export function getRouteForNotification(event: NotificationType, payload: any): string | null {
+export function getRouteForNotification(
+  event: NotificationType,
+  payload: Record<string, unknown>,
+): string | null {
   const resolver = NotificationRouteRegistry[event];
   if (resolver) {
     try {

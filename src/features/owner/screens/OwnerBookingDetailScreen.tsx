@@ -1,5 +1,5 @@
 import { useLocalSearchParams, router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 
 import { OwnerBookingDetailModal } from '@/features/owner/components/OwnerBookingDetailModal';
@@ -11,28 +11,24 @@ import {
   useUndoReject,
   useMarkNoShow,
 } from '@/hooks/useBookings';
-import type { Booking } from '@/types/booking.types';
+
 import { THEME } from '@/theme/theme';
 
 export default function OwnerBookingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: bookings, isLoading, isError } = useBookings('Owner');
-  const [booking, setBooking] = useState<Booking | null>(null);
+  const booking = useMemo(() => {
+    if (bookings && id) {
+      return bookings.find((b) => b.id === id) ?? null;
+    }
+    return null;
+  }, [bookings, id]);
 
   const { mutate: confirmBooking } = useConfirmBooking();
   const { mutate: rejectBooking } = useRejectBooking();
   const { mutate: undoConfirm } = useUndoConfirm();
   const { mutate: undoReject } = useUndoReject();
   const { mutate: markNoShow } = useMarkNoShow();
-
-  useEffect(() => {
-    if (bookings && id) {
-      const found = bookings.find((b) => b.id === id);
-      if (found) {
-        setBooking(found);
-      }
-    }
-  }, [bookings, id]);
 
   const handleClose = () => {
     router.back();

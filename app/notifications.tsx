@@ -16,7 +16,8 @@ import isYesterday from 'dayjs/plugin/isYesterday';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 import { THEME } from '@/theme/theme';
-import { useNotifications, NotificationLog } from '@/hooks/useNotifications';
+import { useNotifications } from '@/hooks/useNotifications';
+import type { NotificationLog } from '@/hooks/useNotifications';
 import { getRouteForNotification } from '@/constants/notification-routes';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
@@ -94,7 +95,7 @@ export default function NotificationsScreen() {
     }
 
     if (route) {
-      router.push(route as any);
+      router.push(route as `/${string}`);
     }
   };
 
@@ -133,7 +134,9 @@ export default function NotificationsScreen() {
                 <Text
                   className={`text-base flex-1 pr-2 ${isUnread ? 'text-text font-black' : 'text-textSecondary font-bold'}`}
                 >
-                  {item.title || item.payload?.title || 'Notification'}
+                  {item.title ||
+                    (item.payload?.title ? String(item.payload.title) : null) ||
+                    'Notification'}
                 </Text>
                 <Text className="text-xs text-textSecondary font-medium">
                   {dayjs(item.created_at).fromNow(true)}
@@ -143,7 +146,9 @@ export default function NotificationsScreen() {
                 className={`text-sm ${isUnread ? 'text-textSecondary font-medium' : 'text-textSecondary/70'}`}
                 numberOfLines={2}
               >
-                {item.body || item.payload?.body || 'You have a new update.'}
+                {item.body ||
+                  (item.payload?.body ? String(item.payload.body) : null) ||
+                  'You have a new update.'}
               </Text>
             </View>
             {isUnread && <View className="w-2 h-2 rounded-full bg-primary mt-2 ml-2" />}

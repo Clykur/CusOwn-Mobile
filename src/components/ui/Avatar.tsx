@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 
 import type { StyleProp, ViewStyle } from 'react-native';
 import BusinessIcon from '../../../assets/Business.svg';
@@ -21,7 +21,7 @@ interface AvatarProps {
 const AvatarBase: React.FC<AvatarProps> = ({
   url,
   userId,
-  name = '',
+  name: _name = '',
   size = 48,
   style,
   className,
@@ -31,7 +31,7 @@ const AvatarBase: React.FC<AvatarProps> = ({
 
   const radius = size / 2;
 
-  const getInitials = (str: string) => {
+  const _getInitials = (str: string) => {
     const parts = str.trim().split(/\s+/);
 
     if (!parts.length || !parts[0]) return 'U';
@@ -112,11 +112,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-  },
-
-  initials: {
-    color: THEME.colors.text,
-    fontWeight: '700',
   },
 });
 

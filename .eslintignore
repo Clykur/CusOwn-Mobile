@@ -17,3 +17,6 @@ test-list.js
 tailwind.config.js
 metro.config.js
 babel.config.js
+
+# Supabase Edge Functions use Deno runtime with URL imports - not compatible with Node ESLint
+supabase/functions

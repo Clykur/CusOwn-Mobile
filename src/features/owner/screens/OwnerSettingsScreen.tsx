@@ -68,7 +68,7 @@ export default function OwnerProfileScreen() {
 
     const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => subscription.remove();
-  }, [editMode]);
+  }, [editMode, showModal]);
 
   const [profileData, setProfileData] = useState<{
     profile?: {

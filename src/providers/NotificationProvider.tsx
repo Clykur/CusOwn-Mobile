@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { Alert } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth.store';
 import { supabase } from '@/lib/supabase';
-import { NotificationLog } from '@/hooks/useNotifications';
-import { useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
+import type { NotificationLog } from '@/hooks/useNotifications';
 import { CustomerNotificationType, OwnerNotificationType } from '@/types/notification.types';
 
 interface NotificationContextType {
@@ -21,6 +21,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   useEffect(() => {
     if (!user?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUnreadCount(0);
       return;
     }

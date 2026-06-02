@@ -1,9 +1,9 @@
+import * as FileSystem from 'expo-file-system';
 import { getActorUserId } from './booking-rpc';
 import { logSupabaseFailure } from './errors';
 import { assertBusinessOwnedByUser } from './owner-access';
 import { isMissingColumnError, logQueryFallback } from './select-fallback';
 import { isStorageRlsError, logStorageDebug, logStorageError } from './storage-debug';
-import * as FileSystem from 'expo-file-system';
 import { supabase } from '@/lib/supabase';
 
 export const STORAGE_BUCKETS = {
@@ -147,7 +147,7 @@ export async function uploadToStorage(params: {
         size_bytes = fileInfo.size;
       }
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 
@@ -163,7 +163,7 @@ export async function uploadToStorage(params: {
     uri: params.file.uri,
     name: fileName,
     type: contentType,
-  } as any);
+  } as unknown as Blob);
 
   const { error } = await supabase.storage
     .from(params.bucket)

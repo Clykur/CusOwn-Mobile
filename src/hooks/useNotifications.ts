@@ -2,19 +2,17 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth.store';
 import { logger, LogTag } from '@/utils/logger';
-import {
-  NotificationType,
-  CustomerNotificationType,
-  OwnerNotificationType,
-} from '@/types/notification.types';
+import type { NotificationType } from '@/types/notification.types';
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import { CustomerNotificationType, OwnerNotificationType } from '@/types/notification.types';
 
 export interface NotificationLog {
   id: string;
   user_id: string;
   notification_type: NotificationType;
-  payload: any;
+  payload: Record<string, unknown>;
   status: string;
-  provider_response: any;
+  provider_response: Record<string, unknown> | null;
   created_at: string;
   opened_at: string | null;
   category?: string;
