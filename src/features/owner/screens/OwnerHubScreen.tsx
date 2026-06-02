@@ -237,6 +237,7 @@ export default function ManageHubScreen() {
         uri: asset.uri,
         name: filename,
         type,
+        fileSize: asset.fileSize,
       });
 
       showModal({
@@ -871,23 +872,22 @@ export default function ManageHubScreen() {
                       </Text>
                     </View>
                   ) : (
-                    <View className="flex-row flex-wrap gap-4 justify-between">
+                    <View className="flex-row flex-wrap -mx-2">
                       {photos.map((item) => (
-                        <View
-                          key={item.id}
-                          className="flex-1 aspect-square bg-input rounded-2xl border border-border overflow-hidden relative mb-2"
-                        >
-                          <Image
-                            source={{ uri: item.url }}
-                            className="w-full h-full"
-                            resizeMode="cover"
-                          />
-                          <Pressable
-                            onPress={() => handleDeletePhoto(item.id)}
-                            className="absolute top-2 right-2 items-center justify-center shadow active:opacity-80"
-                          >
-                            <Ionicons name="trash-outline" size={24} color={THEME.colors.error} />
-                          </Pressable>
+                        <View key={item.id} className="w-1/2 p-2">
+                          <View className="w-full aspect-square bg-input rounded-2xl border border-border overflow-hidden relative">
+                            <Image
+                              source={{ uri: item.url }}
+                              className="w-full h-full"
+                              resizeMode="cover"
+                            />
+                            <Pressable
+                              onPress={() => handleDeletePhoto(item.id)}
+                              className="absolute top-2 right-2 items-center justify-center shadow active:opacity-80"
+                            >
+                              <Ionicons name="trash-outline" size={24} color={THEME.colors.error} />
+                            </Pressable>
+                          </View>
                         </View>
                       ))}
                     </View>

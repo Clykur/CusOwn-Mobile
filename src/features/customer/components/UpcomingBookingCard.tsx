@@ -41,7 +41,7 @@ function UpcomingBookingCardBase({ booking, lastVisited }: UpcomingBookingCardPr
         </Text>
       </View>
 
-      <GlassCard className="p-4 bg-card shadow-sm rounded-full">
+      <GlassCard className="p-4 bg-card shadow-sm">
         {booking ? (
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">

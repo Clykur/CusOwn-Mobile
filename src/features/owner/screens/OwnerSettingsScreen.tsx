@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -26,6 +27,7 @@ import { apiService } from '@/services/api.service';
 import { useAuthStore } from '@/store/auth.store';
 import { THEME } from '@/theme/theme';
 import { isValidImageUrl } from '@/utils/image';
+import { useEditModeStore } from '@/store/editMode.store';
 // New UI Components
 
 export default function OwnerProfileScreen() {
@@ -39,7 +41,34 @@ export default function OwnerProfileScreen() {
 
   const [loading, setLoading] = useState(!profile);
   const [updating, setUpdating] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+
+  const editMode = useEditModeStore((s) => s.isEditing);
+  const setEditMode = useEditModeStore((s) => s.setIsEditing);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      if (editMode) {
+        showModal({
+          variant: 'warning',
+          title: 'Unsaved Changes',
+          description: 'You have unsaved changes. Please save or cancel before leaving.',
+          hideCancel: true,
+          actions: [
+            {
+              label: 'OK',
+              onPress: () => {},
+              variant: 'primary',
+            },
+          ],
+        });
+        return true;
+      }
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [editMode]);
 
   const [profileData, setProfileData] = useState<{
     profile?: {

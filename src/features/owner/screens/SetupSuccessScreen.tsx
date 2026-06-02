@@ -137,7 +137,7 @@ export default function SuccessScreen() {
             <AnimatedSection delay={300} direction="up" className="mt-8">
               <PremiumButton
                 title="Enter Dashboard"
-                onPress={() => router.replace('/(owner)')}
+                onPress={() => router.replace('/(owner)/')}
                 className="w-full mb-3"
               />
 

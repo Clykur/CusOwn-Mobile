@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, router } from 'expo-router';
 import React, { useState } from 'react';
 import { View, Text, Pressable, FlatList, TextInput, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,6 +40,21 @@ export default function OwnerBookingsScreen() {
   const { data: bookings, isLoading, isError, refetch } = useBookings('Owner');
   const { data: businessesData } = useOwnerBusinesses();
   const { showModal } = useModal();
+  const params = useLocalSearchParams<{ bookingId?: string }>();
+  const bookingId = params.bookingId;
+
+  // Handle deep-linked booking from notifications
+  React.useEffect(() => {
+    if (bookingId && bookings) {
+      const b = bookings.find((b) => b.id === bookingId);
+      if (b) {
+        setSelectedBooking(b);
+        setShowDetailModal(true);
+        // Clear param so it doesn't reopen on subsequent renders
+        router.setParams({ bookingId: '' });
+      }
+    }
+  }, [bookingId, bookings]);
 
   // Synchronize selectedBooking with fresh data from the bookings list
   React.useEffect(() => {

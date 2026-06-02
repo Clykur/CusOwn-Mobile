@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import BusinessIcon from '../../../../assets/Business.svg';
 import { useLocalSearchParams, router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, Linking, ActivityIndicator } from 'react-native';
@@ -45,6 +46,7 @@ export default function SalonDetailsScreen() {
   } | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [loadingExtra, setLoadingExtra] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const { data: ownerImage } = useProfileMedia(business?.owner_user_id ?? null);
   useEffect(() => {
     if (!business?.id) return;
@@ -260,22 +262,19 @@ export default function SalonDetailsScreen() {
       >
         {/* Hero Header */}
         <View className="h-96 w-full relative">
-          {ownerImage ? (
+          {ownerImage && !imageError ? (
             <Image
               className="w-full h-full"
               source={{ uri: ownerImage }}
               contentFit="cover"
               transition={300}
               cachePolicy="memory-disk"
+              onError={() => setImageError(true)}
             />
           ) : (
-            <Avatar
-              userId={business.owner_user_id}
-              name={business.salon_name}
-              size={400}
-              type="business"
-              className="w-full h-full"
-            />
+            <View className="w-full h-full items-center justify-center bg-card">
+              <BusinessIcon width={120} height={120} color={THEME.colors.primary} />
+            </View>
           )}
           <View className="absolute inset-0 bg-black/30" />
 

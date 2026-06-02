@@ -35,7 +35,7 @@ function TrendingServiceCardBase({ item, index = 0, onPress }: TrendingServiceCa
   return (
     <AnimatedSection delay={index * 100} direction="left" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-48 p-2 bg-card shadow-sm rounded-3xl items-center justify-center">
+        <GlassCard className="w-48 h-[220px] p-2 bg-card shadow-sm items-center justify-center">
           {/* Icon */}
           <View className="items-center justify-center mb-3">
             <Ionicons name="trending-up" size={30} color={THEME.colors.primary} />

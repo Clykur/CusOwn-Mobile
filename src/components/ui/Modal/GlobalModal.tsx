@@ -108,6 +108,10 @@ export const GlobalModal = () => {
         return <Ionicons name="log-out-outline" size={48} color={THEME.colors.textSecondary} />;
 
       case 'confirmation':
+        return (
+          <Ionicons name="information-circle-outline" size={48} color={THEME.colors.primary} />
+        );
+
       default:
         return <Ionicons name="help-circle-outline" size={48} color={THEME.colors.primary} />;
     }
@@ -285,7 +289,7 @@ const styles = StyleSheet.create({
     color: THEME.colors.textSecondary,
     fontSize: responsiveFontSize(15),
     lineHeight: responsiveFontSize(22),
-    textAlign: 'left',
+    textAlign: 'center',
     width: '100%',
     marginBottom: verticalScale(20),
   },

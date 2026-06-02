@@ -24,6 +24,7 @@ import type { FlashDeal } from '@/features/customer/components/DealCard';
 import type { TrendingService } from '@/features/customer/components/TrendingServiceCard';
 import type { Booking } from '@/types/booking.types';
 import type { Business } from '@/types/business.types';
+import { useNotificationContext } from '@/providers/NotificationProvider';
 
 // New Components
 
@@ -45,6 +46,7 @@ const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: num
 export default function CustomerHomeScreen() {
   const { user, profile } = useAuthStore();
   const { data: businesses, refetch } = useBusinesses();
+  const { unreadCount } = useNotificationContext();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: categories } = useCategories();
@@ -326,9 +328,19 @@ export default function CustomerHomeScreen() {
                   'User'}
               </Text>
             </View>
-            <View className="items-center justify-center">
-              <Ionicons name="notifications-outline" size={20} color={THEME.colors.text} />
-            </View>
+            <Pressable
+              className="items-center justify-center relative p-2"
+              onPress={() => router.push('/notifications')}
+            >
+              <Ionicons name="notifications-outline" size={24} color={THEME.colors.text} />
+              {unreadCount > 0 && (
+                <View className="absolute top-1 right-1.5 min-w-[16px] h-4 bg-primary rounded-full items-center justify-center px-1 border border-background">
+                  <Text className="text-[10px] font-bold text-white leading-none">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
           </AnimatedSection>
 
           <HomeSearchBar

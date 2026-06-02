@@ -57,7 +57,7 @@ const RoleItem = ({
       >
         <View className="flex-row items-center">
           {/* Icon */}
-          <View className="w-22 items-center justify-center mr-4.5">
+          <View className="w-22 items-center justify-center mr-5">
             {type === 'customer' ? (
               <CustomerIcon width={72} height={72} color={THEME.colors.primary} />
             ) : (
@@ -120,7 +120,7 @@ export default function RoleSelectionScreen() {
         </View>
 
         {/* Options */}
-        <View className="flex-1">
+        <View className="flex-1 gap-y-2">
           <RoleItem
             type="customer"
             title="Customer"

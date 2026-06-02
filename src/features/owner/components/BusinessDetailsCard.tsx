@@ -39,7 +39,7 @@ export const BusinessDetailsCard: React.FC<BusinessDetailsCardProps> = ({
   deleteLoading,
 }) => {
   return (
-    <GlassCard className="p-6 mb-8 border-slate-200/80 shadow-sm rounded-luxury">
+    <GlassCard className="p-6 mb-8 shadow-sm">
       <View className="flex-row justify-between items-center mb-6 border-b border-slate-100 pb-4">
         <Text className="text-slate-900 text-xl font-black">Business Details</Text>
         <View className="flex-row gap-3">

@@ -190,7 +190,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
       <View className="flex-1 justify-center items-center bg-black/80 px-6">
         <View
-          className="w-full rounded-full bg-gray-500 p-6"
+          className="w-full rounded-xl bg-card p-6"
           style={[
             {
               maxWidth: 340,
@@ -282,7 +282,7 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
           {/* Review */}
           <View className="mb-6">
             <TextInput
-              className="min-h-28 rounded-3xl px-4.5 py-4 text-text"
+              className="min-h-28 rounded-xl px-6 py-4 text-text"
               value={comment}
               onChangeText={setComment}
               placeholder="Share your feedback..."

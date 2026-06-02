@@ -31,7 +31,7 @@ function DealCardBase({ item, index = 0, onPress }: DealCardProps) {
   return (
     <AnimatedSection delay={index * 100} direction="up" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-64 p-0 rounded-3xl border border-primary/20">
+        <GlassCard className="w-64 p-0">
           <View className="px-4 py-3 flex-row justify-between items-center">
             <View className="flex-row items-center">
               <Ionicons name="pricetag-outline" size={16} color={THEME.colors.primary} />

@@ -78,7 +78,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           }
         }}
       >
-        <GlassCard className="p-1 border-border rounded-luxury">
+        <GlassCard className="p-1">
           {/* Header */}
           <View className="flex-row justify-between items-start mb-2">
             <View className="flex-row items-center flex-1 gap-x-3">

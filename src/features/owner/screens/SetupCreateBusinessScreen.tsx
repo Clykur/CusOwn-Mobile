@@ -7,10 +7,14 @@ import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { CreateBusinessForm } from '@/features/owner/components/setup/CreateBusinessForm';
+import type { Business } from '@/types/business.types';
 
 export default function CreateBusinessScreen() {
-  const handleSuccess = () => {
-    router.push('/setup/success');
+  const handleSuccess = (data: Business) => {
+    router.push({
+      pathname: '/setup/success',
+      params: { businessId: data.id },
+    });
   };
 
   return (

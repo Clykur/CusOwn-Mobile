@@ -12,13 +12,18 @@
     @apply flex-1 bg-background;
   }
 
+  /* Shared Card Border Styling */
+  .card-border-treatment {
+    @apply border border-primary/5 rounded-xl;
+  }
+
   /* Glass Cards — dark-mode surfaces */
   .glass-card {
-    @apply bg-card border border-border rounded-premium overflow-hidden;
+    @apply bg-card card-border-treatment overflow-hidden;
   }
 
   .glass-card-dark {
-    @apply bg-card border border-border rounded-premium overflow-hidden;
+    @apply bg-card card-border-treatment overflow-hidden;
   }
 
   /* Typography */
@@ -50,7 +55,7 @@
 
   /* Cards */
   .onboarding-card {
-    @apply bg-card border border-border rounded-premium p-luxury mx-4 overflow-hidden;
+    @apply bg-card card-border-treatment p-luxury mx-4 overflow-hidden;
   }
 
   .luxury-gradient {
@@ -58,6 +63,6 @@
   }
 
   .card-premium {
-    @apply bg-card border border-border rounded-luxury p-6;
+    @apply bg-card card-border-treatment p-6;
   }
 }

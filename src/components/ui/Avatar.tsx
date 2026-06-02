@@ -83,21 +83,10 @@ const AvatarBase: React.FC<AvatarProps> = ({
       ]}
     >
       {showFallback ? (
-        type === 'customer' ? (
-          <CustomerIcon width={size * 0.6} height={size * 0.6} color={THEME.colors.primary} />
-        ) : type === 'business' ? (
+        type === 'business' ? (
           <BusinessIcon width={size * 0.6} height={size * 0.6} color={THEME.colors.primary} />
         ) : (
-          <Text
-            style={[
-              styles.initials,
-              {
-                fontSize: size * 0.4,
-              },
-            ]}
-          >
-            {getInitials(name)}
-          </Text>
+          <CustomerIcon width={size * 0.6} height={size * 0.6} color={THEME.colors.primary} />
         )
       ) : (
         <Image

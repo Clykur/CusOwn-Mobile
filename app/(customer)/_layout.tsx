@@ -6,12 +6,37 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RatingPromptProvider } from '@/features/reviews/components/RatingPromptProvider';
 import { responsiveFontSize, verticalScale } from '@/utils/responsive';
+import { useEditModeStore } from '@/store/editMode.store';
+import { useModal } from '@/hooks/useModal';
 
 export default function CustomerTabsLayout() {
   const insets = useSafeAreaInsets();
+  const isEditing = useEditModeStore((s) => s.isEditing);
+  const { showModal } = useModal();
+
   return (
     <>
       <Tabs
+        screenListeners={{
+          tabPress: (e) => {
+            if (isEditing) {
+              e.preventDefault();
+              showModal({
+                variant: 'warning',
+                title: 'Unsaved Changes',
+                description: 'You have unsaved changes. Please save or cancel before leaving.',
+                hideCancel: true,
+                actions: [
+                  {
+                    label: 'OK',
+                    onPress: () => {},
+                    variant: 'primary',
+                  },
+                ],
+              });
+            }
+          },
+        }}
         screenOptions={{
           headerShown: false,
 

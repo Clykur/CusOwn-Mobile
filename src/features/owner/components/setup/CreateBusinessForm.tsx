@@ -217,10 +217,8 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
 
       const result = await apiService.createBusiness(payload);
 
-      router.replace('/(owner)');
-
       if (onSuccess) {
-        onSuccess(result);
+        onSuccess(result as Business);
       }
     } catch (err: unknown) {
       console.error('Business creation failed:', err);
