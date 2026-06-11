@@ -104,7 +104,6 @@ export default function CustomerProfileScreen() {
   });
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
     fetchProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -247,7 +246,9 @@ export default function CustomerProfileScreen() {
       </PremiumBackground>
     );
   }
-
+  console.log('mediaUrl:', mediaUrl);
+  console.log('profileImageUrl:', profileImageUrl);
+  console.log('finalUrl:', mediaUrl || profileImageUrl);
   return (
     <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['left', 'right']}>

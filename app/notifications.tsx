@@ -213,8 +213,8 @@ export default function NotificationsScreen() {
             ) : null
           }
           ListEmptyComponent={
-            <View className="flex-1 items-center justify-center pt-20 px-8">
-              <View className="w-20 h-20 rounded-full bg-primary/10 items-center justify-center mb-6">
+            <View className="flex-1 items-center justify-center px-8">
+              <View className="w-20 h-20 rounded-full items-center justify-center mb-6">
                 <Ionicons name="notifications-off-outline" size={32} color={THEME.colors.primary} />
               </View>
               <Text className="text-xl font-black text-text mb-2 text-center">

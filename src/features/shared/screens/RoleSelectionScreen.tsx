@@ -37,11 +37,9 @@ const RoleItem = ({
     <Pressable
       onPress={onPress}
       onPressIn={() => {
-        // eslint-disable-next-line react-hooks/immutability
         scale.value = withSpring(0.98);
       }}
       onPressOut={() => {
-        // eslint-disable-next-line react-hooks/immutability
         scale.value = withSpring(1);
       }}
     >

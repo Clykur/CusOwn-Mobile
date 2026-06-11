@@ -115,7 +115,6 @@ export default function BookingDetailScreen() {
       booking.status === 'completed';
 
     if (isPastOrCancelled) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWhatsappUrl(null);
       return;
     }
@@ -374,8 +373,10 @@ export default function BookingDetailScreen() {
               <View className="flex-row items-center gap-x-4">
                 <Avatar
                   userId={booking.business?.owner_user_id}
+                  url={booking.business?.owner_image || booking.business?.avatar_url}
                   name={booking.business?.salon_name || 'CusOwn Salon'}
                   size={48}
+                  type="business"
                 />
 
                 <View className="flex-1">

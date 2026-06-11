@@ -43,7 +43,6 @@ export const ServicesManagement: React.FC<ServicesManagementProps> = ({ business
   }, [businessId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchServices();
   }, [fetchServices]);
 

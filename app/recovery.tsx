@@ -27,7 +27,6 @@ export default function RecoveryScreen() {
 
       const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDaysRemaining(diffDays > 0 ? diffDays : 0);
     } else {
       setDaysRemaining(30);

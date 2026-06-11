@@ -34,7 +34,6 @@ export const GlobalModal = () => {
   // Keep rendering last config while animating out
   useEffect(() => {
     if (config) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRenderConfig(config);
     }
   }, [config]);

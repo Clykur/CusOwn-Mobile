@@ -42,7 +42,6 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
   const isPast = React.useMemo(() => {
     if (!booking || !booking.date || !booking.time) return false;
     const slotDateTime = new Date(`${booking.date}T${booking.time}`);
-    // eslint-disable-next-line react-hooks/purity
     return slotDateTime.getTime() < Date.now();
   }, [booking]);
 
@@ -56,9 +55,7 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
       return false;
     }
     const windowMs = (CONFIG.UNDO_WINDOW_MINUTES || 15) * 60 * 1000;
-    // eslint-disable-next-line react-hooks/purity
     const updatedAt = new Date(booking.updated_at || Date.now()).getTime();
-    // eslint-disable-next-line react-hooks/purity
     return Date.now() - updatedAt < windowMs;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPast, booking]);
@@ -333,16 +330,16 @@ export const OwnerBookingDetailModal: React.FC<OwnerBookingDetailModalProps> = (
                         onNoShow(booking.id);
                         onClose();
                       }}
-                      disabled={isPast}
+                      disabled={!isPast}
                       className={`w-full h-12 rounded-xl items-center justify-center flex-row gap-x-2 ${
-                        isPast
+                        !isPast
                           ? 'bg-border/30 border border-border/50 opacity-50'
                           : 'bg-input border border-border active:bg-card'
                       }`}
                     >
                       <Text
                         className={`font-black text-xs uppercase tracking-widest ${
-                          isPast ? 'text-textSecondary/50' : 'text-textSecondary'
+                          !isPast ? 'text-textSecondary/50' : 'text-textSecondary'
                         }`}
                       >
                         Mark as No-Show

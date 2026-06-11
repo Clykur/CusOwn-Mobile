@@ -26,6 +26,7 @@ const BrowseCardBase = ({ item, index = 0 }: Props) => {
           <View className="mr-4">
             <Avatar
               userId={item.owner_user_id}
+              url={item.owner_image || item.avatar_url}
               name={item.salon_name}
               size={76}
               type="business"

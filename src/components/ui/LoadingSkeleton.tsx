@@ -18,7 +18,6 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   className = '',
   style,
 }) => {
-  // eslint-disable-next-line react-hooks/refs
   const opacityAnim = useRef(new Animated.Value(0.2)).current;
 
   useEffect(() => {

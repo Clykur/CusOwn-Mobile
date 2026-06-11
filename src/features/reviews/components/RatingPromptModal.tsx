@@ -55,7 +55,6 @@ export const RatingPromptModal: React.FC<RatingPromptModalProps> = ({
   React.useEffect(() => {
     let isMounted = true;
     if (booking) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFullBooking(booking); // Set immediately
 
       // If the booking is missing service details, fetch the full booking

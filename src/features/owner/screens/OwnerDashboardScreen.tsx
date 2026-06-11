@@ -103,7 +103,6 @@ export default function OwnerDashboardScreen() {
     if (selectedBooking && bookings) {
       const fresh = bookings.find((b: Booking) => b.id === selectedBooking.id);
       if (fresh) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedBooking(fresh);
       }
     }
@@ -448,8 +447,10 @@ export default function OwnerDashboardScreen() {
                       >
                         <Avatar
                           userId={biz.owner_user_id}
+                          url={biz.owner_image || biz.avatar_url}
                           name={biz.owner_name || biz.salon_name || 'Owner'}
                           size={40}
+                          type="business"
                         />
 
                         <View className="flex-1 ml-4">
@@ -619,7 +620,7 @@ export default function OwnerDashboardScreen() {
                           <Ionicons
                             name="calendar-clear-outline"
                             size={48}
-                            color={THEME.colors.textSecondary}
+                            color={THEME.colors.primary}
                           />
                         </View>
 

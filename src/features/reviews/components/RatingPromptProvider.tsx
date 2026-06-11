@@ -40,7 +40,6 @@ export const RatingPromptProvider: React.FC = () => {
   }, [session?.user?.id, dismissedBookingIds]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPendingRatings();
   }, [fetchPendingRatings]);
 

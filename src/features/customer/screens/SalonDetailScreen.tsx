@@ -51,6 +51,7 @@ export default function SalonDetailsScreen() {
   const { data: ownerImage } = useProfileMedia(business?.owner_user_id ?? null);
   useEffect(() => {
     if (!business?.id) return;
+    setImageError(false);
 
     const fetchExtraData = async () => {
       try {
@@ -235,8 +236,6 @@ export default function SalonDetailsScreen() {
       )
     : [];
 
-  // Ratings calculation based on API response
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const displayRatingAvg =
     business.rating_avg && Number(business.rating_avg) > 0
@@ -254,6 +253,9 @@ export default function SalonDetailsScreen() {
     0,
   );
 
+  const heroImageUri = ownerImage || business.owner_image || business.avatar_url;
+  const showHeroFallback =
+    !heroImageUri || heroImageUri === 'undefined' || heroImageUri === 'null' || imageError;
   return (
     <PremiumBackground>
       <ScrollView
@@ -263,19 +265,19 @@ export default function SalonDetailsScreen() {
       >
         {/* Hero Header */}
         <View className="h-96 w-full relative">
-          {ownerImage && !imageError ? (
-            <Image
-              className="w-full h-full"
-              source={{ uri: ownerImage }}
-              contentFit="cover"
-              transition={300}
-              cachePolicy="memory-disk"
-              onError={() => setImageError(true)}
-            />
-          ) : (
+          {showHeroFallback ? (
             <View className="w-full h-full items-center justify-center bg-card">
               <BusinessIcon width={120} height={120} color={THEME.colors.primary} />
             </View>
+          ) : (
+            <Image
+              source={{ uri: heroImageUri }}
+              style={{ width: '100%', height: '100%' }}
+              contentFit="cover"
+              transition={300}
+              onError={() => setImageError(true)}
+              className="rounded-xl"
+            />
           )}
           <View className="absolute inset-0 bg-black/30" />
 
@@ -367,6 +369,7 @@ export default function SalonDetailsScreen() {
                   <View className="flex-row items-center">
                     <Avatar
                       userId={business.owner_user_id}
+                      url={business.owner_image || business.avatar_url}
                       name={business.owner_name || 'Owner'}
                       size={42}
                       type="business"
@@ -480,11 +483,15 @@ export default function SalonDetailsScreen() {
             {/* 2 Column Grid */}
             <View className="flex-row flex-wrap justify-between">
               {photos.map((url, i) => (
-                <View
-                  key={i}
-                  className="flex-1 h-44 bg-card rounded-3xl  overflow-hidden shadow-sm mb-4"
-                >
-                  <Image source={{ uri: url }} className="w-full h-full" resizeMode="cover" />
+                <View key={i} className="w-[48%] h-44 bg-card rounded-3xl overflow-hidden mb-4">
+                  <Image
+                    source={url}
+                    style={{ width: '100%', height: '100%' }}
+                    contentFit="cover"
+                    transition={300}
+                    onError={(error) => console.log('Image error:', error)}
+                    onLoad={() => console.log('Loaded:', url)}
+                  />
                 </View>
               ))}
             </View>

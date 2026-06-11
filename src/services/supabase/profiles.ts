@@ -72,10 +72,23 @@ export async function getProfilePayload(): Promise<ProfileApiPayload> {
     };
   }
 
+  let profileImageUrl: string | null = null;
+  if (profile.profile_media_id) {
+    try {
+      const { url } = await resolveMediaPublicUrl(profile.profile_media_id);
+      profileImageUrl = url;
+    } catch (err: unknown) {
+      logger.warn(
+        LogTag.API,
+        `Failed to resolve media for profile payload: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
   const enrichedProfile: UserProfile = {
     ...profile,
     email: user.email,
-    media: null,
+    media: profileImageUrl ? { url: profileImageUrl, signed_url: profileImageUrl } : null,
   };
 
   return {
@@ -84,7 +97,7 @@ export async function getProfilePayload(): Promise<ProfileApiPayload> {
       id: user.id,
       email: user.email,
     },
-    profile_image_url: null,
+    profile_image_url: profileImageUrl,
   };
 }
 

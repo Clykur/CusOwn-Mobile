@@ -55,6 +55,7 @@ function BusinessCardBase({ item, index = 0, onPress }: BrowseSalonCardProps) {
           <View className="items-center justify-center mb-4">
             <Avatar
               userId={item.owner_user_id}
+              url={item.owner_image || item.avatar_url}
               name={item.salon_name}
               size={110}
               type="business"

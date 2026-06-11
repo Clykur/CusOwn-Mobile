@@ -80,7 +80,6 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
   ]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
     loadCategories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -169,8 +168,13 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
   const validateForm = () => {
     if (formData.salon_name.length < 2) return 'Business name must be at least 2 characters.';
     if (formData.owner_name.length < 2) return 'Owner name is required.';
-    if (formData.whatsapp_number.length < 10) return 'Valid 10-digit WhatsApp number is required.';
-    if (formData.address.length < 5) return 'Address is required.';
+    if (formData.whatsapp_number.length < 10)
+      return 'Valid 10-digit Mobile (WhatsApp) number is required.';
+
+    const activeServices = serviceRows.filter((s) => s.name.trim().length > 0);
+    if (activeServices.length === 0) return 'At least one service is required.';
+
+    if (formData.address.trim().length < 5) return 'Address is required (at least 5 characters).';
     if (!formData.city) return 'City is required.';
     if (!formData.location) return 'Location/Area is required.';
     if (formData.opening_time >= formData.closing_time)
@@ -275,7 +279,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       </Field>
 
       {/* WhatsApp */}
-      <Field label="WhatsApp Number *">
+      <Field label="Mobile (WhatsApp) Number *">
         <TextInput
           className={inputClass}
           placeholder="10-digit number"
@@ -395,7 +399,7 @@ export const CreateBusinessForm: React.FC<CreateBusinessFormProps> = ({
       {/* ── Services ── */}
       <View className="mb-2">
         <View className="flex-row justify-between items-center border-b border-border pb-2 mb-4">
-          <Text className="text-text text-sm font-black uppercase tracking-wider">Services</Text>
+          <Text className="text-text text-sm font-black uppercase tracking-wider">Services *</Text>
           <Pressable
             onPress={handleAddService}
             className="bg-primary/10 border border-primary/30 rounded-full px-4 py-1.5 active:bg-primary/20"

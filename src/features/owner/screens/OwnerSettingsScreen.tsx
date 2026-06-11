@@ -99,7 +99,6 @@ export default function OwnerProfileScreen() {
   });
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
     fetchProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -268,7 +267,7 @@ export default function OwnerProfileScreen() {
                     'User'
                   }
                   size={400}
-                  type="customer"
+                  type="business"
                   className="w-full h-full"
                 />
               )}

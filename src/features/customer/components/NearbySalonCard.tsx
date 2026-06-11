@@ -60,6 +60,7 @@ function NearbySalonCardBase({ item, index = 0, onPress }: NearbySalonCardProps)
             <View className="w-28 h-28 rounded-full overflow-hidden items-center justify-center">
               <Avatar
                 userId={item.owner_user_id}
+                url={item.owner_image || item.avatar_url}
                 name={item.salon_name}
                 size={100}
                 type="business"

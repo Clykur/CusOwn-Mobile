@@ -127,7 +127,7 @@ export default function RootLayout() {
     const isPublic = rootSegment === '(public)';
     const isAuth = rootSegment === '(auth)';
     const isRecovery = rootSegment === 'recovery';
-    const isSplash = isPublic && segments[0] === 'splash';
+    const isSplash = isPublic && (segments as string[])[1] === 'splash';
     const isCallback =
       rootSegment === 'google-callback' ||
       (isAuth && (segments as string[])[1] === 'google-callback');
