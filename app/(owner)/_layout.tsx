@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useOwnerStats } from '@/hooks/useOwner';
 import { responsiveFontSize, verticalScale } from '@/utils/responsive';
+import { useEditModeStore } from '@/store/editMode.store';
+import { useModal } from '@/hooks/useModal';
 
 export default function OwnerTabsLayout() {
   const { data: stats, isLoading } = useOwnerStats();
@@ -13,6 +15,9 @@ export default function OwnerTabsLayout() {
   const insets = useSafeAreaInsets();
 
   const businessCount = stats?.total_businesses ?? null;
+
+  const isEditing = useEditModeStore((s) => s.isEditing);
+  const { showModal } = useModal();
 
   React.useEffect(() => {
     // Only redirect if we explicitly know they have 0 businesses
@@ -38,7 +43,28 @@ export default function OwnerTabsLayout() {
 
   return (
     <Tabs
+      screenListeners={{
+        tabPress: (e) => {
+          if (isEditing) {
+            e.preventDefault();
+            showModal({
+              variant: 'warning',
+              title: 'Unsaved Changes',
+              description: 'You have unsaved changes. Please save or cancel before leaving.',
+              hideCancel: true,
+              actions: [
+                {
+                  label: 'OK',
+                  onPress: () => {},
+                  variant: 'primary',
+                },
+              ],
+            });
+          }
+        },
+      }}
       screenOptions={{
+        sceneStyle: { backgroundColor: '#000000' },
         headerShown: false,
         headerStyle: {
           backgroundColor: '#000000', // pure black

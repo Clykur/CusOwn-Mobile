@@ -34,12 +34,14 @@ import { useAuthStore } from '@/store/auth.store';
 import { THEME } from '@/theme/theme';
 
 import type { Booking } from '@/types/booking.types';
+import { useNotificationContext } from '@/providers/NotificationProvider';
 
 type StatusFilter = 'all' | 'pending' | 'confirmed' | 'rejected' | 'cancelled';
 
 export default function OwnerDashboardScreen() {
   const profile = useAuthStore((s) => s.profile);
   const user = useAuthStore((s) => s.user);
+  const { unreadCount } = useNotificationContext();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const profileImageUrl = useAuthStore((s) => s.profileImageUrl);
@@ -101,7 +103,6 @@ export default function OwnerDashboardScreen() {
     if (selectedBooking && bookings) {
       const fresh = bookings.find((b: Booking) => b.id === selectedBooking.id);
       if (fresh) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedBooking(fresh);
       }
     }
@@ -225,14 +226,30 @@ export default function OwnerDashboardScreen() {
               </Text>
               <Text className="text-text text-3xl font-black tracking-tight">Dashboard</Text>
             </View>
-            <Pressable onPress={() => router.push('/(owner)/settings')}>
-              <Avatar
-                userId={user?.id}
-                name={profile?.full_name || user?.user_metadata?.full_name || 'Owner'}
-                size={50}
-                type="business"
-              />
-            </Pressable>
+            <View className="flex-row items-center gap-4">
+              <Pressable
+                className="items-center justify-center relative p-2"
+                onPress={() => router.push('/notifications')}
+              >
+                <Ionicons name="notifications-outline" size={24} color={THEME.colors.text} />
+                {unreadCount > 0 && (
+                  <View className="absolute top-1 right-1.5 min-w-[16px] h-4 bg-primary rounded-full items-center justify-center px-1 border border-background">
+                    <Text className="text-[10px] font-bold text-white leading-none">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+
+              <Pressable onPress={() => router.push('/(owner)/settings')}>
+                <Avatar
+                  userId={user?.id}
+                  name={profile?.full_name || user?.user_metadata?.full_name || 'Owner'}
+                  size={50}
+                  type="business"
+                />
+              </Pressable>
+            </View>
           </AnimatedSection>
 
           {/* Search & Filters */}
@@ -430,8 +447,10 @@ export default function OwnerDashboardScreen() {
                       >
                         <Avatar
                           userId={biz.owner_user_id}
+                          url={biz.owner_image || biz.avatar_url}
                           name={biz.owner_name || biz.salon_name || 'Owner'}
                           size={40}
+                          type="business"
                         />
 
                         <View className="flex-1 ml-4">
@@ -601,7 +620,7 @@ export default function OwnerDashboardScreen() {
                           <Ionicons
                             name="calendar-clear-outline"
                             size={48}
-                            color={THEME.colors.textSecondary}
+                            color={THEME.colors.primary}
                           />
                         </View>
 

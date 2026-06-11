@@ -44,7 +44,6 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   const isPast = React.useMemo(() => {
     if (!item.date || !item.time) return false;
     const slotDateTime = new Date(`${item.date}T${item.time}`);
-    // eslint-disable-next-line react-hooks/purity
     return slotDateTime.getTime() < Date.now();
   }, [item.date, item.time]);
 
@@ -60,10 +59,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
     const windowMs = (CONFIG.UNDO_WINDOW_MINUTES || 15) * 60 * 1000;
 
-    // eslint-disable-next-line react-hooks/purity
     const updatedAt = new Date(item.updated_at || item.created_at || Date.now()).getTime();
 
-    // eslint-disable-next-line react-hooks/purity
     return !isNaN(updatedAt) && Date.now() - updatedAt < windowMs;
   }, [isPast, item.status, item.updated_at, item.created_at, item.undo_used_at]);
 
@@ -78,7 +75,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           }
         }}
       >
-        <GlassCard className="p-1 border-border rounded-luxury">
+        <GlassCard className="p-1">
           {/* Header */}
           <View className="flex-row justify-between items-start mb-2">
             <View className="flex-row items-center flex-1 gap-x-3">
@@ -153,7 +150,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
               )}
 
               {/* Confirmed */}
-              {item.status === 'confirmed' && onUndoAccept && canUndo && !isPast && (
+              {item.status === 'confirmed' && (
                 <View className="flex-row gap-x-2">
                   {onNoShow && !item.no_show && !isPast && (
                     <Pressable
@@ -168,12 +165,18 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                     </Pressable>
                   )}
 
-                  <Pressable
-                    onPress={() => onUndoAccept(item.id)}
-                    className="w-8 h-8 rounded-full bg-input items-center justify-center border border-border"
-                  >
-                    <Ionicons name="refresh-outline" size={16} color={THEME.colors.textSecondary} />
-                  </Pressable>
+                  {onUndoAccept && canUndo && (
+                    <Pressable
+                      onPress={() => onUndoAccept(item.id)}
+                      className="w-8 h-8 rounded-full bg-input items-center justify-center border border-border"
+                    >
+                      <Ionicons
+                        name="refresh-outline"
+                        size={16}
+                        color={THEME.colors.textSecondary}
+                      />
+                    </Pressable>
+                  )}
                 </View>
               )}
 

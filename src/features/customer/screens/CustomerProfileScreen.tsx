@@ -11,6 +11,7 @@ import {
   Platform,
   Switch,
   Image,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,6 +26,7 @@ import { useProfileMedia } from '@/hooks/useProfileMedia';
 import { apiService } from '@/services/api.service';
 import { useAuthStore } from '@/store/auth.store';
 import { THEME } from '@/theme/theme';
+import { useEditModeStore } from '@/store/editMode.store';
 
 export default function CustomerProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -42,9 +44,35 @@ export default function CustomerProfileScreen() {
 
   const [updating, setUpdating] = useState(false);
 
-  const [editMode, setEditMode] = useState(false);
+  const editMode = useEditModeStore((s) => s.isEditing);
+  const setEditMode = useEditModeStore((s) => s.setIsEditing);
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      if (editMode) {
+        showModal({
+          variant: 'warning',
+          title: 'Unsaved Changes',
+          description: 'You have unsaved changes. Please save or cancel before leaving.',
+          hideCancel: true,
+          actions: [
+            {
+              label: 'OK',
+              onPress: () => {},
+              variant: 'primary',
+            },
+          ],
+        });
+        return true;
+      }
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [editMode, showModal]);
 
   const [profileData, setProfileData] = useState<{
     profile?: {
@@ -76,7 +104,6 @@ export default function CustomerProfileScreen() {
   });
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
     fetchProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -219,7 +246,9 @@ export default function CustomerProfileScreen() {
       </PremiumBackground>
     );
   }
-
+  console.log('mediaUrl:', mediaUrl);
+  console.log('profileImageUrl:', profileImageUrl);
+  console.log('finalUrl:', mediaUrl || profileImageUrl);
   return (
     <PremiumBackground>
       <SafeAreaView className="flex-1" edges={['left', 'right']}>

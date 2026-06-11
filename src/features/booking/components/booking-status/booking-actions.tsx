@@ -69,8 +69,7 @@ function BookingActionsComponent({
   })();
 
   const msUntilAppointment = appointmentDateTime
-    ? // eslint-disable-next-line react-hooks/purity
-      appointmentDateTime.getTime() - Date.now()
+    ? appointmentDateTime.getTime() - Date.now()
     : Number.POSITIVE_INFINITY;
 
   const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;

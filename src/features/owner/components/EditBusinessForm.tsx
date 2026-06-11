@@ -62,7 +62,6 @@ export const EditBusinessForm: React.FC<EditBusinessFormProps> = ({
   });
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
     loadCategories();
   }, []);
 

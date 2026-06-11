@@ -18,6 +18,7 @@ import {
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import Calendar from 'react-native-calendars/src/calendar';
 import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
@@ -39,7 +40,9 @@ export default function ManageHubScreen() {
   const { showModal } = useModal();
 
   // QR Code State
-
+  const [showHolidayCalendar, setShowHolidayCalendar] = useState(false);
+  const [showStartCalendar, setShowStartCalendar] = useState(false);
+  const [showEndCalendar, setShowEndCalendar] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [qrCode, setQrCode] = useState<string>('');
 
@@ -91,7 +94,6 @@ export default function ManageHubScreen() {
 
   const qrRef = useRef<{ toDataURL: (callback: (data: string) => void) => void } | null>(null);
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
     fetchBusiness();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -100,16 +102,12 @@ export default function ManageHubScreen() {
     if (!business) return;
 
     if (activeTab === 'overview') {
-      // eslint-disable-next-line react-hooks/immutability
       fetchQR();
     } else if (activeTab === 'photos') {
-      // eslint-disable-next-line react-hooks/immutability
       fetchPhotos();
     } else if (activeTab === 'schedule') {
-      // eslint-disable-next-line react-hooks/immutability
       fetchDowntime();
     } else if (activeTab === 'reviews') {
-      // eslint-disable-next-line react-hooks/immutability
       fetchReviews();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -237,6 +235,7 @@ export default function ManageHubScreen() {
         uri: asset.uri,
         name: filename,
         type,
+        fileSize: asset.fileSize,
       });
 
       showModal({
@@ -871,23 +870,22 @@ export default function ManageHubScreen() {
                       </Text>
                     </View>
                   ) : (
-                    <View className="flex-row flex-wrap gap-4 justify-between">
+                    <View className="flex-row flex-wrap -mx-2">
                       {photos.map((item) => (
-                        <View
-                          key={item.id}
-                          className="flex-1 aspect-square bg-input rounded-2xl border border-border overflow-hidden relative mb-2"
-                        >
-                          <Image
-                            source={{ uri: item.url }}
-                            className="w-full h-full"
-                            resizeMode="cover"
-                          />
-                          <Pressable
-                            onPress={() => handleDeletePhoto(item.id)}
-                            className="absolute top-2 right-2 items-center justify-center shadow active:opacity-80"
-                          >
-                            <Ionicons name="trash-outline" size={24} color={THEME.colors.error} />
-                          </Pressable>
+                        <View key={item.id} className="w-1/2 p-2">
+                          <View className="w-full aspect-square bg-input rounded-2xl border border-border overflow-hidden relative">
+                            <Image
+                              source={{ uri: item.url }}
+                              className="w-full h-full"
+                              resizeMode="cover"
+                            />
+                            <Pressable
+                              onPress={() => handleDeletePhoto(item.id)}
+                              className="absolute top-2 right-2 items-center justify-center shadow active:opacity-80"
+                            >
+                              <Ionicons name="trash-outline" size={24} color={THEME.colors.error} />
+                            </Pressable>
+                          </View>
                         </View>
                       ))}
                     </View>
@@ -910,35 +908,79 @@ export default function ManageHubScreen() {
                     <Text className="text-xs text-textSecondary font-black uppercase tracking-0.5 mb-3">
                       Schedule a Holiday
                     </Text>
-                    <View className="space-y-3">
-                      <TextInput
-                        className="bg-card border border-border rounded-xl px-4 py-3.5 text-text text-xs font-semibold mb-2"
-                        placeholder="Date (YYYY-MM-DD)"
-                        placeholderTextColor={THEME.colors.textSecondary}
-                        value={holidayDate}
-                        onChangeText={setHolidayDate}
-                      />
-                      <TextInput
-                        className="bg-card border border-border rounded-xl px-4 py-3.5 text-text text-xs font-semibold mb-4"
-                        placeholder="Holiday Name (e.g. Diwali)"
-                        placeholderTextColor={THEME.colors.textSecondary}
-                        value={holidayName}
-                        onChangeText={setHolidayName}
-                      />
-                      <Pressable
-                        onPress={handleAddHoliday}
-                        disabled={submittingHoliday}
-                        className="bg-primary py-3.5 rounded-full items-center active:opacity-80"
+                    <Pressable
+                      onPress={() => setShowHolidayCalendar(!showHolidayCalendar)}
+                      className="bg-card border border-border rounded-xl px-4 py-3.5 mb-2 flex-row items-center justify-between"
+                    >
+                      <Text
+                        className={
+                          holidayDate
+                            ? 'text-text text-xs font-semibold'
+                            : 'text-textSecondary text-xs font-semibold'
+                        }
                       >
-                        {submittingHoliday ? (
-                          <ActivityIndicator color="white" />
-                        ) : (
-                          <Text className="text-background font-black text-xs uppercase tracking-wider">
-                            Add Holiday
-                          </Text>
-                        )}
-                      </Pressable>
-                    </View>
+                        {holidayDate || 'Select Date'}
+                      </Text>
+
+                      <Ionicons
+                        name="calendar-outline"
+                        size={18}
+                        color={THEME.colors.textSecondary}
+                      />
+                    </Pressable>
+                    {/* Name Field (Visible when date is selected) */}
+                    {holidayDate && (
+                      <View className="mb-3">
+                        <TextInput
+                          className="bg-card border border-border rounded-xl px-4 py-3.5 text-text text-xs font-semibold"
+                          placeholder="Holiday Name (e.g., Diwali)"
+                          placeholderTextColor={THEME.colors.textSecondary}
+                          value={holidayName}
+                          onChangeText={setHolidayName}
+                        />
+                      </View>
+                    )}
+                    <Pressable
+                      onPress={handleAddHoliday}
+                      disabled={submittingHoliday}
+                      className="bg-primary py-3.5 rounded-full items-center"
+                    >
+                      <Text className="text-background font-black text-xs uppercase tracking-wider">
+                        {submittingHoliday ? 'Adding...' : 'Add Holiday'}
+                      </Text>
+                    </Pressable>
+                    {showHolidayCalendar && (
+                      <View className="mb-3 rounded-2xl overflow-hidden bg-card">
+                        <Calendar
+                          current={holidayDate || new Date().toISOString().split('T')[0]}
+                          minDate={new Date().toISOString().split('T')[0]}
+                          onDayPress={(day) => {
+                            setHolidayDate(day.dateString);
+                            setShowHolidayCalendar(false);
+                          }}
+                          markedDates={{
+                            [holidayDate]: {
+                              selected: true,
+                              selectedColor: THEME.colors.primary,
+                            },
+                          }}
+                          theme={{
+                            backgroundColor: THEME.colors.card,
+                            calendarBackground: THEME.colors.card,
+                            textSectionTitleColor: THEME.colors.textSecondary,
+                            selectedDayBackgroundColor: THEME.colors.primary,
+                            selectedDayTextColor: THEME.colors.background,
+                            todayTextColor: THEME.colors.primary,
+                            dayTextColor: THEME.colors.text,
+                            monthTextColor: THEME.colors.text,
+                            arrowColor: THEME.colors.text,
+                            textDisabledColor: THEME.colors.border,
+                            textDayFontWeight: '700',
+                            textMonthFontWeight: '900',
+                          }}
+                        />
+                      </View>
+                    )}
                   </View>
 
                   {/* Holiday List */}
@@ -988,20 +1030,118 @@ export default function ManageHubScreen() {
                       Add Specific Closure
                     </Text>
                     <View className="space-y-3">
-                      <TextInput
-                        className="bg-card border border-border rounded-xl px-4 py-3.5 text-text text-xs font-semibold mb-2"
-                        placeholder="Start Date (YYYY-MM-DD)"
-                        placeholderTextColor={THEME.colors.textSecondary}
-                        value={closureStart}
-                        onChangeText={setClosureStart}
-                      />
-                      <TextInput
-                        className="bg-card border border-border rounded-xl px-4 py-3.5 text-text text-xs font-semibold mb-2"
-                        placeholder="End Date (YYYY-MM-DD)"
-                        placeholderTextColor={THEME.colors.textSecondary}
-                        value={closureEnd}
-                        onChangeText={setClosureEnd}
-                      />
+                      {/* Start Date */}
+                      <Pressable
+                        onPress={() => setShowStartCalendar(!showStartCalendar)}
+                        className="bg-card border border-border rounded-xl px-4 py-3.5 mb-2 flex-row items-center justify-between"
+                      >
+                        <Text
+                          className={
+                            closureStart
+                              ? 'text-text text-xs font-semibold'
+                              : 'text-textSecondary text-xs font-semibold'
+                          }
+                        >
+                          {closureStart || 'Select Start Date'}
+                        </Text>
+
+                        <Ionicons
+                          name="calendar-outline"
+                          size={18}
+                          color={THEME.colors.textSecondary}
+                        />
+                      </Pressable>
+
+                      {showStartCalendar && (
+                        <View className="mb-3 rounded-2xl overflow-hidden bg-card">
+                          <Calendar
+                            current={closureStart || new Date().toISOString().split('T')[0]}
+                            minDate={new Date().toISOString().split('T')[0]}
+                            onDayPress={(day) => {
+                              setClosureStart(day.dateString);
+                              setShowStartCalendar(false);
+
+                              // Reset end date if it is before the new start date
+                              if (closureEnd && closureEnd < day.dateString) {
+                                setClosureEnd('');
+                              }
+                            }}
+                            markedDates={{
+                              [closureStart]: {
+                                selected: true,
+                                selectedColor: THEME.colors.primary,
+                              },
+                            }}
+                            theme={{
+                              backgroundColor: THEME.colors.card,
+                              calendarBackground: THEME.colors.card,
+                              selectedDayBackgroundColor: THEME.colors.primary,
+                              selectedDayTextColor: THEME.colors.background,
+                              todayTextColor: THEME.colors.primary,
+                              dayTextColor: THEME.colors.text,
+                              monthTextColor: THEME.colors.text,
+                              arrowColor: THEME.colors.text,
+                              textDisabledColor: THEME.colors.border,
+                            }}
+                          />
+                        </View>
+                      )}
+
+                      {/* End Date */}
+                      <Pressable
+                        onPress={() => setShowEndCalendar(!showEndCalendar)}
+                        className="bg-card border border-border rounded-xl px-4 py-3.5 mb-2 flex-row items-center justify-between"
+                      >
+                        <Text
+                          className={
+                            closureEnd
+                              ? 'text-text text-xs font-semibold'
+                              : 'text-textSecondary text-xs font-semibold'
+                          }
+                        >
+                          {closureEnd || 'Select End Date'}
+                        </Text>
+
+                        <Ionicons
+                          name="calendar-outline"
+                          size={18}
+                          color={THEME.colors.textSecondary}
+                        />
+                      </Pressable>
+
+                      {showEndCalendar && (
+                        <View className="mb-3 rounded-2xl overflow-hidden bg-card">
+                          <Calendar
+                            current={
+                              closureEnd || closureStart || new Date().toISOString().split('T')[0]
+                            }
+                            minDate={closureStart || new Date().toISOString().split('T')[0]}
+                            onDayPress={(day) => {
+                              setClosureEnd(day.dateString);
+                              setShowEndCalendar(false);
+                            }}
+                            markedDates={{
+                              [closureEnd]: {
+                                selected: true,
+                                selectedColor: THEME.colors.primary,
+                              },
+                            }}
+                            theme={{
+                              backgroundColor: THEME.colors.card,
+                              calendarBackground: THEME.colors.card,
+                              selectedDayBackgroundColor: THEME.colors.primary,
+                              selectedDayTextColor: THEME.colors.background,
+                              todayTextColor: THEME.colors.primary,
+                              dayTextColor: THEME.colors.text,
+                              monthTextColor: THEME.colors.text,
+                              arrowColor: THEME.colors.text,
+                              textDisabledColor: THEME.colors.border,
+                            }}
+                          />
+                        </View>
+                      )}
+
+                      {/* Reason */}
                       <TextInput
                         className="bg-card border border-border rounded-xl px-4 py-3.5 text-text text-xs font-semibold mb-4"
                         placeholder="Reason (e.g. Renovation)"
@@ -1009,6 +1149,7 @@ export default function ManageHubScreen() {
                         value={closureReason}
                         onChangeText={setClosureReason}
                       />
+
                       <Pressable
                         onPress={handleAddClosure}
                         disabled={submittingClosure}
@@ -1023,42 +1164,40 @@ export default function ManageHubScreen() {
                         )}
                       </Pressable>
                     </View>
-                  </View>
 
-                  {/* Closures List */}
-                  {loadingDowntime ? (
-                    <ActivityIndicator color={THEME.colors.textSecondary} />
-                  ) : closures.length === 0 ? (
-                    <Text className="text-textSecondary text-xs text-center font-semibold py-4">
-                      No custom closures scheduled.
-                    </Text>
-                  ) : (
-                    <View className="space-y-2">
-                      {closures.map((item) => (
-                        <View
-                          key={item.id}
-                          className="bg-input border border-border rounded-xl p-3 flex-row items-center justify-between mb-2"
-                        >
-                          <View className="flex-1 mr-4">
-                            <Text className="text-text font-extrabold text-xs">{item.reason}</Text>
-                            <Text className="text-textSecondary text-xs font-semibold mt-0.5">
-                              {item.start_date} to {item.end_date}
-                            </Text>
-                          </View>
-                          <Pressable
-                            onPress={() => handleDeleteClosure(item.id)}
-                            className="bg-card border border-border p-2 rounded-full active:bg-input"
+                    {/* Closures List */}
+                    {loadingDowntime ? (
+                      <ActivityIndicator color={THEME.colors.textSecondary} />
+                    ) : closures.length === 0 ? (
+                      <Text className="text-textSecondary text-xs text-center font-semibold py-4">
+                        No custom closures scheduled.
+                      </Text>
+                    ) : (
+                      <View className="space-y-4 mt-4">
+                        {closures.map((item) => (
+                          <View
+                            key={item.id}
+                            className="bg-input border border-border rounded-xl p-3 flex-row items-center justify-between mb-2"
                           >
-                            <Ionicons
-                              name="trash-outline"
-                              size={14}
-                              color={THEME.colors.background}
-                            />
-                          </Pressable>
-                        </View>
-                      ))}
-                    </View>
-                  )}
+                            <View className="flex-1 mr-4">
+                              <Text className="text-text font-extrabold text-xs">
+                                {item.reason}
+                              </Text>
+                              <Text className="text-textSecondary text-xs font-semibold mt-0.5">
+                                {item.start_date} to {item.end_date}
+                              </Text>
+                            </View>
+                            <Pressable
+                              onPress={() => handleDeleteClosure(item.id)}
+                              className="p-2 rounded-full active:bg-input"
+                            >
+                              <Ionicons name="trash-outline" size={14} color={THEME.colors.error} />
+                            </Pressable>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
                 </GlassCard>
               </AnimatedSection>
             )}

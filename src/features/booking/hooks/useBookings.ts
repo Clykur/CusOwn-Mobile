@@ -161,14 +161,22 @@ export const useRejectBooking = () => {
 
 export const useMarkNoShow = () => {
   return useMutation({
-    mutationFn: (id: string) => apiService.markNoShow(id),
+    mutationFn: async (id: string) => {
+      console.log('[NO_SHOW] mutationFn start:', id);
+      const result = await apiService.markNoShow(id);
+      console.log('[NO_SHOW] mutationFn result:', result);
+      return result;
+    },
     onSuccess: (_, id) => {
+      console.log('[NO_SHOW] onSuccess:', id);
+
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(id) });
-      queryClient.invalidateQueries({
-        queryKey: ['owner', 'dashboard'],
-      });
+      queryClient.invalidateQueries({ queryKey: ['owner', 'dashboard'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.slots.all() });
+    },
+    onError: (error, id) => {
+      console.error('[NO_SHOW] onError:', id, error);
     },
   });
 };

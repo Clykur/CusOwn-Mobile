@@ -21,11 +21,12 @@ const BrowseCardBase = ({ item, index = 0 }: Props) => {
   return (
     <AnimatedSection delay={index * 50} direction="up" className="mb-4">
       <Pressable onPress={() => router.push(`/(customer)/browse/salons/${item.id}`)}>
-        <View className="flex-row items-center bg-card rounded-full p-4">
+        <View className="flex-row items-center bg-card card-border-treatment p-4">
           {/* Business Image */}
           <View className="mr-4">
             <Avatar
               userId={item.owner_user_id}
+              url={item.owner_image || item.avatar_url}
               name={item.salon_name}
               size={76}
               type="business"

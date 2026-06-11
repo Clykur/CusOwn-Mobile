@@ -12,7 +12,13 @@ interface UpcomingBookingCardProps {
   booking?: {
     id?: string;
     status?: string;
-    business?: { salon_name?: string; address?: string; owner_user_id?: string };
+    business?: {
+      salon_name?: string;
+      address?: string;
+      owner_user_id?: string;
+      owner_image?: string;
+      avatar_url?: string | null;
+    };
     service?: { name?: string; service_name?: string };
     services?: { name?: string; service_name?: string }[];
     date?: string;
@@ -26,6 +32,8 @@ interface UpcomingBookingCardProps {
     address?: string;
     rating_avg?: number;
     owner_user_id?: string;
+    owner_image?: string;
+    avatar_url?: string | null;
     [key: string]: unknown;
   }; // Fallback to last visited salon
 }
@@ -41,12 +49,13 @@ function UpcomingBookingCardBase({ booking, lastVisited }: UpcomingBookingCardPr
         </Text>
       </View>
 
-      <GlassCard className="p-4 bg-card shadow-sm rounded-full">
+      <GlassCard className="p-4 bg-card shadow-sm">
         {booking ? (
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
               <Avatar
                 userId={booking.business?.owner_user_id}
+                url={booking.business?.owner_image || booking.business?.avatar_url}
                 name={booking.business?.salon_name || 'Salon'}
                 size={60}
                 type="business"
@@ -86,6 +95,7 @@ function UpcomingBookingCardBase({ booking, lastVisited }: UpcomingBookingCardPr
             <View className="flex-row items-center flex-1">
               <Avatar
                 userId={lastVisited?.owner_user_id}
+                url={lastVisited?.owner_image || lastVisited?.avatar_url}
                 name={lastVisited?.salon_name || 'Salon'}
                 size={60}
                 type="business"

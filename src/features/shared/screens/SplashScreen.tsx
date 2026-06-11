@@ -1,87 +1,116 @@
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withDelay,
   Easing,
-  runOnJS,
-  withSequence,
-  withRepeat,
   interpolate,
 } from 'react-native-reanimated';
 
 import type { Session } from '@supabase/supabase-js';
-import { AnimatedSection } from '@/components/animations/AnimatedSection';
 import { PremiumBackground } from '@/components/ui/PremiumBackground';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useOnboardingStore } from '@/store/onboarding.store';
+import { THEME } from '@/theme/theme';
 
-const PHRASES = [
-  'Book Instantly',
-  'Manage Effortlessly',
-  'Grow Your Business',
-  'Luxury Meets Technology',
-];
+const SPLASH_DURATION = 4500;
+const FADE_OUT_DURATION = 500;
 
 export default function Splash() {
   const setSession = useAuthStore((s) => s.setSession);
   const { selectedRole, setSplashShown } = useOnboardingStore();
-  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+
+  const [loadPercent, setLoadPercent] = useState(0);
+
+  const containerOpacity = useSharedValue(0);
+  const containerScale = useSharedValue(0.95);
 
   const logoOpacity = useSharedValue(0);
-  const logoScale = useSharedValue(0.8);
-  const taglineOpacity = useSharedValue(0);
-  const phraseOpacity = useSharedValue(0);
-  const phraseTranslateY = useSharedValue(10);
+  const logoScale = useSharedValue(0.85);
+
+  const subtitleOpacity = useSharedValue(0);
+
+  const containerStyle = useAnimatedStyle(() => ({
+    opacity: containerOpacity.value,
+    transform: [{ scale: containerScale.value }],
+  }));
 
   const logoStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
     transform: [{ scale: logoScale.value }],
   }));
 
-  const taglineStyle = useAnimatedStyle(() => ({
-    opacity: taglineOpacity.value,
-    transform: [{ translateY: interpolate(taglineOpacity.value, [0, 1], [20, 0]) }],
-  }));
-
-  const phraseStyle = useAnimatedStyle(() => ({
-    opacity: phraseOpacity.value,
-    transform: [{ translateY: phraseTranslateY.value }],
+  const subtitleStyle = useAnimatedStyle(() => ({
+    opacity: subtitleOpacity.value,
+    transform: [
+      {
+        translateY: interpolate(subtitleOpacity.value, [0, 1], [16, 0]),
+      },
+    ],
   }));
 
   useEffect(() => {
-    let timeout1: NodeJS.Timeout;
-    let timeout2: NodeJS.Timeout;
+    let percentInterval: NodeJS.Timeout;
+    let navigateTimeout: NodeJS.Timeout;
 
     const initialize = async () => {
       try {
         const {
           data: { session },
         } = await authService.getSession();
+
         await setSession(session);
 
-        // eslint-disable-next-line react-hooks/immutability
-        logoOpacity.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.quad) });
-        // eslint-disable-next-line react-hooks/immutability
-        logoScale.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.back(1.5)) });
+        containerOpacity.value = withTiming(1, {
+          duration: 700,
+          easing: Easing.out(Easing.quad),
+        });
 
-        // eslint-disable-next-line react-hooks/immutability
-        taglineOpacity.value = withDelay(800, withTiming(1, { duration: 1000 }));
+        containerScale.value = withTiming(1, {
+          duration: 700,
+          easing: Easing.out(Easing.exp),
+        });
 
-        timeout1 = setTimeout(() => {
-          // eslint-disable-next-line react-hooks/immutability
-          startPhraseRotation();
-        }, 1500);
+        logoOpacity.value = withTiming(1, {
+          duration: 1000,
+        });
 
-        timeout2 = setTimeout(() => {
-          setSplashShown(true);
-          // eslint-disable-next-line react-hooks/immutability
-          handleNavigation(session);
-        }, 4500);
+        logoScale.value = withTiming(1, {
+          duration: 1000,
+          easing: Easing.out(Easing.back(1.4)),
+        });
+
+        subtitleOpacity.value = withTiming(1, {
+          duration: 900,
+        });
+
+        const start = Date.now();
+
+        percentInterval = setInterval(() => {
+          const elapsed = Date.now() - start;
+          const progress = Math.min(100, Math.floor((elapsed / SPLASH_DURATION) * 100));
+          setLoadPercent(progress);
+        }, 30);
+
+        navigateTimeout = setTimeout(() => {
+          clearInterval(percentInterval);
+
+          containerOpacity.value = withTiming(0, {
+            duration: FADE_OUT_DURATION,
+          });
+
+          containerScale.value = withTiming(1.05, {
+            duration: FADE_OUT_DURATION,
+          });
+
+          setTimeout(() => {
+            setSplashShown(true);
+            handleNavigation(session);
+          }, FADE_OUT_DURATION);
+        }, SPLASH_DURATION);
       } catch (error) {
         console.error('Initialization error:', error);
         router.replace('/(public)/welcome');
@@ -91,40 +120,12 @@ export default function Splash() {
     initialize();
 
     return () => {
-      clearTimeout(timeout1);
-      clearTimeout(timeout2);
+      clearInterval(percentInterval);
+      clearTimeout(navigateTimeout);
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const startPhraseRotation = () => {
-    // eslint-disable-next-line react-hooks/immutability
-    phraseOpacity.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 600 }),
-        withDelay(800, withTiming(0, { duration: 600 })),
-      ),
-      -1,
-      false,
-      () => {
-        runOnJS(nextPhrase)();
-      },
-    );
-    // eslint-disable-next-line react-hooks/immutability
-    phraseTranslateY.value = withRepeat(
-      withSequence(
-        withTiming(0, { duration: 600 }),
-        withDelay(800, withTiming(-10, { duration: 600 })),
-      ),
-      -1,
-    );
-  };
-
-  const nextPhrase = () => {
-    setCurrentPhraseIndex((prev) => (prev + 1) % PHRASES.length);
-    // eslint-disable-next-line react-hooks/immutability
-    phraseTranslateY.value = 10;
-  };
 
   const handleNavigation = (session: Session | null) => {
     if (session) {
@@ -137,44 +138,53 @@ export default function Splash() {
 
   return (
     <PremiumBackground>
-      <View className="flex-1 items-center justify-center px-luxury">
-        <Animated.View style={logoStyle} className="shadow-lg shadow-secondary/50">
-          <View className="w-28 h-28 bg-accent-premium rounded-3xl items-center justify-center rotate-12">
-            <Text className="text-black text-5xl font-bold italic -rotate-12">C</Text>
-          </View>
-        </Animated.View>
+      {/* Soft radial glow */}
+      <View
+        className="absolute w-80 h-80 rounded-full self-center top-1/3"
+        style={{
+          backgroundColor: 'rgba(212,175,55,0.08)',
+        }}
+      />
 
-        <Animated.View style={logoStyle} className="mt-8">
-          <Text className="text-text text-5xl font-bold tracking-tighter">
-            Cus<Text className="text-accent-premium">Own</Text>
+      <Animated.View style={containerStyle} className="flex-1 items-center justify-center px-8">
+        {/* Logo */}
+        <Animated.View style={logoStyle}>
+          <Text className="text-text text-6xl font-black tracking-tight">
+            Cus
+            <Text className="text-accent-premium">Own</Text>
           </Text>
         </Animated.View>
 
-        <Animated.View style={taglineStyle} className="mt-4">
-          <Text className="text-textLight text-lg font-medium tracking-1 uppercase text-center">
+        {/* Subtitle */}
+        <Animated.View style={subtitleStyle} className="mt-5">
+          <Text className="text-textLight text-sm tracking-[4px] uppercase">
             Elevated Experiences
           </Text>
         </Animated.View>
 
-        <View className="h-16 mt-12 items-center justify-center">
-          <Animated.Text
-            style={phraseStyle}
-            className="text-accent-premium text-xl font-semibold italic text-center"
-          >
-            {PHRASES[currentPhraseIndex]}
-          </Animated.Text>
+        {/* Loader */}
+        <View className="mt-14 items-center justify-center">
+          <ActivityIndicator
+            size="large"
+            color={THEME.colors.accentPremium || THEME.colors.primary}
+          />
         </View>
-      </View>
+      </Animated.View>
 
-      <AnimatedSection
-        direction="up"
-        delay={2000}
-        className="absolute bottom-16 w-full items-center"
-      >
-        <Text className="text-textSecondary/50 text-xs tracking-2 uppercase">
+      {/* Footer Branding */}
+      <View className="absolute bottom-16 left-0 right-0 items-center">
+        <Text className="text-textSecondary/60 text-xs tracking-[3px] uppercase">
           Powered by Gold Protocol
         </Text>
-      </AnimatedSection>
+      </View>
+
+      {/* Loading Percentage */}
+      <View className="absolute bottom-8 right-8">
+        <Text className="font-mono text-sm">
+          <Text className="text-accent-premium font-bold">{loadPercent}</Text>
+          <Text className="text-textSecondary">%</Text>
+        </Text>
+      </View>
     </PremiumBackground>
   );
 }

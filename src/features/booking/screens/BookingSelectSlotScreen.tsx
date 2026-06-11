@@ -40,7 +40,6 @@ export default function SelectSlotScreen() {
   // Animated value for the shop-closed banner slide-in
   {
   }
-  // eslint-disable-next-line react-hooks/refs
   const bannerAnim = React.useRef(new Animated.Value(0)).current;
 
   const { data: slots, isLoading, isError } = useSlots(selectedBusiness?.id ?? null, selectedDate);
@@ -73,7 +72,6 @@ export default function SelectSlotScreen() {
   useEffect(() => {
     if (isShopClosed && selectedDate === clock.todayStr) {
       const tomorrow = dayjs(clock.todayStr).add(1, 'day').format('YYYY-MM-DD');
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedDate(tomorrow);
     }
   }, [isShopClosed, selectedDate, clock.todayStr]);
@@ -82,7 +80,6 @@ export default function SelectSlotScreen() {
   useEffect(() => {
     // When the date rolls over (todayStr changes), if the user was still on the
     // previous "today" we advance them to the new today and invalidate slots.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDate((prev) => {
       const prevDay = dayjs(prev);
       const newToday = dayjs(clock.todayStr);
@@ -103,7 +100,6 @@ export default function SelectSlotScreen() {
       businessHours.closing_time ?? null,
       /* selectedBusiness?.timezone */
     );
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDate((prev) => {
       // Only move forward, never backward
       return dayjs(correct).isAfter(dayjs(prev), 'day') ? correct : prev;
@@ -312,7 +308,6 @@ export default function SelectSlotScreen() {
       </View>
 
       {/* Shop closed banner */}
-      {/* eslint-disable-next-line react-hooks/refs */}
       {renderClosedBanner()}
 
       {/* Step indicator */}

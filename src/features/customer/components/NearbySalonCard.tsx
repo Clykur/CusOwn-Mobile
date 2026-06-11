@@ -28,7 +28,7 @@ function NearbySalonCardBase({ item, index = 0, onPress }: NearbySalonCardProps)
   return (
     <AnimatedSection delay={index * 100} direction="right" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-56 h-64 p-2 bg-card shadow-sm rounded-full relative">
+        <GlassCard className="w-56 h-64 p-2 bg-card shadow-sm relative">
           {/* Top Right Status */}
           <View className="absolute top-1 right-4 flex-row items-center z-10">
             {/* Pulse Circle */}
@@ -60,6 +60,7 @@ function NearbySalonCardBase({ item, index = 0, onPress }: NearbySalonCardProps)
             <View className="w-28 h-28 rounded-full overflow-hidden items-center justify-center">
               <Avatar
                 userId={item.owner_user_id}
+                url={item.owner_image || item.avatar_url}
                 name={item.salon_name}
                 size={100}
                 type="business"

@@ -3,41 +3,36 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, { useEffect } from 'react';
-import { Platform, View, ActivityIndicator } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import React, { useEffect, useRef } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { ModalProvider } from '@/providers/ModalProvider';
+import { NotificationProvider } from '@/providers/NotificationProvider';
 import { useAuthStore } from '@/store/auth.store';
 import { useOnboardingStore } from '@/store/onboarding.store';
 import { logger, LogTag } from '@/utils/logger';
+import { NotificationService } from '@/services/notification.service';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import type { NotificationPayload } from '@/types/notification.types';
+import { getRouteForNotification } from '@/constants/notification-routes';
+import { NotificationAnalyticsService } from '@/services/notificationAnalytics.service';
 
-// Keep the splash screen visible while we fetch resources
-SplashScreen.preventAutoHideAsync();
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let Notifications: any = null;
+// Keep the splash screen visible while we fetch resources, but ignore errors if it's disabled natively
+try {
+  SplashScreen.preventAutoHideAsync().catch(() => {
+    // Ignore missing splash screen error
+  });
+} catch {
+  // Ignore synchronous errors
+}
 
 const isExpoGo = Constants?.executionEnvironment === 'storeClient';
 
 if (!isExpoGo) {
-  try {
-    import('expo-notifications').then((mod) => {
-      Notifications = mod;
-      Notifications?.setNotificationHandler?.({
-        handleNotification: async () => ({
-          shouldShowAlert: true,
-          shouldPlaySound: true,
-          shouldSetBadge: false,
-          shouldShowBanner: true,
-          shouldShowList: true,
-        }),
-      });
-    });
-  } catch {
-    Notifications = null;
-  }
+  NotificationService.initializeNotifications();
 }
 
 export default function RootLayout() {
@@ -46,6 +41,45 @@ export default function RootLayout() {
   const segments = useSegments();
   const navigationState = useRootNavigationState();
   const isNavigationReady = !!navigationState?.key;
+
+  // Initialize push notifications (handles permission and syncing to backend)
+  usePushNotifications();
+
+  // Listen for Notification Taps (Deep Linking)
+  const responseListener = useRef<Notifications.Subscription | null>(null);
+
+  useEffect(() => {
+    if (!isExpoGo) {
+      responseListener.current = Notifications.addNotificationResponseReceivedListener(
+        (response) => {
+          const data = response.notification.request.content.data as NotificationPayload;
+          logger.info(LogTag.API, 'Notification tapped, handling deep link', data);
+
+          // Track the open in analytics
+          NotificationAnalyticsService.trackNotificationOpen(data);
+
+          // Resolve route using the registry
+          let url = data?.url;
+          if (!url && data?.event) {
+            url = getRouteForNotification(data.event, data) || undefined;
+          }
+
+          if (url && isNavigationReady) {
+            // Add a small delay to ensure routing stack is ready if app was completely closed
+            setTimeout(() => {
+              router.push(url as `/${string}`);
+            }, 100);
+          }
+        },
+      );
+    }
+
+    return () => {
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
+    };
+  }, [isNavigationReady]);
 
   // ─── Initialize Auth ──────────────────────────────────────────────────
   useEffect(() => {
@@ -76,19 +110,24 @@ export default function RootLayout() {
   }, [setSession]);
 
   // ─── Routing & Protection ─────────────────────────────────────────────
+  // Hide splash screen exactly once when ready
+  useEffect(() => {
+    if (!isLoading && isNavigationReady) {
+      try {
+        SplashScreen.hideAsync().catch(() => {});
+      } catch {}
+    }
+  }, [isLoading, isNavigationReady]);
+
   useEffect(() => {
     // Wait for the initial session check to finish and navigation to be ready
     if (isLoading || !isNavigationReady) return;
-
-    // Expo Router automatically shows the splash screen.
-    // Calling showAsync() here manually on iOS throws the "No native splash screen registered" error.
-    SplashScreen.hideAsync();
 
     const rootSegment = segments[0];
     const isPublic = rootSegment === '(public)';
     const isAuth = rootSegment === '(auth)';
     const isRecovery = rootSegment === 'recovery';
-    const isSplash = isPublic && segments[0] === 'splash';
+    const isSplash = isPublic && (segments as string[])[1] === 'splash';
     const isCallback =
       rootSegment === 'google-callback' ||
       (isAuth && (segments as string[])[1] === 'google-callback');
@@ -114,7 +153,6 @@ export default function RootLayout() {
         return; // Prevent further routing logic
       }
 
-      // If we are on the recovery screen but the profile is no longer deleted, continue to the app
       if (isRecovery && !profile?.deleted_at) {
         // Will fall through to the target check below
       }
@@ -129,14 +167,10 @@ export default function RootLayout() {
 
       const target = role === 'Owner' ? '/(owner)' : '/(customer)';
 
-      // Only redirect if they are currently in the public/auth screens (except callback) or the recovery screen
       if ((isPublic || isAuth || isRecovery) && !isCallback) {
         logger.info(LogTag.AUTH, `🚀 RootLayout: Navigating to ${target}`);
         router.replace(target as '/(owner)' | '/(customer)');
       }
-
-      // eslint-disable-next-line react-hooks/immutability
-      registerForPushNotificationsAsync();
     }
     // 2. Handle Not Signed In
     else if (!session && !isPublic && !isAuth && !isAtRoot) {
@@ -150,42 +184,13 @@ export default function RootLayout() {
     }
   }, [session, profile, role, isLoading, segments, onboardingCompleted, isNavigationReady]);
 
-  const registerForPushNotificationsAsync = async () => {
-    if (!Notifications) return;
-
-    try {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus === 'granted') {
-        const tokenData = await Notifications.getExpoPushTokenAsync();
-        const { user } = useAuthStore.getState();
-
-        if (tokenData?.data && user?.id) {
-          await supabase
-            .from('user_profiles')
-            .update({
-              push_token: tokenData.data,
-              platform: Platform.OS,
-            })
-            .eq('id', user.id);
-        }
-      }
-    } catch {
-      // ignore
-    }
-  };
-
   if (isLoading) {
     return (
       <View
         className="flex-1 justify-center items-center"
         style={[
           {
-            backgroundColor: '#F8FAFC',
+            backgroundColor: '#000000',
           },
         ]}
       >
@@ -197,19 +202,32 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ModalProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(public)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(customer)" options={{ headerShown: false }} />
-          <Stack.Screen name="(owner)" options={{ headerShown: false }} />
-          <Stack.Screen name="setup" options={{ headerShown: false }} />
-          <Stack.Screen name="booking" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="booking-detail/[id]"
-            options={{ presentation: 'modal', headerShown: false }}
-          />
-        </Stack>
+        <NotificationProvider>
+          <Stack
+            screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#000000' } }}
+          >
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="(public)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(customer)" options={{ headerShown: false }} />
+            <Stack.Screen name="(owner)" options={{ headerShown: false }} />
+            <Stack.Screen name="setup" options={{ headerShown: false }} />
+            <Stack.Screen name="booking" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="booking-detail/[id]"
+              options={{ presentation: 'modal', headerShown: false }}
+            />
+            <Stack.Screen
+              name="owner-booking-detail/[id]"
+              options={{
+                presentation: 'transparentModal',
+                headerShown: false,
+                animation: 'fade',
+              }}
+            />
+            <Stack.Screen name="notifications" options={{ headerShown: false }} />
+          </Stack>
+        </NotificationProvider>
       </ModalProvider>
     </QueryClientProvider>
   );

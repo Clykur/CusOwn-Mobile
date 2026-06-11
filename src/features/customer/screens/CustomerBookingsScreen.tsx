@@ -80,7 +80,6 @@ export default function CustomerBookingsScreen() {
 
     const salonAddress = item.business?.address || item.salon?.address || 'Premium Suite';
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const salonImage =
       item.business?.owner_image ||
       item.business?.image_url ||
@@ -101,6 +100,7 @@ export default function CustomerBookingsScreen() {
               <View className="relative">
                 <Avatar
                   userId={item.business?.owner_user_id || item.salon?.owner_user_id}
+                  url={salonImage}
                   name={salonName}
                   size={70}
                   type="business"

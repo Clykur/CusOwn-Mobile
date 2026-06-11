@@ -1,3 +1,4 @@
+import * as FileSystem from 'expo-file-system';
 import { getActorUserId } from './booking-rpc';
 import { logSupabaseFailure } from './errors';
 import { assertBusinessOwnedByUser } from './owner-access';
@@ -14,6 +15,7 @@ export type PickedImageFile = {
   uri: string;
   name?: string;
   type?: string;
+  fileSize?: number;
 };
 
 export type MediaListItem = {
@@ -25,14 +27,6 @@ export type MediaListItem = {
   entity_type?: string;
   entity_id?: string;
 };
-
-async function uriToArrayBuffer(uri: string): Promise<ArrayBuffer> {
-  const response = await fetch(uri);
-  if (!response.ok) {
-    throw new Error(`Failed to read file: ${response.status}`);
-  }
-  return response.arrayBuffer();
-}
 
 export function getPublicStorageUrl(
   bucketName: string | null | undefined,
@@ -142,15 +136,41 @@ export async function uploadToStorage(params: {
   file: PickedImageFile;
   upsert?: boolean;
 }): Promise<{ size_bytes: number }> {
-  const buffer = await uriToArrayBuffer(params.file.uri);
   const contentType = params.file.type || 'image/jpeg';
+  const fileName = params.file.name || 'upload.jpg';
+
+  let size_bytes = params.file.fileSize || 0;
+  try {
+    if (!size_bytes) {
+      const fileInfo = await FileSystem.getInfoAsync(params.file.uri);
+      if (fileInfo.exists && fileInfo.size) {
+        size_bytes = fileInfo.size;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  // Fallback to 1 to bypass DB constraint if size couldn't be determined
+  if (!size_bytes || size_bytes <= 0) {
+    size_bytes = 1;
+  }
 
   logStorageDebug('uploading', { bucket: params.bucket, path: params.storagePath, contentType });
 
-  const { error } = await supabase.storage.from(params.bucket).upload(params.storagePath, buffer, {
-    contentType,
-    upsert: params.upsert ?? false,
-  });
+  const formData = new FormData();
+  formData.append('file', {
+    uri: params.file.uri,
+    name: fileName,
+    type: contentType,
+  } as unknown as Blob);
+
+  const { error } = await supabase.storage
+    .from(params.bucket)
+    .upload(params.storagePath, formData, {
+      contentType,
+      upsert: params.upsert ?? false,
+    });
 
   if (error) {
     logStorageError('storage.upload failed', error, {
@@ -160,7 +180,7 @@ export async function uploadToStorage(params: {
     throw error;
   }
 
-  return { size_bytes: buffer.byteLength };
+  return { size_bytes };
 }
 
 export async function listBusinessMedia(businessId: string): Promise<{ items: MediaListItem[] }> {

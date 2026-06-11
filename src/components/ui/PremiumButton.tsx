@@ -30,12 +30,10 @@ const PremiumButtonBase: React.FC<PremiumButtonProps> = ({
   }));
 
   const onPressIn = () => {
-    // eslint-disable-next-line react-hooks/immutability
     scale.value = withSpring(0.97, { damping: 15, stiffness: 200 });
   };
 
   const onPressOut = () => {
-    // eslint-disable-next-line react-hooks/immutability
     scale.value = withSpring(1, { damping: 15, stiffness: 200 });
   };
 

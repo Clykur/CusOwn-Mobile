@@ -22,7 +22,7 @@ function BusinessCardBase({ item, index = 0, onPress }: BrowseSalonCardProps) {
   return (
     <AnimatedSection delay={index * 100} direction="right" className="mr-4">
       <Pressable onPress={onPress}>
-        <GlassCard className="w-56 p-2 bg-card shadow-sm rounded-full items-center relative">
+        <GlassCard className="w-56 p-2 bg-card shadow-sm items-center relative">
           {/* Open / Closed Badge */}
           {/* Top Right Status */}
           <View className="absolute top-3 right-3 flex-row items-center z-10">
@@ -55,6 +55,7 @@ function BusinessCardBase({ item, index = 0, onPress }: BrowseSalonCardProps) {
           <View className="items-center justify-center mb-4">
             <Avatar
               userId={item.owner_user_id}
+              url={item.owner_image || item.avatar_url}
               name={item.salon_name}
               size={110}
               type="business"

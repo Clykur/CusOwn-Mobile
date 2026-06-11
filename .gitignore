@@ -44,3 +44,6 @@ yarn-error.*
 
 # build artifacts
 build-*.apk
+
+# Supabase
+supabase/.temp/

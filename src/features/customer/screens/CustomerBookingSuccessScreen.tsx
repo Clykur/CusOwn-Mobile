@@ -15,7 +15,6 @@ export default function BookingSuccessScreen() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
@@ -34,7 +33,6 @@ function BookingSuccessScreenInner() {
   const params = useLocalSearchParams();
   const salonName = Array.isArray(params.salonName) ? params.salonName[0] : params.salonName;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const salonImage = Array.isArray(params.salonImage) ? params.salonImage[0] : params.salonImage;
   const serviceName = Array.isArray(params.serviceName)
     ? params.serviceName[0]
@@ -100,6 +98,7 @@ function BookingSuccessScreenInner() {
                   <View className="flex-row items-center flex-1 mr-3">
                     <Avatar
                       userId={ownerUserId}
+                      url={salonImage}
                       name={String(salonName || 'Salon')}
                       size={44}
                       type="business"

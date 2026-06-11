@@ -122,7 +122,12 @@ export const apiService = {
     return resolveMediaPublicUrl(mediaId);
   },
 
-  uploadProfileImage: async (file: { uri: string; name?: string; type?: string }) => {
+  uploadProfileImage: async (file: {
+    uri: string;
+    name?: string;
+    type?: string;
+    fileSize?: number;
+  }) => {
     assertSupabaseOnly('uploadProfileImage');
     const result = await uploadProfileAvatar(file);
     return { media: { id: result.mediaId }, url: result.url };
@@ -130,7 +135,7 @@ export const apiService = {
 
   uploadBusinessMedia: async (
     businessId: string,
-    file: { uri: string; name?: string; type?: string },
+    file: { uri: string; name?: string; type?: string; fileSize?: number },
   ): Promise<MediaListItem> => {
     assertSupabaseOnly('uploadBusinessMedia');
     return uploadBusinessGalleryImage(businessId, file);
